@@ -4,6 +4,7 @@ package org.firstinspires.ftc.teamcode.robots.Decode.opmodes;
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.Gamepad;
+import com.qualcomm.robotcore.robot.Robot;
 
 import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.robots.ExampleRobot;
@@ -14,9 +15,11 @@ public abstract class BaseOpMode extends OpMode {
     private ExampleRobot robot = new ExampleRobot("9808");
     private MultipleTelemetry multipleTelemetry = FtcDashboardUtil.getMultipleTelemetry(telemetry);
 
-
+    private boolean allowGamepad2DriverControls;
     long gamepad1UnlockTime = 0; // System time (in mills) when controls can unlock
     long gamepad2UnlockTime = 0;
+
+
 
     @Override
     public void init() {
@@ -76,6 +79,13 @@ public abstract class BaseOpMode extends OpMode {
 
     @Override
     public void loop() {
+
+        // process gamepad controls
+        processDrivingInput(gamepad1);
+        if (allowGamepad2DriverControls) {
+            processDrivingInput(gamepad2);
+        }
+
         if(gamepad1UnlockTime < System.currentTimeMillis()) {
             processGamepad1Input(gamepad1);
         }
@@ -83,6 +93,7 @@ public abstract class BaseOpMode extends OpMode {
             processGamepad2Input(gamepad2);
         }
 
+        multipleTelemetry.addLine("- Charger Robotics: " + this.getRobot().getName() + " -");
         multipleTelemetry.update();
     }
 
@@ -105,14 +116,27 @@ public abstract class BaseOpMode extends OpMode {
     public abstract void processGamepad1Input(Gamepad Gamepad);
     public abstract void processGamepad2Input(Gamepad gamepad);
 
-    // TODO: Min gamepad amount for sensitivity
-    double drivingSpeedMultiplier = 0.7;
-    double minStickSensitivity = 0.1;
+    double driveSpeedMultiplier = 0.75;
+    double turnSpeedMultiplier = 0.6;
+    double minStickSensitivity = 0.05;
+
+    boolean isFastMode = false;
 
     public void processDrivingInput(Gamepad gamepad) {
-        double x_speed = gamepad.left_stick_x > minStickSensitivity ? gamepad.left_stick_x * drivingSpeedMultiplier : 0;
-        double y_speed = gamepad.left_stick_y > minStickSensitivity ? gamepad.left_stick_y * drivingSpeedMultiplier : 0;
-        double r_speed = gamepad.right_stick_x > minStickSensitivity ? gamepad.right_stick_x * drivingSpeedMultiplier : 0;
+        if (gamepad.rightStickButtonWasPressed()) {
+            isFastMode = !isFastMode;
+            if (isFastMode) {
+                driveSpeedMultiplier = 0.75;
+                turnSpeedMultiplier = 0.6;
+            } else {
+                driveSpeedMultiplier = 1;
+                turnSpeedMultiplier = 0.75;
+            }
+        }
+
+        double x_speed = gamepad.left_stick_x > minStickSensitivity ? gamepad.left_stick_x * driveSpeedMultiplier : 0;
+        double y_speed = gamepad.left_stick_y > minStickSensitivity ? gamepad.left_stick_y * driveSpeedMultiplier : 0;
+        double r_speed = gamepad.right_stick_x > minStickSensitivity ? gamepad.right_stick_x * turnSpeedMultiplier : 0;
 
         double cosHeading = getRobot().getDriveTrain().getCosHeading();
         double sinHeading = getRobot().getDriveTrain().getSinHeading();

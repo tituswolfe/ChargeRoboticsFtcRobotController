@@ -10,6 +10,9 @@ public class BaseLinearOpMode extends LinearOpMode {
 
     @Override
     public void runOpMode() throws InterruptedException {
+        while(opModeInInit()) {
 
+        }
+        waitForStart();
     }
 }

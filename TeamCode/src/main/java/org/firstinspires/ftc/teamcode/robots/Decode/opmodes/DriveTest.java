@@ -9,6 +9,9 @@ import com.qualcomm.robotcore.hardware.Gamepad;
 public class DriveTest extends BaseOpMode {
     double targetPos;
     double power; double difference; double Kd;
+
+
+
     @Override
     public void loop() {
         super.loop();
