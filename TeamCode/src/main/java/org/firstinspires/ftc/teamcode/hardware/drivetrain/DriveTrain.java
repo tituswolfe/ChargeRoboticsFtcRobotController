@@ -210,11 +210,14 @@ public class DriveTrain {
                     true
             );
 
-            double sinHeading = Math.sin(odometry.getHeading(AngleUnit.RADIANS, Odometry.AngleSystem.SIGNED));
-            double cosHeading = Math.cos(odometry.getHeading(AngleUnit.RADIANS, Odometry.AngleSystem.SIGNED));
+            double sinHeading = getSinHeading();
+            double cosHeading = getCosHeading();
 
-            double robotStrafeSpeed = xSpeed * cosHeading + ySpeed * sinHeading;
-            double robotForwardSpeed = ySpeed * cosHeading - xSpeed * sinHeading;
+//            double robotStrafeSpeed = xSpeed * cosHeading + ySpeed * sinHeading;
+//            double robotForwardSpeed = ySpeed * cosHeading - xSpeed * sinHeading;
+
+            double robotStrafeSpeed = calculateRobotStrafeFromFieldVelocity(xSpeed, cosHeading, ySpeed, sinHeading);
+            double robotForwardSpeed = calculateRobotForwardFromFieldVelocity(xSpeed, cosHeading, ySpeed, sinHeading);
 
 
 
@@ -230,6 +233,23 @@ public class DriveTrain {
 
         return false;
     }
+
+    public double calculateRobotStrafeFromFieldVelocity(double xVel, double cosHeading, double yVel, double sinHeading) {
+        return xVel * cosHeading + yVel * sinHeading;
+    }
+
+    public double calculateRobotForwardFromFieldVelocity(double xVel, double cosHeading, double yVel, double sinHeading) {
+        return yVel * cosHeading - xVel * sinHeading;
+    }
+
+    public double getSinHeading() {
+        return Math.sin(odometry.getHeading(AngleUnit.RADIANS, Odometry.AngleSystem.SIGNED));
+    }
+
+    public double getCosHeading() {
+        return Math.cos(odometry.getHeading(AngleUnit.RADIANS, Odometry.AngleSystem.SIGNED));
+    }
+
 
 
     public static double calculateHeadingError(double currentHeading, double targetHeading) {

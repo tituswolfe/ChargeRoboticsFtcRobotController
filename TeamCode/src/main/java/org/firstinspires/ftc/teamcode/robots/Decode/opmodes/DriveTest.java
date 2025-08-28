@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.robots.Decode.opmodes;
 import static org.firstinspires.ftc.teamcode.util.ThreadUtil.sleep;
 
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.hardware.Gamepad;
 
 @Autonomous(name="Drive Train Test", group="Test")
 public class DriveTest extends BaseOpMode {
@@ -10,6 +11,7 @@ public class DriveTest extends BaseOpMode {
     double power; double difference; double Kd;
     @Override
     public void loop() {
+        super.loop();
 //        getRobot().getOdometry().update();
 //        telemetry.addData("X", getRobot().getOdometry().getXPos(DistanceUnit.INCH));
 //        telemetry.addData("Y", getRobot().getOdometry().getYPos(DistanceUnit.INCH));
@@ -25,6 +27,17 @@ public class DriveTest extends BaseOpMode {
 
         //stop();
     }
+
+    @Override
+    public void processGamepad1Input(Gamepad gamepad) {
+
+    }
+
+    @Override
+    public void processGamepad2Input(Gamepad gamepad) {
+
+    }
+
 
     @Override
     public void start() {
