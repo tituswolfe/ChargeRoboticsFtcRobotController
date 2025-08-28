@@ -1,0 +1,8 @@
+
+
+
+
+Distances are in inches
+Variables use camel case
+Class in pascal case
+Hardware ref in kebab case
