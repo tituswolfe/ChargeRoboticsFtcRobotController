@@ -1,12 +1,13 @@
 package org.firstinspires.ftc.teamcode.robots.Decode.opmodes;
 
-import static org.firstinspires.ftc.teamcode.util.ThreadUtil.sleep;
-
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.hardware.Gamepad;
 
+import org.firstinspires.ftc.teamcode.robots.ExampleRobot;
+import org.firstinspires.ftc.teamcode.robots.base.BaseOpMode;
+
 @Autonomous(name="Drive Train Test", group="Test")
-public class DriveTest extends BaseOpMode {
+public class DriveTest extends BaseOpMode<ExampleRobot> {
     double targetPos;
     double power; double difference; double Kd;
 

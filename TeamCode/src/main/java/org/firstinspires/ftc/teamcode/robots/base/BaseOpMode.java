@@ -1,28 +1,36 @@
-package org.firstinspires.ftc.teamcode.robots.Decode.opmodes;
+package org.firstinspires.ftc.teamcode.robots.base;
 
 
 import com.acmerobotics.dashboard.telemetry.MultipleTelemetry;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
-import com.qualcomm.robotcore.hardware.Gamepad;
-import com.qualcomm.robotcore.robot.Robot;
 
-import org.firstinspires.ftc.robotcore.external.Telemetry;
-import org.firstinspires.ftc.teamcode.robots.ExampleRobot;
 import org.firstinspires.ftc.teamcode.util.FtcDashboardUtil;
 import org.firstinspires.ftc.teamcode.util.ThreadUtil;
 
-public abstract class BaseOpMode extends OpMode {
-    private ExampleRobot robot = new ExampleRobot("9808");
+public abstract class BaseOpMode<Robot extends RobotBase, GamepadController extends GamepadControllerBase> extends OpMode {
+    protected Robot robot;
+    protected GamepadController gamepadController;
+
     private MultipleTelemetry multipleTelemetry = FtcDashboardUtil.getMultipleTelemetry(telemetry);
 
-    private boolean allowGamepad2DriverControls;
-    long gamepad1UnlockTime = 0; // System time (in mills) when controls can unlock
-    long gamepad2UnlockTime = 0;
+    private boolean isOpModeSetup = false;
+
+    public void setupOpMode(Robot robot) {
+        this.robot = robot;
+        isOpModeSetup = true;
+    }
 
 
-
+    /**
+     * Override this method, and call setupOpMode(), before calling super().
+     */
     @Override
     public void init() {
+        if(!isOpModeSetup) {
+            multipleTelemetry.addLine("OpMode was not setup. Please call setupOpMode() in init");
+            multipleTelemetry.update();
+            stop();
+        }
 //        runAsync(() -> {
 //            while(!robot.isRobotReady()) {
 //                telemetry.addLine("Please wait .");
@@ -79,21 +87,7 @@ public abstract class BaseOpMode extends OpMode {
 
     @Override
     public void loop() {
-
-        // process gamepad controls
-        processDrivingInput(gamepad1);
-        if (allowGamepad2DriverControls) {
-            processDrivingInput(gamepad2);
-        }
-
-        if(gamepad1UnlockTime < System.currentTimeMillis()) {
-            processGamepad1Input(gamepad1);
-        }
-        if (gamepad1UnlockTime < System.currentTimeMillis()) {
-            processGamepad2Input(gamepad2);
-        }
-
-        multipleTelemetry.addLine("- Charger Robotics: " + this.getRobot().getName() + " -");
+        multipleTelemetry.addLine("- Charger Robotics: " + this.robot.getName() + " -");
         multipleTelemetry.update();
     }
 
@@ -104,63 +98,10 @@ public abstract class BaseOpMode extends OpMode {
 
     @Override
     public void stop() {
-        getRobot().getDriveTrain().disable();
         ThreadUtil.shutdown();
     }
 
-    public ExampleRobot getRobot() {
+    public Robot getRobot() {
         return robot;
-    }
-
-    // Gamepad
-    public abstract void processGamepad1Input(Gamepad Gamepad);
-    public abstract void processGamepad2Input(Gamepad gamepad);
-
-    double driveSpeedMultiplier = 0.75;
-    double turnSpeedMultiplier = 0.6;
-    double minStickSensitivity = 0.05;
-
-    boolean isFastMode = false;
-
-    public void processDrivingInput(Gamepad gamepad) {
-        if (gamepad.rightStickButtonWasPressed()) {
-            isFastMode = !isFastMode;
-            if (isFastMode) {
-                driveSpeedMultiplier = 0.75;
-                turnSpeedMultiplier = 0.6;
-            } else {
-                driveSpeedMultiplier = 1;
-                turnSpeedMultiplier = 0.75;
-            }
-        }
-
-        double x_speed = gamepad.left_stick_x > minStickSensitivity ? gamepad.left_stick_x * driveSpeedMultiplier : 0;
-        double y_speed = gamepad.left_stick_y > minStickSensitivity ? gamepad.left_stick_y * driveSpeedMultiplier : 0;
-        double r_speed = gamepad.right_stick_x > minStickSensitivity ? gamepad.right_stick_x * turnSpeedMultiplier : 0;
-
-        double cosHeading = getRobot().getDriveTrain().getCosHeading();
-        double sinHeading = getRobot().getDriveTrain().getSinHeading();
-
-        robot.getDriveTrain().setMotorPowersThroughKinematicTransformation(
-                robot.getDriveTrain().calculateRobotStrafeFromFieldVelocity(x_speed, cosHeading, y_speed, sinHeading),
-                robot.getDriveTrain().calculateRobotForwardFromFieldVelocity(x_speed, cosHeading, y_speed, sinHeading),
-                r_speed
-        );
-    }
-
-    public void lockOutGamepad1() {
-        lockOutGamepad1(200);
-    }
-
-    public void lockOutGamepad1(int durationMills) {
-        gamepad1UnlockTime = System.currentTimeMillis() + durationMills;
-    }
-
-    public void lockOutGamepad2() {
-        lockOutGamepad2(200);
-    }
-
-    public void lockOutGamepad2(int durationMills) {
-        gamepad2UnlockTime = System.currentTimeMillis() + durationMills;
     }
 }

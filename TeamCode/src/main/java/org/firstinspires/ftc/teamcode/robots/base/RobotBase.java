@@ -27,7 +27,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-package org.firstinspires.ftc.teamcode.robots;
+package org.firstinspires.ftc.teamcode.robots.base;
 
 import com.qualcomm.robotcore.hardware.HardwareMap;
 

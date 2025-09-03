@@ -2,7 +2,7 @@ package org.firstinspires.ftc.teamcode.robots.DecodeSummerCamp;
 
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
-import org.firstinspires.ftc.teamcode.robots.RobotBase;
+import org.firstinspires.ftc.teamcode.robots.base.RobotBase;
 
 public class DecodeSummerCampRobot extends RobotBase {
 
