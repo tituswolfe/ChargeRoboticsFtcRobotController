@@ -10,6 +10,4 @@ public class StandardOpMode extends BaseOpMode<StandardRobot, StandardGamepadCon
         robot.getDriveTrain().disable();
         super.stop();
     }
-
-
 }
