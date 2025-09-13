@@ -1,12 +1,11 @@
 package org.firstinspires.ftc.teamcode.robots.standard;
 
-import com.acmerobotics.dashboard.config.Config;
 import com.qualcomm.robotcore.hardware.Gamepad;
 
 import org.firstinspires.ftc.teamcode.robots.base.GamepadControllerBase;
 
-@Config
-public class StandardGamepadController extends GamepadControllerBase<StandardOpMode> {
+@Deprecated
+public abstract class StandardGamepadController extends GamepadControllerBase<StandardOpMode> {
     private boolean allowGamepad2DriverControls;
 
     public static double driveSpeedMultiplierNormalSpeed = 0.75;
@@ -36,16 +35,6 @@ public class StandardGamepadController extends GamepadControllerBase<StandardOpM
         super.processGamepadControls();
     }
 
-    @Override
-    public void proceessGamepad1(Gamepad gamepad) {
-
-    }
-
-    @Override
-    public void proceessGamepad2(Gamepad gamepad) {
-
-    }
-
 
     private void processDrivingInput(Gamepad gamepad) {
         if (gamepad.rightStickButtonWasPressed()) {
@@ -59,17 +48,19 @@ public class StandardGamepadController extends GamepadControllerBase<StandardOpM
             }
         }
 
-        double x_speed = gamepad.left_stick_x > minStickSensitivity ? gamepad.left_stick_x * currentDriveSpeedMultiplier : 0;
-        double y_speed = gamepad.left_stick_y > minStickSensitivity ? gamepad.left_stick_y * currentDriveSpeedMultiplier : 0;
+        double x_speed = (gamepad.left_stick_x > minStickSensitivity ? gamepad.left_stick_x * currentDriveSpeedMultiplier : 0) + (gamepad.dpad_left ? -0.2 : 0) + (gamepad.dpad_right ? 0.2 : 0);
+        double y_speed = (gamepad.left_stick_y > minStickSensitivity ? gamepad.left_stick_y * currentDriveSpeedMultiplier : 0) + (gamepad.dpad_up ? 0.2 : 0) + (gamepad.dpad_down ? -0.2 : 0);
         double r_speed = gamepad.right_stick_x > minStickSensitivity ? gamepad.right_stick_x * currentTurnSpeedMultiplier : 0;
 
-        double cosHeading = opMode.getRobot().getDriveTrain().getCosHeading();
-        double sinHeading = opMode.getRobot().getDriveTrain().getSinHeading();
+        //opMode.getRobot().get().setTeleOpDrive(y_speed, x_speed, r_speed, false);
 
-        opMode.getRobot().getDriveTrain().setMotorPowersThroughKinematicTransformation(
-                opMode.getRobot().getDriveTrain().calculateRobotStrafeFromFieldVelocity(x_speed, cosHeading, y_speed, sinHeading),
-                opMode.getRobot().getDriveTrain().calculateRobotForwardFromFieldVelocity(x_speed, cosHeading, y_speed, sinHeading),
-                r_speed
-        );
+//        double cosHeading = opMode.getRobot().getDriveTrain().getCosHeading();
+//        double sinHeading = opMode.getRobot().getDriveTrain().getSinHeading();
+//
+//        opMode.getRobot().getDriveTrain().setMotorPowersThroughKinematicTransformation(
+//                opMode.getRobot().getDriveTrain().calculateRobotStrafeFromFieldVelocity(x_speed, cosHeading, y_speed, sinHeading),
+//                opMode.getRobot().getDriveTrain().calculateRobotForwardFromFieldVelocity(x_speed, cosHeading, y_speed, sinHeading),
+//                r_speed
+//        );
     }
 }

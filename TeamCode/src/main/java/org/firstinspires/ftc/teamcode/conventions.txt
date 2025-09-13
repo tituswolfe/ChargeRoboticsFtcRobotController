@@ -6,3 +6,7 @@ Distances are in inches
 Variables use camel case
 Class in pascal case
 Hardware ref in kebab case
+
+Ips
+Panels: 192.168.43.1:8001
+Limelight: http://192.168.43.1:5801/

@@ -11,4 +11,13 @@ public class NealsonGamepadController extends StandardGamepadController {
     }
 
 
+    @Override
+    protected void proceessGamepad1(Gamepad gamepad) {
+
+    }
+
+    @Override
+    protected void proceessGamepad2(Gamepad gamepad) {
+
+    }
 }

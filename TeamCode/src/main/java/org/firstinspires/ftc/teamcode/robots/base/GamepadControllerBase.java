@@ -26,10 +26,10 @@ public abstract class GamepadControllerBase<T extends BaseOpMode> {
         }
     }
 
-    public abstract void proceessGamepad1(Gamepad gamepad);
-    public abstract void proceessGamepad2(Gamepad gamepad);
+    protected abstract void proceessGamepad1(Gamepad gamepad);
+    protected abstract void proceessGamepad2(Gamepad gamepad);
 
-
+    // Gamepad lock out
     public void lockOutGamepad1() {
         lockOutGamepad1(200);
     }
@@ -45,5 +45,4 @@ public abstract class GamepadControllerBase<T extends BaseOpMode> {
     public void lockOutGamepad2(int durationMills) {
         gamepad2UnlockTime = System.currentTimeMillis() + durationMills;
     }
-
 }

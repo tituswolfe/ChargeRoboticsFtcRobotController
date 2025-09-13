@@ -29,6 +29,10 @@
 
 package org.firstinspires.ftc.teamcode.robots.base;
 
+import static org.firstinspires.ftc.teamcode.pedroPathing.Constants.createFollower;
+
+import com.pedropathing.follower.Follower;
+import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 // - Dedication -
@@ -39,38 +43,39 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
  * {@link RobotBase} is a parent class with all the basic functions for defining a robot
  */
 public abstract class RobotBase {
-    private HardwareMap hardwareMap;
-    private final String name;
-    private boolean isRobotReady = false;
+    //private HardwareMap hardwareMap;
 
-    public RobotBase(String name) {
-        this.name = name;
-    }
+    // standard hardware
+    private Follower follower;
+    private Limelight3A limelight;
+
 
     public void init(HardwareMap hardwareMap) {
-        this.hardwareMap = hardwareMap;
-
-        boolean isHardwareInitSuccessful = initHardware(this.hardwareMap);
-
-        isRobotReady = isHardwareInitSuccessful;
+        initHardware(hardwareMap);
     }
 
     /**
      * @param hardwareMap
      * @return true if initiation was successful
+     * @throws HardwareException
      */
     public abstract boolean initHardware(HardwareMap hardwareMap);
 
+    public void initStandardHardware(HardwareMap hardwareMap) {
+        follower = createFollower(hardwareMap);
 
-    public HardwareMap getHardwareMap() {
-        return hardwareMap;
+//        limelight = hardwareMap.get(Limelight3A.class, "limelight");
+//        limelight.pipelineSwitch(0);
+//        limelight.start();
     }
 
-    public String getName() {
-        return name;
+    // getters & setters
+
+    public Follower getFollower() {
+        return follower;
     }
 
-    public boolean isRobotReady() {
-        return isRobotReady;
+    public Limelight3A getLimelight() {
+        return limelight;
     }
 }
