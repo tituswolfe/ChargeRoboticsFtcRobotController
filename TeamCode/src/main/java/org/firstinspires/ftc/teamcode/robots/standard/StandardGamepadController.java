@@ -5,7 +5,7 @@ import com.qualcomm.robotcore.hardware.Gamepad;
 import org.firstinspires.ftc.teamcode.robots.base.GamepadControllerBase;
 
 @Deprecated
-public abstract class StandardGamepadController extends GamepadControllerBase<StandardOpMode> {
+public abstract class StandardGamepadController {
     private boolean allowGamepad2DriverControls;
 
     public static double driveSpeedMultiplierNormalSpeed = 0.75;
@@ -21,19 +21,19 @@ public abstract class StandardGamepadController extends GamepadControllerBase<St
 
     private boolean isFastMode = false;
 
-    public StandardGamepadController(StandardOpMode opMode, Gamepad gamepad1, Gamepad gamepad2, boolean allowGamepad2DriverControls) {
-        super(opMode, gamepad1, gamepad2);
-        this.allowGamepad2DriverControls = allowGamepad2DriverControls;
-    }
-
-    @Override
-    public void processGamepadControls() {
-        processDrivingInput(gamepad1);
-        if (allowGamepad2DriverControls) {
-            processDrivingInput(gamepad2);
-        }
-        super.processGamepadControls();
-    }
+//    public StandardGamepadController(StandardOpMode opMode, Gamepad gamepad1, Gamepad gamepad2, boolean allowGamepad2DriverControls) {
+//        super(opMode, gamepad1, gamepad2);
+//        this.allowGamepad2DriverControls = allowGamepad2DriverControls;
+//    }
+//
+//    @Override
+//    public void processGamepadControls() {
+//        processDrivingInput(gamepad1);
+//        if (allowGamepad2DriverControls) {
+//            processDrivingInput(gamepad2);
+//        }
+//        super.processGamepadControls();
+//    }
 
 
     private void processDrivingInput(Gamepad gamepad) {

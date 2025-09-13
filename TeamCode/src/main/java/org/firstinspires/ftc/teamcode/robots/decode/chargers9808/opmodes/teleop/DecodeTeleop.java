@@ -13,13 +13,15 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import org.firstinspires.ftc.teamcode.robots.Decode.chargers9808.DecodeRobot9808;
 import org.firstinspires.ftc.teamcode.robots.base.BaseOpMode;
 import org.firstinspires.ftc.teamcode.robots.base.GamepadControllerBase;
+import org.firstinspires.ftc.teamcode.robots.decode.chargers9808.gamepads.NealsonGamepadController;
 
 @TeleOp(name = "Decode Teleop")
-public class DecodeTeleOp extends BaseOpMode<DecodeRobot9808, GamepadControllerBase> {
+public class DecodeTeleOp extends BaseOpMode<DecodeRobot9808, org.firstinspires.ftc.teamcode.robots.decode.chargers9808.gamepads.NealsonGamepadController> {
 
     @Override
     public void init() {
-        setupOpMode(new DecodeRobot9808());
+        DecodeRobot9808 decodeRobot9808 = new DecodeRobot9808();
+        setupOpMode(decodeRobot9808, new NealsonGamepadController(decodeRobot9808, gamepad1, gamepad2));
         super.init();
     }
 
@@ -38,6 +40,7 @@ public class DecodeTeleOp extends BaseOpMode<DecodeRobot9808, GamepadControllerB
 
 
         robot.getFollower().followPath(path);
+        robot.getFollower().startTeleopDrive();
     }
 
     @Override

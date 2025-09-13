@@ -14,8 +14,9 @@ public abstract class BaseOpMode<Robot extends RobotBase, GamepadController exte
 
     private boolean isOpModeSetup = false;
 
-    public void setupOpMode(Robot robot) {
+    public void setupOpMode(Robot robot, GamepadController gamepadController) {
         this.robot = robot;
+        this.gamepadController = gamepadController;
         isOpModeSetup = true;
     }
 

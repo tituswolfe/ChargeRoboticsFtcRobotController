@@ -2,8 +2,8 @@ package org.firstinspires.ftc.teamcode.robots.base;
 
 import com.qualcomm.robotcore.hardware.Gamepad;
 
-public abstract class GamepadControllerBase<T extends BaseOpMode> {
-    protected final T opMode;
+public abstract class GamepadControllerBase<Robot extends RobotBase> {
+    protected final Robot robot;
     protected final Gamepad gamepad1;
     protected final Gamepad gamepad2;
 
@@ -11,8 +11,8 @@ public abstract class GamepadControllerBase<T extends BaseOpMode> {
     private long gamepad2UnlockTime = 0;
 
 
-    public GamepadControllerBase(T opMode, Gamepad gamepad1, Gamepad gamepad2) {
-        this.opMode = opMode;
+    public GamepadControllerBase(Robot opMode, Gamepad gamepad1, Gamepad gamepad2) {
+        this.robot = opMode;
         this.gamepad1 = gamepad1;
         this.gamepad2 = gamepad2;
     }
