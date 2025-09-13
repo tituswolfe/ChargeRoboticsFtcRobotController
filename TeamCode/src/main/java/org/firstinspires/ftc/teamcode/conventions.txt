@@ -1,12 +1,15 @@
-
-
-
-
-Distances are in inches
-Variables use camel case
-Class in pascal case
+- NAMING -
+Standard distance unit = INCH
+Variables in camelCase
+Class in PascalCase
 Hardware ref in kebab case
 
-Ips
+- IP Adresses -
+OnBot & Mangement: 192.168.43.1
 Panels: 192.168.43.1:8001
-Limelight: http://192.168.43.1:5801/
+Limelight: 192.168.43.1:5801
+
+
+- LIBRARIES -
+Pedro Pathing
+Panels

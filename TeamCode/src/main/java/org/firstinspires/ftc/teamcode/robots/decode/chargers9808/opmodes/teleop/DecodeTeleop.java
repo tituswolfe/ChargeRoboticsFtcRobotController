@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.robots.Decode.chargers9808.opmodes.teleop;
 
+import static org.firstinspires.ftc.teamcode.pedroPathing.Tuning.drawCurrentAndHistory;
 import static org.firstinspires.ftc.teamcode.pedroPathing.Tuning.follower;
 
 import com.pedropathing.geometry.BezierLine;
@@ -27,13 +28,21 @@ public class DecodeTeleOp extends BaseOpMode<DecodeRobot9808, GamepadControllerB
 
     @Override
     public void start() {
-        follower.activateDrive();
+        robot.getFollower().activateDrive();
+        robot.getFollower().activateAllPIDFs();
         PathChain path = robot.getFollower().pathBuilder()
                 .addPath(new BezierLine(startPose, secondPose))
                 .setLinearHeadingInterpolation(startPose.getHeading(), secondPose.getHeading())
+                .setTangentHeadingInterpolation()
                 .build();
 
 
         robot.getFollower().followPath(path);
+    }
+
+    @Override
+    public void loop() {
+        robot.getFollower().update();
+        super.loop();
     }
 }
