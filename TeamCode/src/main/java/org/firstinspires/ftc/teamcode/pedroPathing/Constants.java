@@ -50,9 +50,10 @@ public class Constants {
 
     public static Follower createFollower(HardwareMap hardwareMap) {
         return new FollowerBuilder(followerConstants, hardwareMap)
-                .pathConstraints(pathConstraints)
-                .mecanumDrivetrain(driveConstants)
-                .pinpointLocalizer(localizerConstants)
                 .build();
+//                .pathConstraints(pathConstraints)
+//                .mecanumDrivetrain(driveConstants)
+//                .pinpointLocalizer(localizerConstants)
+//                .build();
     }
 }

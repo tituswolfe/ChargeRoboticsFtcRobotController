@@ -29,7 +29,6 @@ public abstract class GamepadControllerBase<Robot extends RobotBase> {
     protected abstract void proceessGamepad1(Gamepad gamepad);
     protected abstract void proceessGamepad2(Gamepad gamepad);
 
-    // Gamepad lock out
     public void lockOutGamepad1() {
         lockOutGamepad1(200);
     }

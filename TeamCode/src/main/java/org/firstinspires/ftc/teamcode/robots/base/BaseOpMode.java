@@ -6,11 +6,11 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.teamcode.util.ThreadUtil;
 
+import dev.frozenmilk.dairy.pasteurized.Pasteurized;
+
 public abstract class BaseOpMode<Robot extends RobotBase, GamepadController extends GamepadControllerBase> extends OpMode {
     protected Robot robot;
     protected GamepadController gamepadController;
-
-
 
     private boolean isOpModeSetup = false;
 
@@ -25,6 +25,7 @@ public abstract class BaseOpMode<Robot extends RobotBase, GamepadController exte
      */
     @Override
     public void init() {
+        Pasteurized.gamepad1();
         if(!isOpModeSetup) {
             telemetry.addLine("OpMode was not setup. Please call setupOpMode() in init before super().");
             telemetry.update();

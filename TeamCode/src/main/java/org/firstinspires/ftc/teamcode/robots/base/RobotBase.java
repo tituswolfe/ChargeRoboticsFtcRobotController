@@ -47,7 +47,6 @@ public abstract class RobotBase {
 
     // standard hardware
     private Follower follower;
-    private Limelight3A limelight;
 
 
     public void init(HardwareMap hardwareMap) {
@@ -62,20 +61,12 @@ public abstract class RobotBase {
     public abstract boolean initHardware(HardwareMap hardwareMap);
 
     public void initStandardHardware(HardwareMap hardwareMap) {
-        follower = createFollower(hardwareMap);
-
-//        limelight = hardwareMap.get(Limelight3A.class, "limelight");
-//        limelight.pipelineSwitch(0);
-//        limelight.start();
+        //follower = createFollower(hardwareMap);
     }
 
     // getters & setters
 
     public Follower getFollower() {
         return follower;
-    }
-
-    public Limelight3A getLimelight() {
-        return limelight;
     }
 }
