@@ -29,44 +29,59 @@
 
 package org.firstinspires.ftc.teamcode.robots.base;
 
-import static org.firstinspires.ftc.teamcode.pedroPathing.Constants.createFollower;
-
 import com.pedropathing.follower.Follower;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+
+import org.firstinspires.ftc.teamcode.robots.base.opmodes.BaseOpMode;
 
 // - Dedication -
 // In memory of DraculaBase & Mr. Miller.
 // It wasn't pretty, but it worked.
 
 /**
- * {@link RobotBase} is a parent class with all the basic functions for defining a robot
+ * {@link RobotBase} contains the base functions & hardware for a robot.
+ *
+ * @author Titus Wolfe
  */
 public abstract class RobotBase {
-    //private HardwareMap hardwareMap;
-
-    // standard hardware
     private Follower follower;
+    private Limelight3A limelight3A;
 
-
+    /**
+     * Called in {@link BaseOpMode#init()}
+     * @param hardwareMap
+     */
     public void init(HardwareMap hardwareMap) {
+        follower = instantiateFollower(hardwareMap);
+        limelight3A = instantiateLimelight3A(hardwareMap);
         initHardware(hardwareMap);
     }
 
     /**
+     * Initiate robot season specific hardware here.
      * @param hardwareMap
-     * @return true if initiation was successful
-     * @throws HardwareException
      */
-    public abstract boolean initHardware(HardwareMap hardwareMap);
+    public abstract void initHardware(HardwareMap hardwareMap);
 
-    public void initStandardHardware(HardwareMap hardwareMap) {
-        //follower = createFollower(hardwareMap);
-    }
+    /**
+     * @param hardwareMap
+     * @return {@link Follower}
+     * @see org.firstinspires.ftc.teamcode.pedroPathing.Constants#createFollower(HardwareMap)
+     */
+    public abstract Follower instantiateFollower(HardwareMap hardwareMap);
 
-    // getters & setters
+    /**
+     * @param hardwareMap
+     * @return {@link Limelight3A}
+     */
+    public abstract Limelight3A instantiateLimelight3A(HardwareMap hardwareMap);
 
     public Follower getFollower() {
         return follower;
+    }
+
+    public Limelight3A getLimelight3A() {
+        return limelight3A;
     }
 }

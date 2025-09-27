@@ -3,9 +3,6 @@ repositories {
     google() // Needed for androidx
     maven { url = 'https://maven.brott.dev/' }
 
-    // pedro pathing
-    maven { url = 'https://maven.pedropathing.com' }
-
     // panels
     maven { url = "https://mymaven.bylazar.com/releases" }
 }
@@ -22,8 +19,8 @@ dependencies {
     implementation 'androidx.appcompat:appcompat:1.2.0'
 
     // pedro pathing
-    implementation 'com.pedropathing:ftc:2.0.1'
-    implementation 'com.pedropathing:telemetry:0.0.6'
+    implementation 'com.pedropathing:ftc:2.0.2'
+    implementation 'com.pedropathing:telemetry:1.0.0'
 
     // panels
     implementation 'com.bylazar:fullpanels:1.0.6'
