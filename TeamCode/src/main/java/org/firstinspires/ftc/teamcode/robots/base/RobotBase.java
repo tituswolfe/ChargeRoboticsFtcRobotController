@@ -33,6 +33,7 @@ import com.pedropathing.follower.Follower;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
+import org.firstinspires.ftc.teamcode.hardware.drivetrain.pedroPathing.Constants;
 import org.firstinspires.ftc.teamcode.robots.base.opmodes.BaseOpMode;
 
 // - Dedication -
@@ -67,7 +68,7 @@ public abstract class RobotBase {
     /**
      * @param hardwareMap
      * @return {@link Follower}
-     * @see org.firstinspires.ftc.teamcode.pedroPathing.Constants#createFollower(HardwareMap)
+     * @see Constants#createFollower(HardwareMap)
      */
     public abstract Follower instantiateFollower(HardwareMap hardwareMap);
 

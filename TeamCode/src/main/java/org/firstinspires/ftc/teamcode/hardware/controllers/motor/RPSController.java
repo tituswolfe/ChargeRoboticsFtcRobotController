@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.hardware;
+package org.firstinspires.ftc.teamcode.hardware.controllers.motor;
 
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -6,7 +6,6 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 public class RPSController {
     private final DcMotorEx dcMotorEx;
     private final double ticksPerRev;
-
     private double rotationsPerSecond = 0;
 
     public RPSController(DcMotorEx dcMotorEx, double ticksPerRev) {
@@ -29,7 +28,7 @@ public class RPSController {
         return dcMotorEx.getVelocity() / ticksPerRev;
     }
 
-    public void stopFlywheel(DcMotor.ZeroPowerBehavior zeroPowerBehavior) {
+    public void breakMotor(DcMotor.ZeroPowerBehavior zeroPowerBehavior) {
         dcMotorEx.setVelocity(0);
         dcMotorEx.setZeroPowerBehavior(zeroPowerBehavior);
     }

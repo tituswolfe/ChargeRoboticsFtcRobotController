@@ -1,28 +1,11 @@
 package org.firstinspires.ftc.teamcode.util;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-
 public class ThreadUtil {
-    // Make the executorService final and initialize it in a static block
-    private static ExecutorService executorService;
-
-
-    public static void init() {
-        executorService = Executors.newCachedThreadPool();
-    }
-
+    // TODO: Figure out how to use static cashed thread pools (tried before, many problems)
 
     public static void runAsync(Runnable runnable) {
-        // This can now never be null
-        executorService.submit(runnable);
-    }
-
-    public static void shutdown() {
-        if (executorService != null && !executorService.isShutdown()) {
-            executorService.shutdownNow();
-            System.out.println("ExecutorService has been shut down.");
-        }
+        Thread thread = new Thread(runnable);
+        thread.start();
     }
 
     public static void sleep(int mills) {

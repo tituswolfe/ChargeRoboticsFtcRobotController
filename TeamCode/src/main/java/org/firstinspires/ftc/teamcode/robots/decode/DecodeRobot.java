@@ -6,7 +6,7 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
-import org.firstinspires.ftc.teamcode.hardware.RPSController;
+import org.firstinspires.ftc.teamcode.hardware.controllers.motor.RPSController;
 import org.firstinspires.ftc.teamcode.robots.base.RobotBase;
 
 public class DecodeRobot extends RobotBase {
