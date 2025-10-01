@@ -21,6 +21,11 @@ public class DriveAuto extends BaseOpMode<DriveRobot, DriveGamepadHandler, Drive
     }
 
     @Override
+    protected void adjustHardwareBeforeStart() {
+        
+    }
+
+    @Override
     public void start() {
         PathChain path = robot.getFollower().pathBuilder()
                 .addPath(new BezierLine(startPose, secondPose))
@@ -49,5 +54,15 @@ public class DriveAuto extends BaseOpMode<DriveRobot, DriveGamepadHandler, Drive
     @Override
     protected DriveGamepadHandler instantiateGamepadHandler2() {
         return new DriveGamepadHandler(robot, this, gamepad1, true);
+    }
+
+    @Override
+    protected AlliancePosition instantiateAlliancePosition() {
+        return null;
+    }
+
+    @Override
+    protected FieldType instantiateFieldType() {
+        return null;
     }
 }

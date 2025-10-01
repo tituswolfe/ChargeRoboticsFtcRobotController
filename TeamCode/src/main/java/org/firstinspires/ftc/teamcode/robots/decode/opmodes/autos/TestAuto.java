@@ -9,6 +9,11 @@ import org.firstinspires.ftc.teamcode.robots.decode.DecodeRobot;
 
 public class TestAuto extends BaseOpMode {
     @Override
+    protected void adjustHardwareBeforeStart() {
+
+    }
+
+    @Override
     protected RobotBase instantiateRobot() {
         return new DecodeRobot();
     }
@@ -25,6 +30,16 @@ public class TestAuto extends BaseOpMode {
 
     @Override
     protected GamepadHandlerBase instantiateGamepadHandler2() {
+        return null;
+    }
+
+    @Override
+    protected AlliancePosition instantiateAlliancePosition() {
+        return null;
+    }
+
+    @Override
+    protected FieldType instantiateFieldType() {
         return null;
     }
 }

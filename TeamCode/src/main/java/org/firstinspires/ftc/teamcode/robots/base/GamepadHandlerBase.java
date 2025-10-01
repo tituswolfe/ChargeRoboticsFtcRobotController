@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.robots.base;
 
+import com.bylazar.telemetry.PanelsTelemetry;
 import com.qualcomm.robotcore.hardware.Gamepad;
 
 import org.firstinspires.ftc.teamcode.robots.base.opmodes.BaseOpMode;
@@ -14,7 +15,10 @@ public abstract class GamepadHandlerBase<Robot extends RobotBase, OpMode extends
     protected final OpMode opMode;
     private final Gamepad gamepad;
     public boolean allowDrive;
+
+    public boolean isRobotCentric = true;
     private long unlockTime = 0; // System time (in mills) when controls can unlock
+
 
     public GamepadHandlerBase(Robot robot, OpMode opMode, Gamepad gamepad, boolean allowDrive) {
         this.robot = robot;
@@ -25,7 +29,7 @@ public abstract class GamepadHandlerBase<Robot extends RobotBase, OpMode extends
 
     public final void processGamepadControls() {
         if (allowDrive) {
-            processFieldCentricDriveControls(gamepad);
+            processDriveControls(gamepad);
         }
 
         if(unlockTime < System.currentTimeMillis()) {
@@ -43,13 +47,29 @@ public abstract class GamepadHandlerBase<Robot extends RobotBase, OpMode extends
         unlockTime = System.currentTimeMillis() + mills;
     }
 
-    // TODO: Test with Pedro Pathing orientation in mind
-    public final void processFieldCentricDriveControls(Gamepad gamepad) {
-        robot.getFollower().setTeleOpDrive(
-                gamepad.left_stick_y,
-                gamepad.left_stick_x,
-                gamepad.right_stick_x,
-                false
-        );
+    // TODO: Test with Pedro Pathing field centric
+    public final void processDriveControls(Gamepad gamepad) {
+        robot.getFollower().setTeleOpDrive(gamepad.left_stick_x, gamepad.left_stick_y, gamepad.right_stick_x, true);
+//        if (isRobotCentric) {
+//            robot.getFollower().setTeleOpDrive(gamepad.left_stick_y, gamepad.left_stick_x, gamepad.right_stick_x, true);
+//        } else {
+//            processFieldCentricDrive();
+//        }
+    }
+
+    public final void processFieldCentricDrive() {
+        if (opMode.getFieldType() != BaseOpMode.FieldType.DIAMOND) {
+            if (opMode.getAllianceColor() == BaseOpMode.AllianceColor.RED) {
+                robot.getFollower().setTeleOpDrive(gamepad.left_stick_x, gamepad.left_stick_y, gamepad.right_stick_x, true);
+            } else {
+                robot.getFollower().setTeleOpDrive(-gamepad.left_stick_x, -gamepad.left_stick_y, gamepad.right_stick_x, true);
+            }
+        } else {
+            if (opMode.getAllianceColor() == BaseOpMode.AllianceColor.RED) {
+                robot.getFollower().setTeleOpDrive(gamepad.left_stick_y, gamepad.left_stick_x, gamepad.right_stick_x, true);
+            } else {
+                robot.getFollower().setTeleOpDrive(gamepad.left_stick_x, -gamepad.left_stick_y, gamepad.right_stick_x, true);
+            }
+        }
     }
 }

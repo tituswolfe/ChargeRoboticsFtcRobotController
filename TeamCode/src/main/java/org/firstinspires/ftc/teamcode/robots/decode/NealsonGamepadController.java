@@ -6,14 +6,39 @@ import com.qualcomm.robotcore.hardware.Gamepad;
 
 import org.firstinspires.ftc.teamcode.robots.base.GamepadHandlerBase;
 import org.firstinspires.ftc.teamcode.robots.decode.opmodes.teleops.DecodeTeleop;
+import org.firstinspires.ftc.teamcode.util.ThreadUtil;
 
 public class NealsonGamepadController extends GamepadHandlerBase<DecodeRobot, DecodeTeleop> {
+    private boolean isIntakeRunning = false;
+
+
     public NealsonGamepadController(DecodeRobot decodeRobot, DecodeTeleop opMode, Gamepad gamepad, boolean allowDrive) {
         super(decodeRobot, opMode, gamepad, allowDrive);
     }
 
     @Override
     protected void onProcessGamepadControls(Gamepad gamepad) {
+        if (gamepad.aWasPressed()) {
+            isIntakeRunning = !isIntakeRunning;
+            if (isIntakeRunning) {
+                robot.intake.setRPS(15);
+            } else {
+                robot.intake.setRPS(0);
+            }
+        }
+
+//        if (gamepad.left_trigger > 0.1) {
+//            robot.intake.setRPS(15);
+//        } else {
+//            robot.intake.setRPS(0);
+//        }
+
+        if(gamepad.bWasPressed()) {
+            robot.servo.setPosition(0.7);
+            ThreadUtil.sleep(500);
+            robot.servo.setPosition(0.27);
+        }
+
         if(gamepad.dpadUpWasPressed()) {
             robot.flywheel1.setRPS(robot.flywheel1.getConfiguredRPS() + 1);
             lockOutGamepad();

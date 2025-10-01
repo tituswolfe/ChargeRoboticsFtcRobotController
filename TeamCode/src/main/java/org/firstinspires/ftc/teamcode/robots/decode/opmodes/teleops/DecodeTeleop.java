@@ -14,6 +14,11 @@ import org.firstinspires.ftc.teamcode.robots.decode.NealsonGamepadController;
 @TeleOp(name = "Decode")
 public class DecodeTeleop extends BaseOpMode<DecodeRobot, NealsonGamepadController, NealsonGamepadController> {
     @Override
+    protected void adjustHardwareBeforeStart() {
+
+    }
+
+    @Override
     public void loop() {
         telemetry.addLine("- flywheel -");
         telemetry.addData("top set RPS", robot.flywheel1.getConfiguredRPS());
@@ -46,5 +51,15 @@ public class DecodeTeleop extends BaseOpMode<DecodeRobot, NealsonGamepadControll
     @Override
     protected NealsonGamepadController instantiateGamepadHandler2() {
         return new NealsonGamepadController(robot, this, gamepad2, false);
+    }
+
+    @Override
+    protected AlliancePosition instantiateAlliancePosition() {
+        return null;
+    }
+
+    @Override
+    protected FieldType instantiateFieldType() {
+        return null;
     }
 }

@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.robots.drivechassis.opmodes;
 
+import static org.firstinspires.ftc.teamcode.hardware.drivetrain.pedroPathing.Tuning.follower;
+
 import com.pedropathing.geometry.Pose;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -9,6 +11,28 @@ import org.firstinspires.ftc.teamcode.robots.drivechassis.DriveRobot;
 
 @TeleOp(name = "Drive")
 public class DriveTeleOp extends BaseOpMode<DriveRobot, DriveGamepadHandler, DriveGamepadHandler> {
+
+    @Override
+    public void init() {
+        super.init();
+    }
+
+    @Override
+    protected void adjustHardwareBeforeStart() {
+
+    }
+
+    @Override
+    public void start() {
+        robot.getFollower().startTeleopDrive();
+        robot.getFollower().update();
+    }
+
+    @Override
+    public void loop() {
+        super.loop();
+    }
+
     @Override
     protected DriveRobot instantiateRobot() {
         return new DriveRobot();
@@ -27,5 +51,15 @@ public class DriveTeleOp extends BaseOpMode<DriveRobot, DriveGamepadHandler, Dri
     @Override
     protected DriveGamepadHandler instantiateGamepadHandler2() {
         return new DriveGamepadHandler(robot, this, gamepad2, true);
+    }
+
+    @Override
+    protected AlliancePosition instantiateAlliancePosition() {
+        return null;
+    }
+
+    @Override
+    protected FieldType instantiateFieldType() {
+        return null;
     }
 }
