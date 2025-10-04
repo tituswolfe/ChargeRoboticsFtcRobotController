@@ -14,6 +14,16 @@ public class TestAuto extends BaseOpMode {
     }
 
     @Override
+    protected void buildPaths() {
+
+    }
+
+    @Override
+    protected void autonomousPathUpdate(int pathState) {
+
+    }
+
+    @Override
     protected RobotBase instantiateRobot() {
         return new DecodeRobot();
     }

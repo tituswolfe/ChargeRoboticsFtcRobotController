@@ -23,6 +23,11 @@ public class DriveTeleOp extends BaseOpMode<DriveRobot, DriveGamepadHandler, Dri
     }
 
     @Override
+    protected void buildPaths() {
+
+    }
+
+    @Override
     public void start() {
         robot.getFollower().startTeleopDrive();
         robot.getFollower().update();
@@ -30,7 +35,14 @@ public class DriveTeleOp extends BaseOpMode<DriveRobot, DriveGamepadHandler, Dri
 
     @Override
     public void loop() {
+
+        robot.getFollower().setTeleOpDrive(-gamepad1.left_stick_y, -gamepad1.left_stick_x, -gamepad1.right_stick_x, true);
         super.loop();
+    }
+
+    @Override
+    protected void autonomousPathUpdate(int pathState) {
+
     }
 
     @Override

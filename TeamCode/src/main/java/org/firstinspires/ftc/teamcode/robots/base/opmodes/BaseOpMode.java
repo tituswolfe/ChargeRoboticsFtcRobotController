@@ -8,6 +8,15 @@ import com.bylazar.telemetry.TelemetryManager;
 import com.pedropathing.geometry.Pose;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 
+import com.pedropathing.follower.Follower;
+import com.pedropathing.geometry.BezierLine;
+import com.pedropathing.geometry.Pose;
+import com.pedropathing.paths.Path;
+import com.pedropathing.paths.PathChain;
+import com.pedropathing.util.Timer;
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import  com.qualcomm.robotcore.eventloop.opmode.OpMode;
+
 import org.firstinspires.ftc.teamcode.robots.base.GamepadHandlerBase;
 import org.firstinspires.ftc.teamcode.robots.base.RobotBase;
 
@@ -44,10 +53,14 @@ public abstract class BaseOpMode<Robot extends RobotBase, GamepadHandler1 extend
     private AlliancePosition alliancePosition;
 
     private boolean isEndgame = false;
-    // Pose pose = isEndgame ? new Pose() : new Pose();
+
+    private Timer pathTimer, actionTimer, opmodeTimer;
+    private int pathState;
+// TODO: Panels telemetry
+
 
     /**
-     * Initiates and instantiates hardware & gamepad handlers.
+     * Initiates and instantiates hardware & handlers.
      * Please wait to call {@link Robot#getFollower()} until {@link OpMode#start()}.
      */
     @Override
@@ -56,31 +69,35 @@ public abstract class BaseOpMode<Robot extends RobotBase, GamepadHandler1 extend
         telemetry.addLine("Please wait . . .");
         telemetry.update();
 
+        alliancePosition = instantiateAlliancePosition();
+        fieldType = instantiateFieldType();
+
         robot = instantiateRobot();
         gamepadHandler1 = instantiateGamepadHandler1();
         gamepadHandler2 = instantiateGamepadHandler2();
 
-        alliancePosition = instantiateAlliancePosition();
-        fieldType = instantiateFieldType();
-
-
-        telemetryManager = PanelsTelemetry.INSTANCE.getTelemetry();
         robot.init(hardwareMap);
 
         if (robot.getFollower() != null) {
             Pose startPose = instantiateStartPose();
-            robot.getFollower().setStartingPose(startPose != null ? startPose : new Pose());
+            robot.getFollower().setStartingPose(startPose != null ? startPose : new Pose(0, 0, 0));
             robot.getFollower().update();
-
-            // TODO: Build paths using followers
         }
 
+        buildPaths();
         adjustHardwareBeforeStart();
 
-        // sleep(200);
+        pathTimer = new Timer();
+        opmodeTimer = new Timer();
+        opmodeTimer.resetTimer();
 
         telemetry.addLine("READY");
         telemetry.update();
+    }
+
+    @Override
+    public void start() {
+        opmodeTimer.resetTimer();
     }
 
     /**
@@ -92,29 +109,37 @@ public abstract class BaseOpMode<Robot extends RobotBase, GamepadHandler1 extend
      */
     protected abstract void adjustHardwareBeforeStart();
 
+    protected abstract void buildPaths();
+
     @Override
     public void loop() {
         gamepadHandler1.processGamepadControls();
         gamepadHandler2.processGamepadControls();
 
-        if (getRuntime() > 150) {
+        if ((opmodeTimer.getElapsedTime() * 1000) > 150) {
             isEndgame = true;
         }
 
         if (robot.getFollower() != null) {
             robot.getFollower().update();
+            autonomousPathUpdate(pathState);
 
-            telemetryManager.addLine("");
-            telemetryManager.addData("x", robot.getFollower().getPose().getX());
-            telemetryManager.addData("y", robot.getFollower().getPose().getX());
-            telemetryManager.addData("heading", robot.getFollower().getPose().getX());
+            telemetry.addLine();
+            telemetry.addData("x", robot.getFollower().getPose().getX());
+            telemetry.addData("y", robot.getFollower().getPose().getX());
+            telemetry.addData("heading", Math.toDegrees(robot.getFollower().getPose().getHeading()));
         }
 
-        telemetryManager.addLine("");
-        telemetryManager.addLine("- Charger Robotics -");
-        telemetryManager.addLine("- DON'T TOUCH THAT RYAN! -");
+        telemetry.addLine("");
+        telemetry.addLine("- Charger Robotics -");
+        telemetry.addLine("- DON'T TOUCH THAT RYAN! -");
+        telemetry.update();
+    }
+    protected abstract void autonomousPathUpdate(int pathState);
 
-        telemetryManager.update(telemetry);
+    public void setPathState(int pState) {
+        pathState = pState;
+        pathTimer.resetTimer();
     }
 
     public boolean isEndgame() {
