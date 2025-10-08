@@ -20,17 +20,20 @@ public class DriveGamepadHandler extends GamepadHandlerBase {
     protected void onProcessGamepadControls(Gamepad gamepad) {
         if (gamepad.aWasPressed()) {
             Pose startPose = robot.getFollower().getPose();
-            Pose targetPose = new Pose(35.6, 32.7, 0);
+            Pose targetPose = new Pose(38.8, 33, 0);
 
             PathChain path = robot.getFollower().pathBuilder()
                     .addPath(new BezierLine(startPose, targetPose))
                     .setLinearHeadingInterpolation(startPose.getHeading(), targetPose.getHeading())
-                    .setTangentHeadingInterpolation()
                     .build();
 
-            robot.getFollower().followPath(path);
+//            robot.getFollower().followPath(path);
+//            while (robot.getFollower().isBusy()) {
+//                robot.getFollower().update();
+//            }
+//
+//
         }
 
-        robot.getFollower().setTeleOpDrive(-gamepad.left_stick_y, -gamepad.left_stick_x, -gamepad.right_stick_x, true);
     }
 }

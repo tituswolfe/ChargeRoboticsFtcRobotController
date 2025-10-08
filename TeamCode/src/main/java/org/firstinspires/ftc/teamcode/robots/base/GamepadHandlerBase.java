@@ -18,6 +18,7 @@ public abstract class GamepadHandlerBase<Robot extends RobotBase, OpMode extends
 
     public boolean isRobotCentric = true;
     private long unlockTime = 0; // System time (in mills) when controls can unlock
+    public double speedFactor = 1.0;
 
 
     public GamepadHandlerBase(Robot robot, OpMode opMode, Gamepad gamepad, boolean allowDrive) {
@@ -47,9 +48,12 @@ public abstract class GamepadHandlerBase<Robot extends RobotBase, OpMode extends
         unlockTime = System.currentTimeMillis() + mills;
     }
 
-    // TODO: Test with Pedro Pathing field centric
     public final void processDriveControls(Gamepad gamepad) {
-        robot.getFollower().setTeleOpDrive(gamepad.left_stick_x, gamepad.left_stick_y, gamepad.right_stick_x, true);
+        if (!robot.getFollower().isBusy() && !robot.getFollower().isTeleopDrive()) {
+            robot.getFollower().startTeleopDrive(); // robot.getFollower().getTeleopDrive()
+        }
+
+        robot.getFollower().setTeleOpDrive(gamepad.left_stick_x * speedFactor, gamepad.left_stick_y * speedFactor, gamepad.right_stick_x * speedFactor, true);
 //        if (isRobotCentric) {
 //            robot.getFollower().setTeleOpDrive(gamepad.left_stick_y, gamepad.left_stick_x, gamepad.right_stick_x, true);
 //        } else {

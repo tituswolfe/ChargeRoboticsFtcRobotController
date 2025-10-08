@@ -1,5 +1,10 @@
 package org.firstinspires.ftc.teamcode.robots.decode;
 
+import static org.firstinspires.ftc.teamcode.hardware.drivetrain.pedroPathing.Constants.createFollower;
+
+import com.bylazar.graph.GraphManager;
+import com.bylazar.graph.PanelsGraph;
+import com.bylazar.panels.Panels;
 import com.pedropathing.follower.Follower;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -24,6 +29,8 @@ public class DecodeRobot extends RobotBase {
     public RPSController intake;
     public Servo servo;
 
+    public GraphManager graphManager = PanelsGraph.INSTANCE.getManager();
+
     enum LaunchServoPositions {
         LAUNCH,
         REST
@@ -46,17 +53,19 @@ public class DecodeRobot extends RobotBase {
 
         intake = new RPSController(intakeMotor, 384.5);
 
-        HashMap<LaunchServoPositions, Double> launchServoPositionsHashMap = new HashMap<>();
-        launchServoPositionsHashMap.put(LaunchServoPositions.LAUNCH, 0.6);
-        launchServoPositionsHashMap.put(LaunchServoPositions.REST, 0.27);
-        launchServo = new ServoPositionController<>(hardwareMap.get(Servo.class, "launch"), launchServoPositionsHashMap);
-
-        launchServo.setPosition(LaunchServoPositions.REST);
+//        HashMap<LaunchServoPositions, Double> launchServoPositionsHashMap = new HashMap<>();
+//        launchServoPositionsHashMap.put(LaunchServoPositions.LAUNCH, 0.6);
+//        launchServoPositionsHashMap.put(LaunchServoPositions.REST, 0.27);
+//        launchServo = new ServoPositionController<>(hardwareMap.get(Servo.class, "launch"), launchServoPositionsHashMap);
+//
+//        launchServo.setPosition(LaunchServoPositions.REST);
+        servo = hardwareMap.get(Servo.class, "launch");
     }
+
 
     @Override
     public Follower instantiateFollower(HardwareMap hardwareMap) {
-        return null; //createFollower(hardwareMap);
+        return createFollower(hardwareMap);
     }
 
     @Override

@@ -1,10 +1,8 @@
 package org.firstinspires.ftc.teamcode.robots.decode.opmodes.teleops;
 
-import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
-import com.pedropathing.paths.PathChain;
-import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
+import com.qualcomm.robotcore.util.ElapsedTime;
 
 import org.firstinspires.ftc.teamcode.robots.base.opmodes.BaseOpMode;
 import org.firstinspires.ftc.teamcode.robots.decode.DecodeRobot;
@@ -19,7 +17,16 @@ public class DecodeTeleop extends BaseOpMode<DecodeRobot, NealsonGamepadControll
     }
 
     @Override
+    protected void buildPaths() {
+
+    }
+
+
+    @Override
     public void loop() {
+        robot.getFollower().setTeleOpDrive(-gamepad1.left_stick_y * 0.7, -gamepad1.left_stick_x * 0.7, -gamepad1.right_stick_x * 0.7, true);
+
+
         telemetry.addLine("- flywheel -");
         telemetry.addData("top set RPS", robot.flywheel1.getConfiguredRPS());
         telemetry.addData("bottom set RPS", robot.flywheel2.getConfiguredRPS());
@@ -29,8 +36,21 @@ public class DecodeTeleop extends BaseOpMode<DecodeRobot, NealsonGamepadControll
         telemetry.addLine();
         telemetry.addData("top pow", robot.flywheel1.getDcMotorEx().getPower());
         telemetry.addData("bottom pow", robot.flywheel2.getDcMotorEx().getPower());
+        telemetry.update();
 
         super.loop();
+    }
+
+    @Override
+    public void start() {
+        robot.getFollower().startTeleopDrive();
+        robot.getFollower().update();
+        super.start();
+    }
+
+    @Override
+    protected void autonomousPathUpdate(int pathState) {
+
     }
 
     @Override
