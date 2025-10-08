@@ -52,4 +52,14 @@ public class TestAuto extends BaseOpMode {
     protected FieldType instantiateFieldType() {
         return null;
     }
+
+    @Override
+    protected AllianceColor instantiateAllianceColor() {
+        return null;
+    }
+
+    @Override
+    protected OpModeType instantiateOpModeType() {
+        return null;
+    }
 }

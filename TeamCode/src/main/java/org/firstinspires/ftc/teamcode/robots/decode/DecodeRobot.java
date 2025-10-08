@@ -62,7 +62,6 @@ public class DecodeRobot extends RobotBase {
         servo = hardwareMap.get(Servo.class, "launch");
     }
 
-
     @Override
     public Follower instantiateFollower(HardwareMap hardwareMap) {
         return createFollower(hardwareMap);

@@ -24,8 +24,6 @@ public class DecodeTeleop extends BaseOpMode<DecodeRobot, NealsonGamepadControll
 
     @Override
     public void loop() {
-        robot.getFollower().setTeleOpDrive(-gamepad1.left_stick_y * 0.7, -gamepad1.left_stick_x * 0.7, -gamepad1.right_stick_x * 0.7, true);
-
 
         telemetry.addLine("- flywheel -");
         telemetry.addData("top set RPS", robot.flywheel1.getConfiguredRPS());
@@ -36,7 +34,6 @@ public class DecodeTeleop extends BaseOpMode<DecodeRobot, NealsonGamepadControll
         telemetry.addLine();
         telemetry.addData("top pow", robot.flywheel1.getDcMotorEx().getPower());
         telemetry.addData("bottom pow", robot.flywheel2.getDcMotorEx().getPower());
-        telemetry.update();
 
         super.loop();
     }
@@ -75,11 +72,21 @@ public class DecodeTeleop extends BaseOpMode<DecodeRobot, NealsonGamepadControll
 
     @Override
     protected AlliancePosition instantiateAlliancePosition() {
-        return null;
+        return AlliancePosition.RIGHT;
     }
 
     @Override
     protected FieldType instantiateFieldType() {
+        return FieldType.SQUARE_INVERTED_ALLIANCE;
+    }
+
+    @Override
+    protected AllianceColor instantiateAllianceColor() {
+        return AllianceColor.RED;
+    }
+
+    @Override
+    protected OpModeType instantiateOpModeType() {
         return null;
     }
 }

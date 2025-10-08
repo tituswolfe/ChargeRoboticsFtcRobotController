@@ -74,4 +74,14 @@ public class DriveTeleOp extends BaseOpMode<DriveRobot, DriveGamepadHandler, Dri
     protected FieldType instantiateFieldType() {
         return null;
     }
+
+    @Override
+    protected AllianceColor instantiateAllianceColor() {
+        return null;
+    }
+
+    @Override
+    protected OpModeType instantiateOpModeType() {
+        return null;
+    }
 }

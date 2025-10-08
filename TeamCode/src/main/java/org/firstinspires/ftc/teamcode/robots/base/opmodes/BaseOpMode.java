@@ -30,8 +30,10 @@ import org.firstinspires.ftc.teamcode.robots.base.RobotBase;
 public abstract class BaseOpMode<Robot extends RobotBase, GamepadHandler1 extends GamepadHandlerBase, GamepadHandler2 extends GamepadHandlerBase> extends OpMode {
     protected Robot robot;
     protected GamepadHandler1 gamepadHandler1;
-    protected GamepadHandler2 gamepadHandler2; // TODO: Test instatiate here
-    private TelemetryManager telemetryManager;
+    protected GamepadHandler2 gamepadHandler2;
+    // private TelemetryManager telemetryManager;
+
+    // TODO: Create sub auto and teleop classes
 
     public enum FieldType {
         DIAMOND,
@@ -52,12 +54,16 @@ public abstract class BaseOpMode<Robot extends RobotBase, GamepadHandler1 extend
     }
     private AlliancePosition alliancePosition;
 
+    public enum OpModeType {
+        TELEOP,
+        AUTO
+    }
+    private OpModeType opModeType;
+
     private boolean isEndgame = false;
 
     private Timer pathTimer, actionTimer, opmodeTimer;
     private int pathState;
-// TODO: Panels telemetry
-
 
     /**
      * Initiates and instantiates hardware & handlers.
@@ -70,7 +76,9 @@ public abstract class BaseOpMode<Robot extends RobotBase, GamepadHandler1 extend
         telemetry.update();
 
         alliancePosition = instantiateAlliancePosition();
+        allianceColor = instantiateAllianceColor();
         fieldType = instantiateFieldType();
+        opModeType = instantiateOpModeType();
 
         robot = instantiateRobot();
         gamepadHandler1 = instantiateGamepadHandler1();
@@ -80,7 +88,7 @@ public abstract class BaseOpMode<Robot extends RobotBase, GamepadHandler1 extend
 
         if (robot.getFollower() != null) {
             Pose startPose = instantiateStartPose();
-            robot.getFollower().setStartingPose(startPose != null ? startPose : new Pose(0, 0, 0));
+            robot.getFollower().setStartingPose(startPose != null ? startPose : new Pose(0, 0, 0)); // TODO: Move over static pose
             robot.getFollower().update();
         }
 
@@ -124,13 +132,14 @@ public abstract class BaseOpMode<Robot extends RobotBase, GamepadHandler1 extend
             robot.getFollower().update();
             autonomousPathUpdate(pathState);
 
-            telemetry.addLine();
-            telemetry.addData("x", robot.getFollower().getPose().getX());
-            telemetry.addData("y", robot.getFollower().getPose().getX());
-            telemetry.addData("heading", Math.toDegrees(robot.getFollower().getPose().getHeading()));
         }
 
-        telemetry.addLine("");
+        telemetry.addLine();
+        telemetry.addData("x", robot.getFollower().getPose().getX());
+        telemetry.addData("y", robot.getFollower().getPose().getY());
+        telemetry.addData("heading", Math.toDegrees(robot.getFollower().getPose().getHeading()));
+
+        telemetry.addLine();
         telemetry.addLine("- Charger Robotics -");
         telemetry.addLine("- DON'T TOUCH THAT RYAN! -");
         telemetry.update();
@@ -155,6 +164,8 @@ public abstract class BaseOpMode<Robot extends RobotBase, GamepadHandler1 extend
     protected abstract GamepadHandler2 instantiateGamepadHandler2();;
     protected abstract AlliancePosition instantiateAlliancePosition();;
     protected abstract FieldType instantiateFieldType();
+    protected abstract AllianceColor instantiateAllianceColor();
+    protected abstract OpModeType instantiateOpModeType();
 
 
     public FieldType getFieldType() {

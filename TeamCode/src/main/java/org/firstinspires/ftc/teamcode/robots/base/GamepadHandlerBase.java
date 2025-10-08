@@ -16,10 +16,9 @@ public abstract class GamepadHandlerBase<Robot extends RobotBase, OpMode extends
     private final Gamepad gamepad;
     public boolean allowDrive;
 
-    public boolean isRobotCentric = true;
+    public boolean isRobotCentric = false;
     private long unlockTime = 0; // System time (in mills) when controls can unlock
     public double speedFactor = 1.0;
-
 
     public GamepadHandlerBase(Robot robot, OpMode opMode, Gamepad gamepad, boolean allowDrive) {
         this.robot = robot;
@@ -53,26 +52,27 @@ public abstract class GamepadHandlerBase<Robot extends RobotBase, OpMode extends
             robot.getFollower().startTeleopDrive(); // robot.getFollower().getTeleopDrive()
         }
 
-        robot.getFollower().setTeleOpDrive(gamepad.left_stick_x * speedFactor, gamepad.left_stick_y * speedFactor, gamepad.right_stick_x * speedFactor, true);
-//        if (isRobotCentric) {
-//            robot.getFollower().setTeleOpDrive(gamepad.left_stick_y, gamepad.left_stick_x, gamepad.right_stick_x, true);
-//        } else {
-//            processFieldCentricDrive();
-//        }
+        if (isRobotCentric) {
+            robot.getFollower().setTeleOpDrive(gamepad.left_stick_y * speedFactor, gamepad.left_stick_x * speedFactor, gamepad.right_stick_x * speedFactor, true);
+        } else {
+            processFieldCentricDrive();
+        }
     }
 
     public final void processFieldCentricDrive() {
         if (opMode.getFieldType() != BaseOpMode.FieldType.DIAMOND) {
             if (opMode.getAllianceColor() == BaseOpMode.AllianceColor.RED) {
-                robot.getFollower().setTeleOpDrive(gamepad.left_stick_x, gamepad.left_stick_y, gamepad.right_stick_x, true);
+                robot.getFollower().setTeleOpDrive(-gamepad.left_stick_x * speedFactor, -gamepad.left_stick_y * speedFactor, -gamepad.right_stick_x * speedFactor, false);
             } else {
-                robot.getFollower().setTeleOpDrive(-gamepad.left_stick_x, -gamepad.left_stick_y, gamepad.right_stick_x, true);
+                robot.getFollower().setTeleOpDrive(-gamepad.left_stick_x, -gamepad.left_stick_y, gamepad.right_stick_x, false);
             }
-        } else {
+        }
+        // Diamond field
+        else {
             if (opMode.getAllianceColor() == BaseOpMode.AllianceColor.RED) {
-                robot.getFollower().setTeleOpDrive(gamepad.left_stick_y, gamepad.left_stick_x, gamepad.right_stick_x, true);
+                robot.getFollower().setTeleOpDrive(gamepad.left_stick_y, gamepad.left_stick_x, gamepad.right_stick_x, false);
             } else {
-                robot.getFollower().setTeleOpDrive(gamepad.left_stick_x, -gamepad.left_stick_y, gamepad.right_stick_x, true);
+                robot.getFollower().setTeleOpDrive(gamepad.left_stick_x, -gamepad.left_stick_y, gamepad.right_stick_x, false);
             }
         }
     }
