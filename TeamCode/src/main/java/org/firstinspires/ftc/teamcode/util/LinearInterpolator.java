@@ -2,12 +2,13 @@ package org.firstinspires.ftc.teamcode.util;
 
 public class LinearInterpolator {
     //These arrays contain data on various distances and the required angle of launch.
-    private static Double[] dataPosition = new Double[]{
-           1.,2.,3.
-    };
-    private static Double[] dataAngle = new Double[]{
-         2.,4.,6.
-    };
+    private static Double[] dataPosition;
+    private static Double[] dataAngle;
+
+    public LinearInterpolator(Double[] positions, Double[] angles){
+        dataPosition = positions;
+        dataAngle = angles;
+    }
 
     //This function returns angle of launch based on robot distance from goal.
     public static Double getAngle(Double distance){
