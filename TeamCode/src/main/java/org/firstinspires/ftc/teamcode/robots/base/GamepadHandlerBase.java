@@ -16,9 +16,9 @@ public abstract class GamepadHandlerBase<Robot extends RobotBase, OpMode extends
     private final Gamepad gamepad;
     public boolean allowDrive;
 
-    public boolean isRobotCentric = false;
+    public boolean isRobotCentric = false                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    ;
     private long unlockTime = 0; // System time (in mills) when controls can unlock
-    public double speedFactor = 1.0;
+    public double speedFactor = 0.7;
 
     public GamepadHandlerBase(Robot robot, OpMode opMode, Gamepad gamepad, boolean allowDrive) {
         this.robot = robot;
@@ -48,32 +48,47 @@ public abstract class GamepadHandlerBase<Robot extends RobotBase, OpMode extends
     }
 
     public final void processDriveControls(Gamepad gamepad) {
+        // Re-start teleop drive after path finished
         if (!robot.getFollower().isBusy() && !robot.getFollower().isTeleopDrive()) {
-            robot.getFollower().startTeleopDrive(); // robot.getFollower().getTeleopDrive()
+            robot.getFollower().startTeleopDrive();
         }
 
         if (isRobotCentric) {
-            robot.getFollower().setTeleOpDrive(gamepad.left_stick_y * speedFactor, gamepad.left_stick_x * speedFactor, gamepad.right_stick_x * speedFactor, true);
+            robot.getFollower().setTeleOpDrive(-gamepad.left_stick_y * speedFactor, -gamepad.left_stick_x * speedFactor, -gamepad.right_stick_x * speedFactor, true);
         } else {
+            //robot.getFollower().setTeleOpDrive(gamepad.left_stick_y * speedFactor, gamepad.left_stick_x * speedFactor, -gamepad.right_stick_x * speedFactor, false);
             processFieldCentricDrive();
         }
     }
 
+    // x y head for teleop drive field centric
+    // left y is up and down, left x is right and left
+    // right stick x is left and right
+
     public final void processFieldCentricDrive() {
-        if (opMode.getFieldType() != BaseOpMode.FieldType.DIAMOND) {
-            if (opMode.getAllianceColor() == BaseOpMode.AllianceColor.RED) {
-                robot.getFollower().setTeleOpDrive(-gamepad.left_stick_x * speedFactor, -gamepad.left_stick_y * speedFactor, -gamepad.right_stick_x * speedFactor, false);
-            } else {
-                robot.getFollower().setTeleOpDrive(-gamepad.left_stick_x, -gamepad.left_stick_y, gamepad.right_stick_x, false);
+        double xSpeed = 0;
+        double ySpeed = 0;
+
+        if(opMode.getAllianceColor() == BaseOpMode.AllianceColor.RED) {
+            xSpeed = gamepad.left_stick_x;
+            ySpeed = -gamepad.left_stick_y;
+        } else {
+            switch (opMode.getFieldType()) {
+                case SQUARE:
+                    xSpeed = -gamepad.left_stick_x;
+                    ySpeed = gamepad.left_stick_y;
+                    break;
+                case SQUARE_INVERTED_ALLIANCE:
+                    xSpeed = -gamepad.left_stick_x;
+                    ySpeed = gamepad.left_stick_y;
+                    break;
+                case DIAMOND:
+                    xSpeed = gamepad.left_stick_y;
+                    ySpeed = gamepad.left_stick_x;
+                    break;
             }
         }
-        // Diamond field
-        else {
-            if (opMode.getAllianceColor() == BaseOpMode.AllianceColor.RED) {
-                robot.getFollower().setTeleOpDrive(gamepad.left_stick_y, gamepad.left_stick_x, gamepad.right_stick_x, false);
-            } else {
-                robot.getFollower().setTeleOpDrive(gamepad.left_stick_x, -gamepad.left_stick_y, gamepad.right_stick_x, false);
-            }
-        }
+
+        robot.getFollower().getVectorCalculator().setTeleOpMovementVectors(xSpeed * speedFactor, ySpeed * speedFactor, -gamepad.right_stick_x * speedFactor, false);
     }
 }

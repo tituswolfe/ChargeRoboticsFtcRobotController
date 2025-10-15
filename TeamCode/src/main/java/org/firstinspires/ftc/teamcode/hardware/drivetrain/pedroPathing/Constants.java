@@ -99,13 +99,13 @@ public class Constants {
                         .xVelocity(87.1)
                         .yVelocity(75.3))
                 .pinpointLocalizer(new PinpointConstants()
-                        .forwardPodY(-19.05)
-                        .strafePodX(152.4)
+                        .forwardPodY(0.75)
+                        .strafePodX(6)
                         .distanceUnit(DistanceUnit.INCH)
                         .hardwareMapName("odometry")
                         .encoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD)
-                        .forwardEncoderDirection(GoBildaPinpointDriver.EncoderDirection.FORWARD)
-                        .strafeEncoderDirection(GoBildaPinpointDriver.EncoderDirection.FORWARD))
+                        .forwardEncoderDirection(GoBildaPinpointDriver.EncoderDirection.REVERSED)
+                        .strafeEncoderDirection(GoBildaPinpointDriver.EncoderDirection.REVERSED))
                 .build();
     }
 }
