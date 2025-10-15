@@ -1,5 +1,9 @@
 package org.firstinspires.ftc.teamcode.util;
-
+/*
+        * {@link LinearInterpolator} Has a function to interpolate data and estimate launch angle.
+        *
+        * @author Titus King
+ */
 public class LinearInterpolator {
     //These arrays contain data on various distances and the required angle of launch.
     private static Double[] dataPosition;
