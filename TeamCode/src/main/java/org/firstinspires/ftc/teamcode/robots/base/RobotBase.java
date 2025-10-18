@@ -37,7 +37,7 @@ import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.teamcode.hardware.drivetrain.pedroPathing.Constants;
-import org.firstinspires.ftc.teamcode.robots.base.opmodes.BaseOpMode;
+import org.firstinspires.ftc.teamcode.robots.base.opmodes.OpModeBase;
 
 // - Dedication -
 // In memory of DraculaBase & Mr. Miller.
@@ -60,7 +60,7 @@ public abstract class RobotBase {
     private Limelight3A limelight3A;
 
     /**
-     * Called in {@link BaseOpMode#init()}
+     * Called in {@link OpModeBase#init()}
      * @param hardwareMap
      */
     public void init(HardwareMap hardwareMap, Pose startPose) {

@@ -3,13 +3,13 @@ package org.firstinspires.ftc.teamcode.robots.decode.opmodes.teleops;
 import com.pedropathing.geometry.Pose;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
-import org.firstinspires.ftc.teamcode.robots.base.opmodes.BaseTeleop;
+import org.firstinspires.ftc.teamcode.robots.base.opmodes.TeleOpBase;
 import org.firstinspires.ftc.teamcode.robots.decode.DecodeRobot;
 import org.firstinspires.ftc.teamcode.robots.decode.DecodeGamepadController;
 
 
 @TeleOp(name = "Decode")
-public class Teleop extends BaseTeleop<DecodeRobot, DecodeGamepadController, DecodeGamepadController> {
+public class Teleop extends TeleOpBase<DecodeRobot, DecodeGamepadController, DecodeGamepadController> {
     @Override
     public void loop() {
         telemetry.addLine("- flywheel -");

@@ -3,22 +3,22 @@ package org.firstinspires.ftc.teamcode.robots.base;
 import com.bylazar.configurables.annotations.Configurable;
 import com.qualcomm.robotcore.hardware.Gamepad;
 
-import org.firstinspires.ftc.teamcode.robots.base.opmodes.BaseOpMode;
+import org.firstinspires.ftc.teamcode.robots.base.opmodes.OpModeBase;
 
 /**
  * {@link GamepadHandlerBase} contains base functions for gamepad handling.
- * {@link GamepadHandlerBase} takes generics for a subclasses of {@link RobotBase} and of {@link BaseOpMode}.
+ * {@link GamepadHandlerBase} takes generics for a subclasses of {@link RobotBase} and of {@link OpModeBase}.
  * @author Titus Wolfe
  */
 @Configurable
-public abstract class GamepadHandlerBase<Robot extends RobotBase, OpMode extends BaseOpMode> {
+public abstract class GamepadHandlerBase<Robot extends RobotBase, OpMode extends OpModeBase> {
     protected final Robot robot;
     protected final OpMode opMode;
     private final Gamepad gamepad;
     public boolean allowDrive;
 
     public static boolean isRobotCentric = false;                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                         ;
-    private long unlockTime = 0; // System time (in mills) when controls can unlock
+    private long unlockTime = 0;
     public double speedFactor = 0.7;
 
     public static double slowSpeedFactor = 0.65;
@@ -32,22 +32,18 @@ public abstract class GamepadHandlerBase<Robot extends RobotBase, OpMode extends
     }
 
     public final void processGamepadControls() {
-        if (allowDrive) {
-            processDriveControls(gamepad);
-        }
+        if (opMode.getOpModeType() == OpModeBase.OpModeType.AUTO) return; // TODO: Consider adding init controls process
 
-        if(unlockTime < System.currentTimeMillis()) {
-            onProcessGamepadControls(gamepad);
-        }
+        if (allowDrive) processDriveControls(gamepad);
+        if (unlockTime < System.currentTimeMillis()) onProcessGamepadControls(gamepad);
     }
 
+
     protected abstract void onProcessGamepadControls(Gamepad gamepad);
-    protected abstract void onProcessInitGamepadControls(Gamepad gamepad); // TODO
 
     public final void lockOutGamepad() {
         lockOutGamepad(150);
     }
-
     public final void lockOutGamepad(int mills) {
         unlockTime = System.currentTimeMillis() + mills;
     }
@@ -57,8 +53,6 @@ public abstract class GamepadHandlerBase<Robot extends RobotBase, OpMode extends
         if (!robot.getFollower().isBusy() && !robot.getFollower().isTeleopDrive()) {
             robot.getFollower().startTeleopDrive();
         }
-
-        // TODO: Account for auto
 
         if (gamepad.rightStickButtonWasPressed()) {
             isSlowMode = !isSlowMode;
@@ -79,10 +73,10 @@ public abstract class GamepadHandlerBase<Robot extends RobotBase, OpMode extends
         if (isRobotCentric) { // Robot Centric
             xSpeed = -gamepad.left_stick_y;
             ySpeed = -gamepad.left_stick_x;
-        } else if(opMode.getAllianceColor() == BaseOpMode.AllianceColor.RED) { // Field centric red alliance
+        } else if(opMode.getAllianceColor() == OpModeBase.AllianceColor.RED) { // Field centric red alliance
             xSpeed = gamepad.left_stick_x;
             ySpeed = -gamepad.left_stick_y;
-        } else if (opMode.getFieldType() == BaseOpMode.FieldType.DIAMOND) { // Field centric blue alliance diamond field
+        } else if (robot.getFieldType() == RobotBase.FieldType.DIAMOND) { // Field centric blue alliance diamond field
             xSpeed = gamepad.left_stick_y;
             ySpeed = gamepad.left_stick_x;
         } else { // Field centric blue alliance square & square inverted alliance

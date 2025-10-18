@@ -17,12 +17,12 @@ public class RedGoal extends BaseAuto<DecodeRobot, DecodeGamepadController, Deco
 
     @Override
     protected DecodeRobot instantiateRobot() {
-        return null;
+        return new DecodeRobot();
     }
 
     @Override
     protected Pose instantiateStartPose() {
-        return null;
+        return new Pose(0 , 0, 0);
     }
 
     @Override
@@ -35,9 +35,8 @@ public class RedGoal extends BaseAuto<DecodeRobot, DecodeGamepadController, Deco
         return null;
     }
 
-
     @Override
     protected AllianceColor instantiateAllianceColor() {
-        return null;
+        return AllianceColor.RED;
     }
 }

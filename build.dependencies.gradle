@@ -19,7 +19,7 @@ dependencies {
     implementation 'androidx.appcompat:appcompat:1.2.0'
 
     // pedro pathing
-    implementation 'com.pedropathing:ftc:2.0.2'
+    implementation 'com.pedropathing:ftc:2.0.3'
     implementation 'com.pedropathing:telemetry:1.0.0'
 
     // panels

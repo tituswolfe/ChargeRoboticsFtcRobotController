@@ -6,15 +6,16 @@ import com.pedropathing.util.Timer;
 
 import org.firstinspires.ftc.teamcode.robots.base.GamepadHandlerBase;
 import org.firstinspires.ftc.teamcode.robots.base.RobotBase;
+import org.firstinspires.ftc.teamcode.robots.base.StaticData;
 
 /**
- * {@link BaseOpMode} is an abstract subclass of {@link OpMode}.
- * Extend {@link BaseOpMode} to create {@link  com.qualcomm.robotcore.eventloop.opmode.TeleOp} and {@link com.qualcomm.robotcore.eventloop.opmode.Autonomous}.
- * {@link BaseOpMode} takes generics for a subclasses of {@link RobotBase} and of {@link GamepadHandlerBase}.
+ * {@link OpModeBase} is an abstract subclass of {@link OpMode}.
+ * Extend {@link OpModeBase} to create {@link  com.qualcomm.robotcore.eventloop.opmode.TeleOp} and {@link com.qualcomm.robotcore.eventloop.opmode.Autonomous}.
+ * {@link OpModeBase} takes generics for a subclasses of {@link RobotBase} and of {@link GamepadHandlerBase}.
  *
  * @author Titus Wolfe
  */
-public abstract class BaseOpMode<Robot extends RobotBase, GamepadHandler1 extends GamepadHandlerBase, GamepadHandler2 extends GamepadHandlerBase> extends OpMode {
+public abstract class OpModeBase<Robot extends RobotBase, GamepadHandler1 extends GamepadHandlerBase, GamepadHandler2 extends GamepadHandlerBase> extends OpMode {
     protected Robot robot;
     protected GamepadHandler1 gamepadHandler1;
     protected GamepadHandler2 gamepadHandler2;
@@ -50,20 +51,18 @@ public abstract class BaseOpMode<Robot extends RobotBase, GamepadHandler1 extend
         telemetry.update();
 
         allianceColor = instantiateAllianceColor();
+        StaticData.lastAllianceColor = allianceColor;
+        opModeType = instantiateOpModeType();
 
         robot = instantiateRobot();
         gamepadHandler1 = instantiateGamepadHandler1();
         gamepadHandler2 = instantiateGamepadHandler2();
         robot.init(hardwareMap, instantiateStartPose());
 
-        if (instantiateOpModeType() == OpModeType.AUTO) {
-            robot.startConfiguration();
-        }
+        if (opModeType == OpModeType.AUTO) robot.startConfiguration();
 
         opmodeTimer = new Timer();
         opmodeTimer.resetTimer();
-
-        // TODO: Init controls
 
         telemetry.addLine("READY");
         telemetry.update();
@@ -76,12 +75,10 @@ public abstract class BaseOpMode<Robot extends RobotBase, GamepadHandler1 extend
 
     @Override
     public void loop() {
-        gamepadHandler1.processGamepadControls();
-        gamepadHandler2.processGamepadControls();
+        if (gamepadHandler1 != null) gamepadHandler1.processGamepadControls();
+        if (gamepadHandler2 != null) gamepadHandler2.processGamepadControls();
 
-        if (opmodeTimer.getElapsedTimeSeconds() > 150) {
-            isEndgame = true;
-        }
+        if (opmodeTimer.getElapsedTimeSeconds() > 150) isEndgame = true;
 
         if (robot.getFollower() != null) {
             robot.getFollower().update();
@@ -112,11 +109,11 @@ public abstract class BaseOpMode<Robot extends RobotBase, GamepadHandler1 extend
     protected abstract AllianceColor instantiateAllianceColor();
     protected abstract OpModeType instantiateOpModeType();
 
+    public OpModeType getOpModeType() {
+        return opModeType;
+    }
 
     public AllianceColor getAllianceColor() {
         return allianceColor;
     }
-
-
-    // TODO: Document code structure
 }

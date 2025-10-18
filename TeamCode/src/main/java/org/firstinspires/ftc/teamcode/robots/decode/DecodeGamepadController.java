@@ -79,31 +79,9 @@ public class DecodeGamepadController extends GamepadHandlerBase<DecodeRobot, Tel
             lockOutGamepad();
         }
     }
-}
 
-//    private void processDrivingInput(Gamepad gamepad) {
-//        if (gamepad.rightStickButtonWasPressed()) {
-//            isFastMode = !isFastMode;
-//            if (isFastMode) {
-//                currentDriveSpeedMultiplier = driveSpeedMultiplierFastSpeed;
-//                currentTurnSpeedMultiplier = turnSpeedMultiplierFastSpeed;
-//            } else {
-//                currentDriveSpeedMultiplier = driveSpeedMultiplierNormalSpeed;
-//                currentTurnSpeedMultiplier = turnSpeedMultiplierNormalSpeed;
-//            }
-//        }
-//
-//        double x_speed = (gamepad.left_stick_x > minStickSensitivity ? gamepad.left_stick_x * currentDriveSpeedMultiplier : 0) + (gamepad.dpad_left ? -0.2 : 0) + (gamepad.dpad_right ? 0.2 : 0);
-//        double y_speed = (gamepad.left_stick_y > minStickSensitivity ? gamepad.left_stick_y * currentDriveSpeedMultiplier : 0) + (gamepad.dpad_up ? 0.2 : 0) + (gamepad.dpad_down ? -0.2 : 0);
-//        double r_speed = gamepad.right_stick_x > minStickSensitivity ? gamepad.right_stick_x * currentTurnSpeedMultiplier : 0;
-//
-//        //opMode.getRobot().get().setTeleOpDrive(y_speed, x_speed, r_speed, false);
-//
-////        double cosHeading = opMode.getRobot().getDriveTrain().getCosHeading();
-////        double sinHeading = opMode.getRobot().getDriveTrain().getSinHeading();
-////
-////        opMode.getRobot().getDriveTrain().setMotorPowersThroughKinematicTransformation(
-////                opMode.getRobot().getDriveTrain().calculateRobotStrafeFromFieldVelocity(x_speed, cosHeading, y_speed, sinHeading),
-////                opMode.getRobot().getDriveTrain().calculateRobotForwardFromFieldVelocity(x_speed, cosHeading, y_speed, sinHeading),
-////                r_speed
-////        );
+    @Override
+    protected void onProcessInitGamepadControls(Gamepad gamepad) {
+
+    }
+}
