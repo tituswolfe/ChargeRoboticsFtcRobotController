@@ -79,9 +79,4 @@ public class DecodeGamepadController extends GamepadHandlerBase<DecodeRobot, Tel
             lockOutGamepad();
         }
     }
-
-    @Override
-    protected void onProcessInitGamepadControls(Gamepad gamepad) {
-
-    }
 }
