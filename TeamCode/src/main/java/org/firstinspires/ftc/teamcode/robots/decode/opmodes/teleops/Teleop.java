@@ -2,29 +2,16 @@ package org.firstinspires.ftc.teamcode.robots.decode.opmodes.teleops;
 
 import com.pedropathing.geometry.Pose;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.util.ElapsedTime;
 
-import org.firstinspires.ftc.teamcode.robots.base.opmodes.BaseOpMode;
+import org.firstinspires.ftc.teamcode.robots.base.opmodes.BaseTeleop;
 import org.firstinspires.ftc.teamcode.robots.decode.DecodeRobot;
-import org.firstinspires.ftc.teamcode.robots.decode.NealsonGamepadController;
+import org.firstinspires.ftc.teamcode.robots.decode.DecodeGamepadController;
 
 
 @TeleOp(name = "Decode")
-public class DecodeTeleop extends BaseOpMode<DecodeRobot, NealsonGamepadController, NealsonGamepadController> {
-    @Override
-    protected void adjustHardwareBeforeStart() {
-
-    }
-
-    @Override
-    protected void buildPaths() {
-
-    }
-
-
+public class Teleop extends BaseTeleop<DecodeRobot, DecodeGamepadController, DecodeGamepadController> {
     @Override
     public void loop() {
-
         telemetry.addLine("- flywheel -");
         telemetry.addData("top set RPS", robot.flywheel1.getConfiguredRPS());
         telemetry.addData("bottom set RPS", robot.flywheel2.getConfiguredRPS());
@@ -46,11 +33,6 @@ public class DecodeTeleop extends BaseOpMode<DecodeRobot, NealsonGamepadControll
     }
 
     @Override
-    protected void autonomousPathUpdate(int pathState) {
-
-    }
-
-    @Override
     protected DecodeRobot instantiateRobot() {
         return new DecodeRobot();
     }
@@ -61,32 +43,17 @@ public class DecodeTeleop extends BaseOpMode<DecodeRobot, NealsonGamepadControll
     }
 
     @Override
-    protected NealsonGamepadController instantiateGamepadHandler1() {
-        return new NealsonGamepadController(robot, this, gamepad1, true);
+    protected DecodeGamepadController instantiateGamepadHandler1() {
+        return new DecodeGamepadController(robot, this, gamepad1, true);
     }
 
     @Override
-    protected NealsonGamepadController instantiateGamepadHandler2() {
-        return new NealsonGamepadController(robot, this, gamepad2, false);
-    }
-
-    @Override
-    protected AlliancePosition instantiateAlliancePosition() {
-        return AlliancePosition.RIGHT;
-    }
-
-    @Override
-    protected FieldType instantiateFieldType() {
-        return FieldType.SQUARE_INVERTED_ALLIANCE;
+    protected DecodeGamepadController instantiateGamepadHandler2() {
+        return new DecodeGamepadController(robot, this, gamepad2, false);
     }
 
     @Override
     protected AllianceColor instantiateAllianceColor() {
         return AllianceColor.RED;
-    }
-
-    @Override
-    protected OpModeType instantiateOpModeType() {
-        return null;
     }
 }

@@ -8,15 +8,14 @@ import com.pedropathing.paths.PathChain;
 import com.qualcomm.robotcore.hardware.Gamepad;
 
 import org.firstinspires.ftc.teamcode.robots.base.GamepadHandlerBase;
-import org.firstinspires.ftc.teamcode.robots.decode.opmodes.teleops.DecodeTeleop;
-import org.firstinspires.ftc.teamcode.util.ThreadUtil;
+import org.firstinspires.ftc.teamcode.robots.decode.opmodes.teleops.Teleop;
 
-public class NealsonGamepadController extends GamepadHandlerBase<DecodeRobot, DecodeTeleop> {
+public class DecodeGamepadController extends GamepadHandlerBase<DecodeRobot, Teleop> {
     private boolean isIntakeRunning = false;
     private boolean areFlywheelsActive = false;
 
 
-    public NealsonGamepadController(DecodeRobot decodeRobot, DecodeTeleop opMode, Gamepad gamepad, boolean allowDrive) {
+    public DecodeGamepadController(DecodeRobot decodeRobot, Teleop opMode, Gamepad gamepad, boolean allowDrive) {
         super(decodeRobot, opMode, gamepad, allowDrive);
     }
 
@@ -25,9 +24,9 @@ public class NealsonGamepadController extends GamepadHandlerBase<DecodeRobot, De
         if (gamepad.yWasPressed()) {
             isIntakeRunning = !isIntakeRunning;
             if (isIntakeRunning) {
-                robot.intake.setRPS(25);
+                robot.runIntake();
             } else {
-                robot.intake.setRPS(0);
+                robot.stopIntake();
             }
         }
 
@@ -44,12 +43,10 @@ public class NealsonGamepadController extends GamepadHandlerBase<DecodeRobot, De
         }
 
         if(gamepad.rightBumperWasPressed()) {
-            robot.servo.setPosition(0.7);
-            ThreadUtil.sleep(500);
-            robot.servo.setPosition(0.27);
+            gamepad.rumble(150);
+            robot.launchArtifact();
         }
-//        robot.servo.
-//        robot.servo.setPosition((gamepad.right_trigger * (0.7 - 0.27)));
+        //robot.lanchServo.setPosition((gamepad.right_trigger * (0.7 - 0.27)));
 
         if (gamepad.bWasPressed()) {
             if (areFlywheelsActive) {

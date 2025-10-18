@@ -30,7 +30,10 @@
 package org.firstinspires.ftc.teamcode.robots.base;
 
 import com.pedropathing.follower.Follower;
+import com.pedropathing.geometry.Pose;
+import com.pedropathing.paths.PathBuilder;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
+import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.teamcode.hardware.drivetrain.pedroPathing.Constants;
@@ -46,6 +49,13 @@ import org.firstinspires.ftc.teamcode.robots.base.opmodes.BaseOpMode;
  * @author Titus Wolfe
  */
 public abstract class RobotBase {
+    public enum FieldType {
+        DIAMOND,
+        SQUARE,
+        SQUARE_INVERTED_ALLIANCE
+    }
+    private FieldType fieldType;
+
     private Follower follower;
     private Limelight3A limelight3A;
 
@@ -53,17 +63,37 @@ public abstract class RobotBase {
      * Called in {@link BaseOpMode#init()}
      * @param hardwareMap
      */
-    public void init(HardwareMap hardwareMap) {
+    public void init(HardwareMap hardwareMap, Pose startPose) {
+        fieldType = instantiateFieldType();
+
         follower = instantiateFollower(hardwareMap);
         limelight3A = instantiateLimelight3A(hardwareMap);
         initHardware(hardwareMap);
+
+        if (follower != null) {
+            follower.setStartingPose(startPose != null ? startPose : new Pose(0, 0, 0)); // TODO: Move over static pose
+            follower.update();
+            buildPaths(follower.pathBuilder());
+        }
     }
+
+
+    /**
+     * Activate any powered or unpowered hardware to set or hold a starting configuration for {@link com.qualcomm.robotcore.eventloop.opmode.Autonomous} before {@link OpMode#start()} during {@link OpMode#init()}.
+     * You cannot have any CONTINUOUS movement during init.
+     * This method is only called during init in auto.
+     */
+    public abstract void startConfiguration();
+
+    public abstract void buildPaths(PathBuilder pathBuilder);
 
     /**
      * Initiate robot season specific hardware here.
      * @param hardwareMap
      */
     public abstract void initHardware(HardwareMap hardwareMap);
+
+    protected abstract FieldType instantiateFieldType();
 
     /**
      * @param hardwareMap
@@ -77,6 +107,11 @@ public abstract class RobotBase {
      * @return {@link Limelight3A}
      */
     public abstract Limelight3A instantiateLimelight3A(HardwareMap hardwareMap);
+
+
+    public FieldType getFieldType() {
+        return fieldType;
+    }
 
     public Follower getFollower() {
         return follower;

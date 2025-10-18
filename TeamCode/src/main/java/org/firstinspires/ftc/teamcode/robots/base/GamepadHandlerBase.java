@@ -21,9 +21,8 @@ public abstract class GamepadHandlerBase<Robot extends RobotBase, OpMode extends
     private long unlockTime = 0; // System time (in mills) when controls can unlock
     public double speedFactor = 0.7;
 
-    public static boolean isFastSpeed = true;
-    public static double fastSpeed = 1;
-    public static double slowSpeed = 0.7;
+    public static double slowSpeedFactor = 0.65;
+    public static boolean isSlowMode = false;
 
     public GamepadHandlerBase(Robot robot, OpMode opMode, Gamepad gamepad, boolean allowDrive) {
         this.robot = robot;
@@ -36,13 +35,14 @@ public abstract class GamepadHandlerBase<Robot extends RobotBase, OpMode extends
         if (allowDrive) {
             processDriveControls(gamepad);
         }
-        // TODO: init controls
+
         if(unlockTime < System.currentTimeMillis()) {
             onProcessGamepadControls(gamepad);
         }
     }
 
     protected abstract void onProcessGamepadControls(Gamepad gamepad);
+    protected abstract void onProcessInitGamepadControls(Gamepad gamepad); // TODO
 
     public final void lockOutGamepad() {
         lockOutGamepad(150);
@@ -61,11 +61,11 @@ public abstract class GamepadHandlerBase<Robot extends RobotBase, OpMode extends
         // TODO: Account for auto
 
         if (gamepad.rightStickButtonWasPressed()) {
-            isFastSpeed = !isFastSpeed;
-            if (isFastSpeed) {
-                speedFactor = fastSpeed;
+            isSlowMode = !isSlowMode;
+            if (isSlowMode) {
+                speedFactor = slowSpeedFactor;
             } else {
-                speedFactor = slowSpeed;
+                speedFactor = 1.0;
             }
         }
 
