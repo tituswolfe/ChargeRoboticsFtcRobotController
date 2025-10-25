@@ -67,8 +67,8 @@ public abstract class GamepadHandlerBase<Robot extends RobotBase, OpMode extends
             isRobotCentric = !isRobotCentric;
         }
 
-        double xSpeed = 0;
-        double ySpeed = 0;
+        double xSpeed;
+        double ySpeed;
 
         if (isRobotCentric) { // Robot Centric
             xSpeed = -gamepad.left_stick_y;

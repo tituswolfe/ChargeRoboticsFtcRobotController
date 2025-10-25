@@ -62,10 +62,10 @@ public abstract class RobotBase {
     /**
      * Called in {@link OpModeBase#init()}
      * @param hardwareMap
+     * @param startPose
      */
     public void init(HardwareMap hardwareMap, Pose startPose) {
         fieldType = instantiateFieldType();
-
         follower = instantiateFollower(hardwareMap);
         limelight3A = instantiateLimelight3A(hardwareMap);
         initHardware(hardwareMap);

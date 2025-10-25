@@ -3,14 +3,16 @@ package org.firstinspires.ftc.teamcode.robots.base.opmodes;
 import com.pedropathing.geometry.Pose;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.pedropathing.util.Timer;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.robots.base.GamepadHandlerBase;
 import org.firstinspires.ftc.teamcode.robots.base.RobotBase;
 import org.firstinspires.ftc.teamcode.robots.base.StaticData;
 
 /**
  * {@link OpModeBase} is an abstract subclass of {@link OpMode}.
- * Extend {@link OpModeBase} to create {@link  com.qualcomm.robotcore.eventloop.opmode.TeleOp} and {@link com.qualcomm.robotcore.eventloop.opmode.Autonomous}.
+ * Use {@link TeleOpBase} or {@link BaseAuto} to create your {@link OpMode}!
  * {@link OpModeBase} takes generics for a subclasses of {@link RobotBase} and of {@link GamepadHandlerBase}.
  *
  * @author Titus Wolfe
@@ -19,9 +21,6 @@ public abstract class OpModeBase<Robot extends RobotBase, GamepadHandler1 extend
     protected Robot robot;
     protected GamepadHandler1 gamepadHandler1;
     protected GamepadHandler2 gamepadHandler2;
-    // private TelemetryManager telemetryManager;
-
-    // TODO: Standardize base and name scheme
 
     public enum AllianceColor {
         RED,
@@ -42,7 +41,6 @@ public abstract class OpModeBase<Robot extends RobotBase, GamepadHandler1 extend
 
     /**
      * Initiates and instantiates hardware & handlers.
-     * Please wait to call {@link Robot#getFollower()} until {@link OpMode#start()}.
      */
     @Override
     public void init() {
@@ -68,6 +66,10 @@ public abstract class OpModeBase<Robot extends RobotBase, GamepadHandler1 extend
         telemetry.update();
     }
 
+    public void instantiateComponents() {
+
+    }
+
     @Override
     public void start() {
         opmodeTimer.resetTimer();
@@ -80,15 +82,21 @@ public abstract class OpModeBase<Robot extends RobotBase, GamepadHandler1 extend
 
         if (opmodeTimer.getElapsedTimeSeconds() > 150) isEndgame = true;
 
+        telemetry.addLine();
+
         if (robot.getFollower() != null) {
             robot.getFollower().update();
 
-            telemetry.addLine();
+            telemetry.addLine("- Position -");
             telemetry.addData("x", robot.getFollower().getPose().getX());
             telemetry.addData("y", robot.getFollower().getPose().getY());
             telemetry.addData("heading", Math.toDegrees(robot.getFollower().getPose().getHeading()));
+            telemetry.addLine();
         }
 
+        telemetry.addLine("- OpMode info -");
+        telemetry.addData("Elapsed time (sec)", opmodeTimer.getElapsedTimeSeconds());
+        telemetry.addData("isEndgame", isEndgame);
         telemetry.addLine();
         telemetry.addLine("- Charger Robotics -");
         telemetry.addLine("- DON'T TOUCH THAT RYAN! -");
@@ -100,9 +108,6 @@ public abstract class OpModeBase<Robot extends RobotBase, GamepadHandler1 extend
     }
 
     protected abstract Robot instantiateRobot();
-    /**
-     * Subclass defined method. Return null to use odometry reading. Return new {@link Pose} to set robot position.
-     */
     protected abstract Pose instantiateStartPose();
     protected abstract GamepadHandler1 instantiateGamepadHandler1();
     protected abstract GamepadHandler2 instantiateGamepadHandler2();

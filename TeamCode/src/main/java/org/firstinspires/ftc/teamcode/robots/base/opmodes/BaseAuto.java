@@ -16,11 +16,12 @@ public abstract class BaseAuto<Robot extends RobotBase, GamepadHandler1 extends 
      * @param pathState
      * @returns a new path state
      */
-    public abstract int autonomousPathUpdate(int pathState);
+    public abstract void autonomousPathUpdate(int pathState);
 
     @Override
     public void start() {
-        setPathState(1);
+        pathTimer = new Timer(); // TODO: Move to init
+        setPathState(0);
         super.start();
     }
 

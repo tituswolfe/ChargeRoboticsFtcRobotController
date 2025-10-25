@@ -46,7 +46,7 @@ public class DecodeGamepadController extends GamepadHandlerBase<DecodeRobot, Tel
             gamepad.rumble(150);
             robot.launchArtifact();
         }
-        //robot.lanchServo.setPosition((gamepad.right_trigger * (0.7 - 0.27)));
+        //robot.lanchServo.setPosition((-gamepad.right_trigger * (0.7 - 0.27)) + 0.27);
 
         if (gamepad.bWasPressed()) {
             if (areFlywheelsActive) {

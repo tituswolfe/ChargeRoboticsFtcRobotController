@@ -3,7 +3,10 @@ package org.firstinspires.ftc.teamcode.robots.decode;
 import static org.firstinspires.ftc.teamcode.hardware.drivetrain.pedroPathing.Constants.createFollower;
 
 import com.pedropathing.follower.Follower;
+import com.pedropathing.geometry.BezierLine;
+import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.PathBuilder;
+import com.pedropathing.paths.PathChain;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
@@ -24,6 +27,10 @@ public class DecodeRobot extends RobotBase {
     public RPSController intake;
     public Servo lanchServo;
 
+    public Pose autoStart = new Pose(-60.7, -42.3, Math.toRadians(-126));
+    public Pose closeShoot = new Pose(-41.9, -25.67, Math.toRadians(-131.1));
+
+    public PathChain shoot1;
 
     @Override
     public void startConfiguration() {
@@ -32,6 +39,10 @@ public class DecodeRobot extends RobotBase {
 
     @Override
     public void buildPaths(PathBuilder pathBuilder) {
+        shoot1 = pathBuilder
+                .addPath(new BezierLine(autoStart, closeShoot))
+                .setLinearHeadingInterpolation(autoStart.getHeading(), closeShoot.getHeading())
+                .build();
 
     }
 
@@ -86,6 +97,17 @@ public class DecodeRobot extends RobotBase {
 
     public void reverseIntake() {
         intake.setRPS(-25);
+    }
+
+    public void startFlywheels() {
+        flywheel1.setRPS(20);
+        flywheel2.setRPS(35);
+    }
+
+
+    public void stopFlywheels() {
+        flywheel1.setRPS(0);
+        flywheel2.setRPS(0);
     }
 
 
