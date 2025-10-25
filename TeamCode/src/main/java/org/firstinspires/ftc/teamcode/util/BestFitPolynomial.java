@@ -1,5 +1,5 @@
 package org.firstinspires.ftc.teamcode.util;
-/*
+/**
  * {@link BestFitPolynomial} Calculates the coefficients of the best-fit polynomial
  * of an input degree for the data. It also contains a function that uses the coefficients
  * to calculate the estimated launch angle given a certain distance.
@@ -49,7 +49,7 @@ public class BestFitPolynomial {
         double[] augment = new double[degree + 1];
         for (int i = 0; i <= degree; i++){
             augment[i] = 0;
-            for (int j = 0; j <= degree; j++){
+            for (int j = 0; j < dataPosition.length; j++){
                 augment[i] += dataAngle[j] * positionPowers[i][j];
             }
         }
@@ -62,10 +62,13 @@ public class BestFitPolynomial {
         matrix[0][0] = 1;
         for (int i = 1; i <= degree; i++){
             for (int j = 0; j < i; j++){
-                for (int k = 0; k <= degree; k++){
-                    matrix[i][k] -= matrix[j][k] * matrix[i][j];
-                }
                 augment[i] -= augment[j] * matrix[i][j];
+                for (int k = 0; k <= degree; k++){
+                    if (k != j){
+                        matrix[i][k] -= matrix[j][k] * matrix[i][j];
+                    }
+                }
+                matrix[i][j] = 0;
             }
 
             for (int j = i + 1; j <= degree; j++){
@@ -95,3 +98,4 @@ public class BestFitPolynomial {
         return angle;
     }
 }
+
