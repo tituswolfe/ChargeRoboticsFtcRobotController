@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.robots.decode.opmodes.teleops;
 
+import com.bylazar.telemetry.PanelsTelemetry;
 import com.pedropathing.geometry.Pose;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -10,17 +11,21 @@ import org.firstinspires.ftc.teamcode.robots.decode.DecodeGamepadController;
 
 @TeleOp(name = "Decode")
 public class Teleop extends TeleOpBase<DecodeRobot, DecodeGamepadController, DecodeGamepadController> {
+    // private PanelsTelemetry panelsTelemetry = PanelsTelemetry.INSTANCE;
     @Override
     public void loop() {
         telemetry.addLine("- flywheel -");
-        telemetry.addData("top set RPS", robot.flywheel1.getConfiguredRPS());
-        telemetry.addData("bottom set RPS", robot.flywheel2.getConfiguredRPS());
+        telemetry.addData("top target RPS", robot.flywheel1.getConfiguredRPS());
+        telemetry.addData("bottom target RPS", robot.flywheel2.getConfiguredRPS());
         telemetry.addLine();
         telemetry.addData("top actual RPS", robot.flywheel1.getCurrentRPS());
         telemetry.addData("bottom actual RPS", robot.flywheel2.getCurrentRPS());
         telemetry.addLine();
         telemetry.addData("top pow", robot.flywheel1.getDcMotorEx().getPower());
         telemetry.addData("bottom pow", robot.flywheel2.getDcMotorEx().getPower());
+
+
+        // panelsTelemetry.getTelemetry().addData("top RPS", robot.flywheel1.getCurrentRPS());
 
         super.loop();
     }
@@ -49,7 +54,7 @@ public class Teleop extends TeleOpBase<DecodeRobot, DecodeGamepadController, Dec
 
     @Override
     protected DecodeGamepadController instantiateGamepadHandler2() {
-        return new DecodeGamepadController(robot, this, gamepad2, false);
+        return null;
     }
 
     @Override

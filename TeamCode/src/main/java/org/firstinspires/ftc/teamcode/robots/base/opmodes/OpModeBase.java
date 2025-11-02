@@ -39,6 +39,9 @@ public abstract class OpModeBase<Robot extends RobotBase, GamepadHandler1 extend
     private boolean isEndgame = false;
     private Timer opmodeTimer, actionTimer;
 
+    private Timer sleepTimer = new Timer();
+    boolean isActiveSleep = false;
+
     /**
      * Initiates and instantiates hardware & handlers.
      */
@@ -77,8 +80,10 @@ public abstract class OpModeBase<Robot extends RobotBase, GamepadHandler1 extend
 
     @Override
     public void loop() {
-        if (gamepadHandler1 != null) gamepadHandler1.processGamepadControls();
-        if (gamepadHandler2 != null) gamepadHandler2.processGamepadControls();
+        if (!isActiveSleep) {
+            if (gamepadHandler1 != null) gamepadHandler1.processGamepadControls();
+            if (gamepadHandler2 != null) gamepadHandler2.processGamepadControls();
+        }
 
         if (opmodeTimer.getElapsedTimeSeconds() > 150) isEndgame = true;
 
@@ -91,6 +96,7 @@ public abstract class OpModeBase<Robot extends RobotBase, GamepadHandler1 extend
             telemetry.addData("x", robot.getFollower().getPose().getX());
             telemetry.addData("y", robot.getFollower().getPose().getY());
             telemetry.addData("heading", Math.toDegrees(robot.getFollower().getPose().getHeading()));
+            telemetry.addData("isSlowMode", GamepadHandlerBase.isSlowMode);
             telemetry.addLine();
         }
 
@@ -105,6 +111,16 @@ public abstract class OpModeBase<Robot extends RobotBase, GamepadHandler1 extend
 
     public boolean isEndgame() {
         return isEndgame;
+    }
+
+
+    public void activeSleep(long mills) {
+        sleepTimer.resetTimer();
+        isActiveSleep = true;
+        while(sleepTimer.getElapsedTime() < mills) {
+            loop();
+        }
+        isActiveSleep = false;
     }
 
     protected abstract Robot instantiateRobot();

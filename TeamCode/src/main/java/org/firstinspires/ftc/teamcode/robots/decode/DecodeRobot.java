@@ -26,6 +26,7 @@ public class DecodeRobot extends RobotBase {
     public RPSController flywheel2;
     public RPSController intake;
     public Servo lanchServo;
+    public Servo thing1;
 
     public Pose autoStart = new Pose(-60.7, -42.3, Math.toRadians(-126));
     public Pose closeShoot = new Pose(-41.9, -25.67, Math.toRadians(-131.1));
@@ -63,6 +64,8 @@ public class DecodeRobot extends RobotBase {
         intake = new RPSController(intakeMotor, 384.5);
 
         lanchServo = hardwareMap.get(Servo.class, "launch");
+        thing1 = hardwareMap.get(Servo.class, "thing1");
+        thing1.setPosition(0.625);
     }
 
     @Override
@@ -108,6 +111,12 @@ public class DecodeRobot extends RobotBase {
     public void stopFlywheels() {
         flywheel1.setRPS(0);
         flywheel2.setRPS(0);
+    }
+
+    public void flicker() {
+        thing1.setPosition(0.3);
+        ThreadUtil.sleep(250);
+        thing1.setPosition(0.625);
     }
 
 

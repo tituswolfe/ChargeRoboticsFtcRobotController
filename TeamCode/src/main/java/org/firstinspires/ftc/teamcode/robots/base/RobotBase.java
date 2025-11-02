@@ -75,6 +75,9 @@ public abstract class RobotBase {
             follower.update();
             buildPaths(follower.pathBuilder());
         }
+
+        //TODO: Tear up mat
+        //TODO: Throw $20 bill at judges
     }
 
 
