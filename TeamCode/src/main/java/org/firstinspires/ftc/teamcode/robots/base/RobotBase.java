@@ -44,7 +44,7 @@ import org.firstinspires.ftc.teamcode.robots.base.opmodes.OpModeBase;
 // It wasn't pretty, but it worked.
 
 /**
- * {@link RobotBase} contains the base functions & hardware for a robot.
+ * {@link RobotBase} contains the base functions & hardware classes for a robot.
  *
  * @author Titus Wolfe
  */
@@ -58,6 +58,8 @@ public abstract class RobotBase {
 
     private Follower follower;
     private Limelight3A limelight3A;
+
+    public boolean allowDrive = false;
 
     /**
      * Called in {@link OpModeBase#init()}
@@ -75,9 +77,6 @@ public abstract class RobotBase {
             follower.update();
             buildPaths(follower.pathBuilder());
         }
-
-        //TODO: Tear up mat
-        //TODO: Throw $20 bill at judges
     }
 
 

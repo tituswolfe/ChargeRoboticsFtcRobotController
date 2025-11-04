@@ -1,11 +1,11 @@
-package org.firstinspires.ftc.teamcode.robots.decode.opmodes.autos;
+package org.firstinspires.ftc.teamcode.robots.jetfire.opmodes.autos;
 
 import com.pedropathing.geometry.Pose;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
 import org.firstinspires.ftc.teamcode.robots.base.opmodes.BaseAuto;
-import org.firstinspires.ftc.teamcode.robots.decode.DecodeGamepadController;
-import org.firstinspires.ftc.teamcode.robots.decode.DecodeRobot;
+import org.firstinspires.ftc.teamcode.robots.jetfire.DecodeGamepadController;
+import org.firstinspires.ftc.teamcode.robots.jetfire.DecodeRobot;
 import org.firstinspires.ftc.teamcode.util.ThreadUtil;
 
 @Autonomous(name = "Red Goal", group = "decode", preselectTeleOp = "Decode")
@@ -16,7 +16,7 @@ public class RedGoal extends BaseAuto<DecodeRobot, DecodeGamepadController, Deco
         switch (pathState) {
             case 0:
                 robot.startFlywheels();
-                robot.runIntake();
+                robot.startIntake();
                 robot.getFollower().followPath(robot.shoot1, true);
                 setPathState(1);
                 break;

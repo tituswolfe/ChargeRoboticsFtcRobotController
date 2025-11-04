@@ -1,17 +1,16 @@
-package org.firstinspires.ftc.teamcode.robots.decode.opmodes.teleops;
+package org.firstinspires.ftc.teamcode.robots.jetfire.opmodes.teleops;
 
-import com.bylazar.telemetry.PanelsTelemetry;
+
 import com.pedropathing.geometry.Pose;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
+import org.firstinspires.ftc.teamcode.robots.base.GamepadMapping;
 import org.firstinspires.ftc.teamcode.robots.base.opmodes.TeleOpBase;
-import org.firstinspires.ftc.teamcode.robots.decode.DecodeRobot;
-import org.firstinspires.ftc.teamcode.robots.decode.DecodeGamepadController;
-
+import org.firstinspires.ftc.teamcode.robots.jetfire.DecodeRobot;
 
 @TeleOp(name = "Decode")
-public class Teleop extends TeleOpBase<DecodeRobot, DecodeGamepadController, DecodeGamepadController> {
-    // private PanelsTelemetry panelsTelemetry = PanelsTelemetry.INSTANCE;
+public class Teleop extends TeleOpBase<DecodeRobot> {
+
     @Override
     public void loop() {
         telemetry.addLine("- flywheel -");
@@ -24,8 +23,12 @@ public class Teleop extends TeleOpBase<DecodeRobot, DecodeGamepadController, Dec
         telemetry.addData("top pow", robot.flywheel1.getDcMotorEx().getPower());
         telemetry.addData("bottom pow", robot.flywheel2.getDcMotorEx().getPower());
 
-
-        // panelsTelemetry.getTelemetry().addData("top RPS", robot.flywheel1.getCurrentRPS());
+//        graphManager.addData("top RPS", robot.flywheel1.getCurrentRPS());
+//        graphManager.addData("bottom RPS", robot.flywheel2.getCurrentRPS());
+//        graphManager.update();
+        panelsTelemetry.getTelemetry().addData("top RPS", robot.flywheel1.getCurrentRPS());
+        panelsTelemetry.getTelemetry().addData("bottom RPS", robot.flywheel2.getCurrentRPS());
+        panelsTelemetry.getTelemetry().update(telemetry);
 
         super.loop();
     }
@@ -48,12 +51,12 @@ public class Teleop extends TeleOpBase<DecodeRobot, DecodeGamepadController, Dec
     }
 
     @Override
-    protected DecodeGamepadController instantiateGamepadHandler1() {
-        return new DecodeGamepadController(robot, this, gamepad1, true);
+    protected GamepadMapping instantiateGamepadMapping1() {
+        return null;
     }
 
     @Override
-    protected DecodeGamepadController instantiateGamepadHandler2() {
+    protected GamepadMapping instantiateGamepadMapping2() {
         return null;
     }
 

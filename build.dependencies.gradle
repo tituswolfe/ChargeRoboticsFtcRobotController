@@ -23,8 +23,7 @@ dependencies {
     implementation 'com.pedropathing:telemetry:1.0.0'
 
     // panels
-    implementation 'com.bylazar:fullpanels:1.0.0'
-    //implementation "com.bylazar:graph:1.0.4"
-    //implementation "com.bylazar:panels:1.0.4"
+    implementation 'com.bylazar:fullpanels:1.0.9'
+    // implementation "com.bylazar:panels:1.0.3"
 }
 

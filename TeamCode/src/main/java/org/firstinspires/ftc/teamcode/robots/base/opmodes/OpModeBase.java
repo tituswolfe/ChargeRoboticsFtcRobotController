@@ -1,12 +1,13 @@
 package org.firstinspires.ftc.teamcode.robots.base.opmodes;
 
+import com.bylazar.telemetry.PanelsTelemetry;
+import com.bylazar.telemetry.TelemetryManager;
 import com.pedropathing.geometry.Pose;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.pedropathing.util.Timer;
-import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
-import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.robots.base.GamepadHandlerBase;
+import org.firstinspires.ftc.teamcode.robots.base.GamepadMapping;
 import org.firstinspires.ftc.teamcode.robots.base.RobotBase;
 import org.firstinspires.ftc.teamcode.robots.base.StaticData;
 
@@ -17,10 +18,12 @@ import org.firstinspires.ftc.teamcode.robots.base.StaticData;
  *
  * @author Titus Wolfe
  */
-public abstract class OpModeBase<Robot extends RobotBase, GamepadHandler1 extends GamepadHandlerBase, GamepadHandler2 extends GamepadHandlerBase> extends OpMode {
+public abstract class OpModeBase<Robot extends RobotBase> extends OpMode {
     protected Robot robot;
-    protected GamepadHandler1 gamepadHandler1;
-    protected GamepadHandler2 gamepadHandler2;
+    protected GamepadMapping<Robot> gamepadMapping1;
+    protected GamepadMapping<Robot> gamepadMapping2;
+
+    TelemetryManager telemetryManager = PanelsTelemetry.INSTANCE.getTelemetry();
 
     public enum AllianceColor {
         RED,
@@ -39,7 +42,8 @@ public abstract class OpModeBase<Robot extends RobotBase, GamepadHandler1 extend
     private boolean isEndgame = false;
     private Timer opmodeTimer, actionTimer;
 
-    private Timer sleepTimer = new Timer();
+    private final Timer sleepTimer = new Timer();
+
     boolean isActiveSleep = false;
 
     /**
@@ -47,6 +51,7 @@ public abstract class OpModeBase<Robot extends RobotBase, GamepadHandler1 extend
      */
     @Override
     public void init() {
+
         telemetry.addLine("Charger Robotics");
         telemetry.addLine("Please wait . . .");
         telemetry.update();
@@ -56,8 +61,8 @@ public abstract class OpModeBase<Robot extends RobotBase, GamepadHandler1 extend
         opModeType = instantiateOpModeType();
 
         robot = instantiateRobot();
-        gamepadHandler1 = instantiateGamepadHandler1();
-        gamepadHandler2 = instantiateGamepadHandler2();
+        gamepadMapping1 = instantiateGamepadMapping1();
+        gamepadMapping2 = instantiateGamepadMapping2();
         robot.init(hardwareMap, instantiateStartPose());
 
         if (opModeType == OpModeType.AUTO) robot.startConfiguration();
@@ -81,13 +86,11 @@ public abstract class OpModeBase<Robot extends RobotBase, GamepadHandler1 extend
     @Override
     public void loop() {
         if (!isActiveSleep) {
-            if (gamepadHandler1 != null) gamepadHandler1.processGamepadControls();
-            if (gamepadHandler2 != null) gamepadHandler2.processGamepadControls();
+            if (gamepadMapping1 != null) gamepadMapping1.processGamepad(gamepad1);
+            if (gamepadMapping2 != null) gamepadMapping2.processGamepad(gamepad2);
         }
 
         if (opmodeTimer.getElapsedTimeSeconds() > 150) isEndgame = true;
-
-        telemetry.addLine();
 
         if (robot.getFollower() != null) {
             robot.getFollower().update();
@@ -97,16 +100,22 @@ public abstract class OpModeBase<Robot extends RobotBase, GamepadHandler1 extend
             telemetry.addData("y", robot.getFollower().getPose().getY());
             telemetry.addData("heading", Math.toDegrees(robot.getFollower().getPose().getHeading()));
             telemetry.addData("isSlowMode", GamepadHandlerBase.isSlowMode);
-            telemetry.addLine();
+            telemetry.addLine("");
         }
 
         telemetry.addLine("- OpMode info -");
         telemetry.addData("Elapsed time (sec)", opmodeTimer.getElapsedTimeSeconds());
         telemetry.addData("isEndgame", isEndgame);
-        telemetry.addLine();
+        telemetry.addLine("");
         telemetry.addLine("- Charger Robotics -");
         telemetry.addLine("- DON'T TOUCH THAT RYAN! -");
         telemetry.update();
+
+        telemetryManager.update(telemetry);
+    }
+
+    public void updateTelemetry(TelemetryManager telemetry) {
+
     }
 
     public boolean isEndgame() {
@@ -117,16 +126,14 @@ public abstract class OpModeBase<Robot extends RobotBase, GamepadHandler1 extend
     public void activeSleep(long mills) {
         sleepTimer.resetTimer();
         isActiveSleep = true;
-        while(sleepTimer.getElapsedTime() < mills) {
-            loop();
-        }
+        while(sleepTimer.getElapsedTime() < mills); // TODO: Call loop during wait?
         isActiveSleep = false;
     }
 
     protected abstract Robot instantiateRobot();
     protected abstract Pose instantiateStartPose();
-    protected abstract GamepadHandler1 instantiateGamepadHandler1();
-    protected abstract GamepadHandler2 instantiateGamepadHandler2();
+    protected abstract GamepadMapping<Robot> instantiateGamepadMapping1();
+    protected abstract GamepadMapping<Robot> instantiateGamepadMapping2();
     protected abstract AllianceColor instantiateAllianceColor();
     protected abstract OpModeType instantiateOpModeType();
 

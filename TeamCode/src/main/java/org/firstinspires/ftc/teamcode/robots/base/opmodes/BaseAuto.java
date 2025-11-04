@@ -5,7 +5,7 @@ import com.pedropathing.util.Timer;
 import org.firstinspires.ftc.teamcode.robots.base.GamepadHandlerBase;
 import org.firstinspires.ftc.teamcode.robots.base.RobotBase;
 
-public abstract class BaseAuto<Robot extends RobotBase, GamepadHandler1 extends GamepadHandlerBase, GamepadHandler2 extends GamepadHandlerBase> extends OpModeBase<Robot, GamepadHandler1, GamepadHandler2> {
+public abstract class BaseAuto<Robot extends RobotBase> extends OpModeBase<Robot> {
     private Timer pathTimer, actionTimer;
     private int pathState;
 

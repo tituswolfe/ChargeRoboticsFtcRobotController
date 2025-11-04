@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.robots.decode;
+package org.firstinspires.ftc.teamcode.robots.jetfire;
 
 import static org.firstinspires.ftc.teamcode.hardware.drivetrain.pedroPathing.Constants.createFollower;
 
@@ -22,9 +22,14 @@ public class DecodeRobot extends RobotBase {
     public static final int blueGoalAprilTagID = 22;
     public static final int purpleGreenPorpleMotif = 22;
 
-    public RPSController flywheel1;
-    public RPSController flywheel2;
+    public final double topFlywheelSpeed = 15;
+    public final double bottomFlywheelSpeed = 30;
+    private RPSController flywheel1;
+    private RPSController flywheel2;
+
+    public final double intakeSpeed = 35;
     public RPSController intake;
+
     public Servo lanchServo;
     public Servo thing1;
 
@@ -84,33 +89,30 @@ public class DecodeRobot extends RobotBase {
     }
 
     // Robot functions
+    public void startFlywheels() {
+        flywheel1.setRPS(topFlywheelSpeed);
+        flywheel2.setRPS(bottomFlywheelSpeed);
+    }
+    public void stopFlywheels() {
+        flywheel1.setRPS(0);
+        flywheel2.setRPS(0);
+    }
+
+    public void startIntake() {
+        intake.setRPS(intakeSpeed);
+    }
+    public void stopIntake() {
+        intake.setRPS(0);
+    }
+    public void reverseIntake() {
+        intake.setRPS(-intakeSpeed);
+    }
+
+
     public void launchArtifact() {
         lanchServo.setPosition(0.7);
         ThreadUtil.sleep(500);
         lanchServo.setPosition(0.27);
-    }
-
-    public void runIntake() {
-        intake.setRPS(25);
-    }
-
-    public void stopIntake() {
-        intake.setRPS(0);
-    }
-
-    public void reverseIntake() {
-        intake.setRPS(-25);
-    }
-
-    public void startFlywheels() {
-        flywheel1.setRPS(20);
-        flywheel2.setRPS(35);
-    }
-
-
-    public void stopFlywheels() {
-        flywheel1.setRPS(0);
-        flywheel2.setRPS(0);
     }
 
     public void flicker() {
