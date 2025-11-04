@@ -5,7 +5,6 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
 import org.firstinspires.ftc.teamcode.robots.base.opmodes.BaseAuto;
 import org.firstinspires.ftc.teamcode.robots.jetfire.JetFireRobot;
-import org.firstinspires.ftc.teamcode.util.ThreadUtil;
 
 @Autonomous(name = "Red Goal", group = "decode", preselectTeleOp = "Decode")
 public class RedGoal extends BaseAuto<JetFireRobot> {
