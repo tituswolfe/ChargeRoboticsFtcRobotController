@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.robots.jetfire;
 
 import static org.firstinspires.ftc.teamcode.hardware.drivetrain.pedroPathing.Constants.createFollower;
+import static org.firstinspires.ftc.teamcode.robots.base.opmodes.OpModeBase.activeSleep;
 
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.BezierLine;
@@ -8,24 +9,27 @@ import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.PathBuilder;
 import com.pedropathing.paths.PathChain;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
+import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.hardware.controllers.motor.RPSController;
 import org.firstinspires.ftc.teamcode.robots.base.RobotBase;
-import org.firstinspires.ftc.teamcode.util.ThreadUtil;
 
-public class DecodeRobot extends RobotBase {
+public class JetFireRobot extends RobotBase {
     public static final int redGoalAprilTagID = 22;
     public static final int blueGoalAprilTagID = 22;
     public static final int purpleGreenPorpleMotif = 22;
 
+
+    // Hardware
     public final double topFlywheelSpeed = 15;
     public final double bottomFlywheelSpeed = 30;
-    private RPSController flywheel1;
-    private RPSController flywheel2;
+    private RPSController topFlywheel;
+    private RPSController bottomFlywheel;
 
     public final double intakeSpeed = 35;
     public RPSController intake;
@@ -33,6 +37,7 @@ public class DecodeRobot extends RobotBase {
     public Servo lanchServo;
     public Servo thing1;
 
+    // Poses
     public Pose autoStart = new Pose(-60.7, -42.3, Math.toRadians(-126));
     public Pose closeShoot = new Pose(-41.9, -25.67, Math.toRadians(-131.1));
 
@@ -55,13 +60,14 @@ public class DecodeRobot extends RobotBase {
     @Override
     public void initHardware(HardwareMap hardwareMap) {
         DcMotorEx flywheelMotor1 = hardwareMap.get(DcMotorEx.class, "top-flywheel");
+        flywheelMotor1.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, new PIDFCoefficients());
         flywheelMotor1.setDirection(DcMotorSimple.Direction.FORWARD);
 
         DcMotorEx flywheelMotor2 = hardwareMap.get(DcMotorEx.class, "bottom-flywheel");
         flywheelMotor2.setDirection(DcMotorSimple.Direction.REVERSE);
 
-        flywheel1 = new RPSController(flywheelMotor1, 28);
-        flywheel2 = new RPSController(flywheelMotor2, 28);
+        topFlywheel = new RPSController(flywheelMotor1, 28);
+        bottomFlywheel = new RPSController(flywheelMotor2, 28);
 
         DcMotorEx intakeMotor = hardwareMap.get(DcMotorEx.class, "intake");
         intakeMotor.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -90,12 +96,12 @@ public class DecodeRobot extends RobotBase {
 
     // Robot functions
     public void startFlywheels() {
-        flywheel1.setRPS(topFlywheelSpeed);
-        flywheel2.setRPS(bottomFlywheelSpeed);
+        topFlywheel.setRPS(topFlywheelSpeed);
+        bottomFlywheel.setRPS(bottomFlywheelSpeed);
     }
     public void stopFlywheels() {
-        flywheel1.setRPS(0);
-        flywheel2.setRPS(0);
+        topFlywheel.setRPS(0);
+        bottomFlywheel.setRPS(0);
     }
 
     public void startIntake() {
@@ -108,18 +114,25 @@ public class DecodeRobot extends RobotBase {
         intake.setRPS(-intakeSpeed);
     }
 
-
     public void launchArtifact() {
         lanchServo.setPosition(0.7);
-        ThreadUtil.sleep(500);
+        activeSleep(400);
         lanchServo.setPosition(0.27);
     }
 
     public void flicker() {
         thing1.setPosition(0.3);
-        ThreadUtil.sleep(250);
+        activeSleep(250);
         thing1.setPosition(0.625);
     }
 
+    // getters
 
+    public RPSController getTopFlywheel() {
+        return topFlywheel;
+    }
+
+    public RPSController getBottomFlywheel() {
+        return bottomFlywheel;
+    }
 }

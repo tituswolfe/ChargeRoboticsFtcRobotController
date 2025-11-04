@@ -6,7 +6,6 @@ import com.pedropathing.geometry.Pose;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.pedropathing.util.Timer;
 
-import org.firstinspires.ftc.teamcode.robots.base.GamepadHandlerBase;
 import org.firstinspires.ftc.teamcode.robots.base.GamepadMapping;
 import org.firstinspires.ftc.teamcode.robots.base.RobotBase;
 import org.firstinspires.ftc.teamcode.robots.base.StaticData;
@@ -14,7 +13,7 @@ import org.firstinspires.ftc.teamcode.robots.base.StaticData;
 /**
  * {@link OpModeBase} is an abstract subclass of {@link OpMode}.
  * Use {@link TeleOpBase} or {@link BaseAuto} to create your {@link OpMode}!
- * {@link OpModeBase} takes generics for a subclasses of {@link RobotBase} and of {@link GamepadHandlerBase}.
+ * {@link OpModeBase} takes generics for a subclasses of {@link RobotBase} and of {@link GamepadMapping}.
  *
  * @author Titus Wolfe
  */
@@ -31,27 +30,23 @@ public abstract class OpModeBase<Robot extends RobotBase> extends OpMode {
     }
     private AllianceColor allianceColor;
 
-    public enum OpModeType {
-        AUTO,
-        TELEOP
-    }
-    private OpModeType opModeType;
+//    public enum OpModeType {
+//        AUTO,
+//        TELEOP
+//    }
+//    private OpModeType opModeType;
 
     // R.I.P AlliancePosition (interesting, but unnecessary after further thought)
 
-    private boolean isEndgame = false;
-    private Timer opmodeTimer, actionTimer;
-
-    private final Timer sleepTimer = new Timer();
-
-    boolean isActiveSleep = false;
+    protected boolean isEndgame = false;
+    protected Timer opmodeTimer = new Timer();
+    private final static Timer sleepTimer = new Timer();
 
     /**
      * Initiates and instantiates hardware & handlers.
      */
     @Override
     public void init() {
-
         telemetry.addLine("Charger Robotics");
         telemetry.addLine("Please wait . . .");
         telemetry.update();
@@ -63,20 +58,16 @@ public abstract class OpModeBase<Robot extends RobotBase> extends OpMode {
         robot = instantiateRobot();
         gamepadMapping1 = instantiateGamepadMapping1();
         gamepadMapping2 = instantiateGamepadMapping2();
-        robot.init(hardwareMap, instantiateStartPose());
+        robot.init(hardwareMap, instantiateStartPose(), allianceColor);
 
-        if (opModeType == OpModeType.AUTO) robot.startConfiguration();
-
-        opmodeTimer = new Timer();
-        opmodeTimer.resetTimer();
+        opModeTypeSpecificInit();
 
         telemetry.addLine("READY");
         telemetry.update();
     }
 
-    public void instantiateComponents() {
+    public abstract void opModeTypeSpecificInit();
 
-    }
 
     @Override
     public void start() {
@@ -85,21 +76,23 @@ public abstract class OpModeBase<Robot extends RobotBase> extends OpMode {
 
     @Override
     public void loop() {
-        if (!isActiveSleep) {
-            if (gamepadMapping1 != null) gamepadMapping1.processGamepad(gamepad1);
-            if (gamepadMapping2 != null) gamepadMapping2.processGamepad(gamepad2);
-        }
-
-        if (opmodeTimer.getElapsedTimeSeconds() > 150) isEndgame = true;
-
         if (robot.getFollower() != null) {
             robot.getFollower().update();
+            StaticData.lastPose = robot.getFollower().getPose();
+        }
 
+        updateTelemetry(telemetryManager);
+    }
+
+    public void updateTelemetry(TelemetryManager telemetry) {
+        telemetry.addLine("");
+
+        if (robot.getFollower() != null) {
             telemetry.addLine("- Position -");
             telemetry.addData("x", robot.getFollower().getPose().getX());
             telemetry.addData("y", robot.getFollower().getPose().getY());
             telemetry.addData("heading", Math.toDegrees(robot.getFollower().getPose().getHeading()));
-            telemetry.addData("isSlowMode", GamepadHandlerBase.isSlowMode);
+            telemetry.addData("isSlowMode", robot.isSlowMode);
             telemetry.addLine("");
         }
 
@@ -111,23 +104,16 @@ public abstract class OpModeBase<Robot extends RobotBase> extends OpMode {
         telemetry.addLine("- DON'T TOUCH THAT RYAN! -");
         telemetry.update();
 
-        telemetryManager.update(telemetry);
-    }
-
-    public void updateTelemetry(TelemetryManager telemetry) {
-
+        telemetryManager.update(this.telemetry);
     }
 
     public boolean isEndgame() {
         return isEndgame;
     }
 
-
-    public void activeSleep(long mills) {
+    public static void activeSleep(long mills) {
         sleepTimer.resetTimer();
-        isActiveSleep = true;
-        while(sleepTimer.getElapsedTime() < mills); // TODO: Call loop during wait?
-        isActiveSleep = false;
+        while(sleepTimer.getElapsedTime() < mills);
     }
 
     protected abstract Robot instantiateRobot();
@@ -136,12 +122,4 @@ public abstract class OpModeBase<Robot extends RobotBase> extends OpMode {
     protected abstract GamepadMapping<Robot> instantiateGamepadMapping2();
     protected abstract AllianceColor instantiateAllianceColor();
     protected abstract OpModeType instantiateOpModeType();
-
-    public OpModeType getOpModeType() {
-        return opModeType;
-    }
-
-    public AllianceColor getAllianceColor() {
-        return allianceColor;
-    }
 }

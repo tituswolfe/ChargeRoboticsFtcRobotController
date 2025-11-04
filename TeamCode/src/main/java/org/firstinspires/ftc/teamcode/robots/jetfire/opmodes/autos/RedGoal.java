@@ -4,12 +4,11 @@ import com.pedropathing.geometry.Pose;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
 import org.firstinspires.ftc.teamcode.robots.base.opmodes.BaseAuto;
-import org.firstinspires.ftc.teamcode.robots.jetfire.DecodeGamepadController;
-import org.firstinspires.ftc.teamcode.robots.jetfire.DecodeRobot;
+import org.firstinspires.ftc.teamcode.robots.jetfire.JetFireRobot;
 import org.firstinspires.ftc.teamcode.util.ThreadUtil;
 
 @Autonomous(name = "Red Goal", group = "decode", preselectTeleOp = "Decode")
-public class RedGoal extends BaseAuto<DecodeRobot, DecodeGamepadController, DecodeGamepadController> {
+public class RedGoal extends BaseAuto<JetFireRobot> {
 
     @Override
     public void autonomousPathUpdate(int pathState) {
@@ -44,23 +43,13 @@ public class RedGoal extends BaseAuto<DecodeRobot, DecodeGamepadController, Deco
     }
 
     @Override
-    protected DecodeRobot instantiateRobot() {
-        return new DecodeRobot();
+    protected JetFireRobot instantiateRobot() {
+        return new JetFireRobot();
     }
 
     @Override
     protected Pose instantiateStartPose() {
         return robot.autoStart;
-    }
-
-    @Override
-    protected DecodeGamepadController instantiateGamepadHandler1() {
-        return null;
-    }
-
-    @Override
-    protected DecodeGamepadController instantiateGamepadHandler2() {
-        return null;
     }
 
     @Override

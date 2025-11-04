@@ -2,11 +2,11 @@ package org.firstinspires.ftc.teamcode.robots.jetfire;
 
 import org.firstinspires.ftc.teamcode.robots.base.GamepadMapping;
 
-public class JetFireGamepadMapping extends GamepadMapping<DecodeRobot> {
+public class JetFireGamepadMapping extends GamepadMapping<JetFireRobot> {
     boolean isIntakeActive = false;
     boolean areFlywheelsActive = false;
 
-    public JetFireGamepadMapping(DecodeRobot decodeRobot) {
+    public JetFireGamepadMapping(JetFireRobot decodeRobot) {
         super(decodeRobot);
     }
 
@@ -120,3 +120,25 @@ public class JetFireGamepadMapping extends GamepadMapping<DecodeRobot> {
 
     }
 }
+
+
+//
+//        if(gamepad.dpadUpWasPressed()) {
+//        robot.flywheel1.setRPS(robot.flywheel1.getConfiguredRPS() + 1);
+//lockOutGamepad();
+//        }
+//
+//                if(gamepad.dpadDownWasPressed()) {
+//        robot.flywheel1.setRPS(robot.flywheel1.getConfiguredRPS() - 1);
+//lockOutGamepad();
+//        }
+//
+//                if(gamepad.dpadRightWasPressed()) {
+//        robot.flywheel2.setRPS(robot.flywheel2.getConfiguredRPS() + 1);
+//lockOutGamepad();
+//        }
+//
+//                if(gamepad.dpadLeftWasPressed()) {
+//        robot.flywheel2.setRPS(robot.flywheel2.getConfiguredRPS() - 1);
+//lockOutGamepad();
+//        }

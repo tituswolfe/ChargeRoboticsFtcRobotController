@@ -2,7 +2,7 @@ package org.firstinspires.ftc.teamcode.robots.base.opmodes;
 
 import com.pedropathing.util.Timer;
 
-import org.firstinspires.ftc.teamcode.robots.base.GamepadHandlerBase;
+import org.firstinspires.ftc.teamcode.robots.base.GamepadMapping;
 import org.firstinspires.ftc.teamcode.robots.base.RobotBase;
 
 public abstract class BaseAuto<Robot extends RobotBase> extends OpModeBase<Robot> {
@@ -17,6 +17,11 @@ public abstract class BaseAuto<Robot extends RobotBase> extends OpModeBase<Robot
      * @returns a new path state
      */
     public abstract void autonomousPathUpdate(int pathState);
+
+    @Override
+    public void opModeTypeSpecificInit() {
+        robot.startConfiguration();
+    }
 
     @Override
     public void start() {
@@ -39,5 +44,15 @@ public abstract class BaseAuto<Robot extends RobotBase> extends OpModeBase<Robot
     @Override
     protected OpModeType instantiateOpModeType() {
         return OpModeType.AUTO;
+    }
+
+    @Override
+    protected GamepadMapping<Robot> instantiateGamepadMapping1() {
+        return null;
+    }
+
+    @Override
+    protected GamepadMapping<Robot> instantiateGamepadMapping2() {
+        return null;
     }
 }

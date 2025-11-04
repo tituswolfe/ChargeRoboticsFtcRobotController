@@ -29,6 +29,7 @@
 
 package org.firstinspires.ftc.teamcode.robots.base;
 
+import com.bylazar.configurables.annotations.Configurable;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.PathBuilder;
@@ -48,6 +49,7 @@ import org.firstinspires.ftc.teamcode.robots.base.opmodes.OpModeBase;
  *
  * @author Titus Wolfe
  */
+@Configurable
 public abstract class RobotBase {
     public enum FieldType {
         DIAMOND,
@@ -56,23 +58,39 @@ public abstract class RobotBase {
     }
     private FieldType fieldType;
 
+    // Drivetrain
     private Follower follower;
-    private Limelight3A limelight3A;
+    public boolean isRobotCentric = false;
+    public double speedFactor = 1.0;
+    public boolean isSlowMode = false;
+    public double fieldCentricOffset;
 
-    public boolean allowDrive = false;
+    public static double slowSpeedFactor = 0.3;
+
+
+    private Limelight3A limelight3A;
 
     /**
      * Called in {@link OpModeBase#init()}
      * @param hardwareMap
      * @param startPose
      */
-    public void init(HardwareMap hardwareMap, Pose startPose) {
+    public void init(HardwareMap hardwareMap, Pose startPose, OpModeBase.AllianceColor allianceColor) {
         fieldType = instantiateFieldType();
         follower = instantiateFollower(hardwareMap);
         limelight3A = instantiateLimelight3A(hardwareMap);
         initHardware(hardwareMap);
 
+
+        switch(allianceColor) {
+            case RED:
+                fieldCentricOffset = -90;
+            case BLUE:
+                fieldCentricOffset = (fieldType == FieldType.DIAMOND) ? 180 : 90;
+        }
+
         if (follower != null) {
+
             follower.setStartingPose(startPose != null ? startPose : new Pose(0, 0, 0)); // TODO: Move over static pose
             follower.update();
             buildPaths(follower.pathBuilder());

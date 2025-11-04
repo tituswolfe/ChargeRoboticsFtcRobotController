@@ -4,6 +4,9 @@ import com.qualcomm.robotcore.hardware.Gamepad;
 
 public abstract class GamepadMapping<Robot extends RobotBase> {
     protected final Robot robot;
+    boolean wasLeftTriggerPressed = false;
+    boolean wasRightTriggerPressed = false;
+
     public GamepadMapping(Robot robot) {
         this.robot = robot;
     }
@@ -20,7 +23,23 @@ public abstract class GamepadMapping<Robot extends RobotBase> {
     // Joysticks
     public abstract void leftJoystick(float x, float y);
     public abstract void rightJoystick(float x, float y);
-    public abstract void joysticks(float leftX, float leftY, float rightX, float rightY);
+    public void joysticks(float leftX, float leftY, float rightX, float rightY) {
+        if (robot.getFollower() == null) return;
+        robot.getFollower().setTeleOpDrive(leftY * robot.speedFactor, leftX * robot.speedFactor, rightX * robot.speedFactor, robot.isRobotCentric, robot.fieldCentricOffset);
+    };
+
+    public void onLeftStickPressed() {
+        robot.isRobotCentric = !robot.isRobotCentric;
+    }
+
+    public void onRightStickPressed() {
+        robot.isSlowMode = !robot.isSlowMode;
+        if (robot.isSlowMode) {
+            robot.speedFactor = RobotBase.slowSpeedFactor;
+        } else {
+            robot.speedFactor = 1;
+        }
+    }
 
     // Triggers
     public abstract void leftTrigger(float val);
@@ -42,9 +61,6 @@ public abstract class GamepadMapping<Robot extends RobotBase> {
     public abstract void onDpadDownPressed();
     public abstract void onDpadLeftPressed();
 
-    boolean wasLeftTriggerPressed = false;
-    boolean wasRightTriggerPressed = false;
-
     // TODO: Make static method
     public void processGamepad(Gamepad gamepad) {
         boolean isLeftTriggerPressed = gamepad.right_trigger > 0.1;
@@ -59,6 +75,10 @@ public abstract class GamepadMapping<Robot extends RobotBase> {
         // Joysticks
         leftJoystick(-gamepad.left_stick_x, -gamepad.left_stick_y);
         rightJoystick(-gamepad.right_stick_x, -gamepad.right_stick_y);
+        joysticks(-gamepad.left_stick_x, -gamepad.left_stick_y, -gamepad.right_stick_x, -gamepad.right_stick_y);
+
+        if (gamepad.leftStickButtonWasPressed()) onLeftStickPressed();
+        if (gamepad.rightStickButtonWasPressed()) onRightStickPressed();
 
         // Trigger
         leftTrigger(gamepad.left_trigger);
@@ -71,15 +91,32 @@ public abstract class GamepadMapping<Robot extends RobotBase> {
         if (!isRightTriggerPressed && wasRightTriggerPressed) onRightTriggerReleased();
 
         // Bumper
-        onLeftBumperPressed();
+        if (gamepad.leftBumperWasPressed()) onLeftBumperPressed();
+        if (gamepad.rightBumperWasPressed()) onRightBumperPressed();
 
-        if (gamepad.dpadUpWasPressed());
-        if (gamepad.dpadRightWasPressed());
-        if (gamepad.dpadDownWasPressed());
-        if (gamepad.dpadLeftWasPressed());
+        if (gamepad.dpadUpWasPressed()) onDpadUpPressed();
+        if (gamepad.dpadRightWasPressed()) onDpadRightPressed();
+        if (gamepad.dpadDownWasPressed()) onDpadDownPressed();
+        if (gamepad.dpadLeftWasPressed()) onDpadLeftPressed();
 
 
         wasLeftTriggerPressed = isLeftTriggerPressed;
         wasRightTriggerPressed = isRightTriggerPressed;
     }
 }
+
+// JOYSTICK INPUT
+//           | <---- y axis
+//           |
+//         -1.0
+//           /\
+//           ___
+//         / \|/ \
+// -1.0 < |--( )--| > 1.0 ---- x axis
+//         \ /|\ /
+//           ---
+//           \/
+//           1.0
+
+// RIGHT STICK 0.0 to -1.0
+// LEFT STICK 0.0 to 1.0
