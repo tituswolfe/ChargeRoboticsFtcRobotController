@@ -53,7 +53,6 @@ public abstract class OpModeBase<Robot extends RobotBase> extends OpMode {
 
         allianceColor = instantiateAllianceColor();
         StaticData.lastAllianceColor = allianceColor;
-        opModeType = instantiateOpModeType();
 
         robot = instantiateRobot();
         gamepadMapping1 = instantiateGamepadMapping1();
@@ -121,5 +120,4 @@ public abstract class OpModeBase<Robot extends RobotBase> extends OpMode {
     protected abstract GamepadMapping<Robot> instantiateGamepadMapping1();
     protected abstract GamepadMapping<Robot> instantiateGamepadMapping2();
     protected abstract AllianceColor instantiateAllianceColor();
-    protected abstract OpModeType instantiateOpModeType();
 }

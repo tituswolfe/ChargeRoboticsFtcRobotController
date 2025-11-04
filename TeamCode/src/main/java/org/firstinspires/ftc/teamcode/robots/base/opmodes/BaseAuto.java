@@ -42,11 +42,6 @@ public abstract class BaseAuto<Robot extends RobotBase> extends OpModeBase<Robot
     }
 
     @Override
-    protected OpModeType instantiateOpModeType() {
-        return OpModeType.AUTO;
-    }
-
-    @Override
     protected GamepadMapping<Robot> instantiateGamepadMapping1() {
         return null;
     }

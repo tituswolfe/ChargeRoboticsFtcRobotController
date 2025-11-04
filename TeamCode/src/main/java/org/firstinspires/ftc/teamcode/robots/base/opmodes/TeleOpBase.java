@@ -39,9 +39,4 @@ public abstract class TeleOpBase<Robot extends RobotBase> extends OpModeBase<Rob
     protected Pose instantiateStartPose() {
         return StaticData.lastPose;
     }
-
-    @Override
-    protected OpModeType instantiateOpModeType() {
-        return OpModeType.TELEOP;
-    }
 }
