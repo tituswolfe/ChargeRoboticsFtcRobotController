@@ -102,43 +102,22 @@ public class JetFireGamepadMapping extends GamepadMapping<JetFireRobot> {
 
     @Override
     public void onDpadUpPressed() {
-
+        robot.getTopFlywheel().setRPS(robot.getTopFlywheel().getConfiguredRPS() + 1);
     }
 
     @Override
     public void onDpadRightPressed() {
-
+        robot.getBottomFlywheel().setRPS(robot.getBottomFlywheel().getConfiguredRPS() + 1);
     }
 
     @Override
     public void onDpadDownPressed() {
+        robot.getTopFlywheel().setRPS(robot.getTopFlywheel().getConfiguredRPS() - 1);
 
     }
 
     @Override
     public void onDpadLeftPressed() {
-
+        robot.getBottomFlywheel().setRPS(robot.getBottomFlywheel().getConfiguredRPS() - 1);
     }
 }
-
-
-//
-//        if(gamepad.dpadUpWasPressed()) {
-//        robot.flywheel1.setRPS(robot.flywheel1.getConfiguredRPS() + 1);
-//lockOutGamepad();
-//        }
-//
-//                if(gamepad.dpadDownWasPressed()) {
-//        robot.flywheel1.setRPS(robot.flywheel1.getConfiguredRPS() - 1);
-//lockOutGamepad();
-//        }
-//
-//                if(gamepad.dpadRightWasPressed()) {
-//        robot.flywheel2.setRPS(robot.flywheel2.getConfiguredRPS() + 1);
-//lockOutGamepad();
-//        }
-//
-//                if(gamepad.dpadLeftWasPressed()) {
-//        robot.flywheel2.setRPS(robot.flywheel2.getConfiguredRPS() - 1);
-//lockOutGamepad();
-//        }

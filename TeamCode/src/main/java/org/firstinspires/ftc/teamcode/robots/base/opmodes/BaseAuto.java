@@ -13,7 +13,7 @@ public abstract class BaseAuto<Robot extends RobotBase> extends OpModeBase<Robot
      * See <a href="https://pedropathing.com/docs/pathing/examples/auto">Example Auto (Pedro Pathing)</a>
      * This method is continously called in {@link #loop()}. Use a state machine (switch case) to manage which path is active.
      *
-     * @param pathState
+     * @param pathState current path state/segment
      */
     public abstract void autonomousPathUpdate(int pathState);
 

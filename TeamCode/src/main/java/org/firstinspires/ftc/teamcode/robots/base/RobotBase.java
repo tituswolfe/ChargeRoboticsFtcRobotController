@@ -71,9 +71,9 @@ public abstract class RobotBase {
 
     /**
      * Called in {@link OpModeBase#init()}
-     * @param hardwareMap
-     * @param startPose
-     * @param allianceColor
+     * @param hardwareMap hardware map
+     * @param startPose start pose
+     * @param allianceColor alliance color
      */
     public void init(HardwareMap hardwareMap, Pose startPose, OpModeBase.AllianceColor allianceColor) {
         fieldType = instantiateFieldType();
@@ -95,6 +95,11 @@ public abstract class RobotBase {
         }
     }
 
+    /**
+     * Initiate robot season specific hardware here.
+     * @param hardwareMap hardwareMap
+     */
+    public abstract void initHardware(HardwareMap hardwareMap);
 
     /**
      * Activate any hardware to set or hold a starting configuration.
@@ -106,23 +111,18 @@ public abstract class RobotBase {
 
     public abstract void buildPaths(PathBuilder pathBuilder);
 
-    /**
-     * Initiate robot season specific hardware here.
-     * @param hardwareMap
-     */
-    public abstract void initHardware(HardwareMap hardwareMap);
 
     protected abstract FieldType instantiateFieldType();
 
     /**
-     * @param hardwareMap
+     * @param hardwareMap hardwareMap
      * @return {@link Follower}
      * @see Constants#createFollower(HardwareMap)
      */
     public abstract Follower instantiateFollower(HardwareMap hardwareMap);
 
     /**
-     * @param hardwareMap
+     * @param hardwareMap hardwareMap
      * @return {@link Limelight3A}
      */
     public abstract Limelight3A instantiateLimelight3A(HardwareMap hardwareMap);

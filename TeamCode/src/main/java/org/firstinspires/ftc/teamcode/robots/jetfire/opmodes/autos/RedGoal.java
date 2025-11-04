@@ -21,14 +21,13 @@ public class RedGoal extends BaseAuto<JetFireRobot> {
                 break;
             case 1:
 
-                if (robot.getFollower().atPose(robot.closeShoot, 1, 1)) {
+                if (!robot.getFollower().isBusy()) {
                     robot.launchArtifact();
-                    ThreadUtil.sleep(1000);
+                    activeSleep(1000);
                     robot.launchArtifact();
-                    ThreadUtil.sleep(1000);
+                    activeSleep(1000);
                     robot.launchArtifact();
-
-                    ThreadUtil.sleep(1000);
+                    activeSleep(1000);
 
                     setPathState(2);
                 }
