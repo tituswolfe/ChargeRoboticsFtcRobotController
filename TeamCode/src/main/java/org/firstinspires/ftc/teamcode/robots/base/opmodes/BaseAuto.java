@@ -6,7 +6,7 @@ import org.firstinspires.ftc.teamcode.robots.base.GamepadMapping;
 import org.firstinspires.ftc.teamcode.robots.base.RobotBase;
 
 public abstract class BaseAuto<Robot extends RobotBase> extends OpModeBase<Robot> {
-    private Timer pathTimer, actionTimer;
+    private Timer pathTimer;
     private int pathState;
 
     /**
@@ -14,7 +14,6 @@ public abstract class BaseAuto<Robot extends RobotBase> extends OpModeBase<Robot
      * This method is continously called in {@link #loop()}. Use a state machine (switch case) to manage which path is active.
      *
      * @param pathState
-     * @returns a new path state
      */
     public abstract void autonomousPathUpdate(int pathState);
 
@@ -25,7 +24,7 @@ public abstract class BaseAuto<Robot extends RobotBase> extends OpModeBase<Robot
 
     @Override
     public void start() {
-        pathTimer = new Timer(); // TODO: Move to init
+        pathTimer = new Timer();
         setPathState(0);
         super.start();
     }

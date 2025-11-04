@@ -30,17 +30,11 @@ public abstract class OpModeBase<Robot extends RobotBase> extends OpMode {
     }
     private AllianceColor allianceColor;
 
-//    public enum OpModeType {
-//        AUTO,
-//        TELEOP
-//    }
-//    private OpModeType opModeType;
-
-    // R.I.P AlliancePosition (interesting, but unnecessary after further thought)
-
-    protected boolean isEndgame = false;
     protected Timer opmodeTimer = new Timer();
     private final static Timer sleepTimer = new Timer();
+    protected boolean isEndgame = false;
+
+    // R.I.P AlliancePosition, OpModeType, & FieldType
 
     /**
      * Initiates and instantiates hardware & handlers.

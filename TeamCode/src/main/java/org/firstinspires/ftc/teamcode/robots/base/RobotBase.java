@@ -46,7 +46,6 @@ import org.firstinspires.ftc.teamcode.robots.base.opmodes.OpModeBase;
 
 /**
  * {@link RobotBase} contains the base functions & hardware classes for a robot.
- *
  * @author Titus Wolfe
  */
 @Configurable
@@ -60,8 +59,8 @@ public abstract class RobotBase {
 
     // Drivetrain
     private Follower follower;
+    public double speedFactor = 1;
     public boolean isRobotCentric = false;
-    public double speedFactor = 1.0;
     public boolean isSlowMode = false;
     public double fieldCentricOffset;
 
@@ -74,13 +73,13 @@ public abstract class RobotBase {
      * Called in {@link OpModeBase#init()}
      * @param hardwareMap
      * @param startPose
+     * @param allianceColor
      */
     public void init(HardwareMap hardwareMap, Pose startPose, OpModeBase.AllianceColor allianceColor) {
         fieldType = instantiateFieldType();
         follower = instantiateFollower(hardwareMap);
         limelight3A = instantiateLimelight3A(hardwareMap);
         initHardware(hardwareMap);
-
 
         switch(allianceColor) {
             case RED:
@@ -90,8 +89,7 @@ public abstract class RobotBase {
         }
 
         if (follower != null) {
-
-            follower.setStartingPose(startPose != null ? startPose : new Pose(0, 0, 0)); // TODO: Move over static pose
+            follower.setStartingPose(startPose);
             follower.update();
             buildPaths(follower.pathBuilder());
         }
@@ -99,9 +97,10 @@ public abstract class RobotBase {
 
 
     /**
-     * Activate any powered or unpowered hardware to set or hold a starting configuration for {@link com.qualcomm.robotcore.eventloop.opmode.Autonomous} before {@link OpMode#start()} during {@link OpMode#init()}.
+     * Activate any hardware to set or hold a starting configuration.
+     * This method is called in {@link com.qualcomm.robotcore.eventloop.opmode.Autonomous} during {@link #init}.
+     * This method is NOT called in {@link com.qualcomm.robotcore.eventloop.opmode.TeleOp}.
      * You cannot have any CONTINUOUS movement during init.
-     * This method is only called during init in auto.
      */
     public abstract void startConfiguration();
 
