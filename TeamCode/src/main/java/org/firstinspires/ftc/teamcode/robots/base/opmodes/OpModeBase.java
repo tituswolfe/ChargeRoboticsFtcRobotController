@@ -13,9 +13,9 @@ import org.firstinspires.ftc.teamcode.robots.base.StaticData;
 /**
  * {@link OpModeBase} is an abstract subclass of {@link OpMode}.
  * Use {@link TeleOpBase} or {@link BaseAuto} to create your {@link OpMode}!
- * {@link OpModeBase} takes generics for a subclasses of {@link RobotBase} and of {@link GamepadMapping}.
  *
  * @author Titus Wolfe
+ * @param <Robot> a {@link RobotBase} subclass
  */
 public abstract class OpModeBase<Robot extends RobotBase> extends OpMode {
     protected Robot robot;
@@ -28,7 +28,7 @@ public abstract class OpModeBase<Robot extends RobotBase> extends OpMode {
         RED,
         BLUE
     }
-    private AllianceColor allianceColor;
+
 
     protected Timer opmodeTimer = new Timer();
     private final static Timer sleepTimer = new Timer();
@@ -45,13 +45,12 @@ public abstract class OpModeBase<Robot extends RobotBase> extends OpMode {
         telemetry.addLine("Please wait . . .");
         telemetry.update();
 
-        allianceColor = instantiateAllianceColor();
-        StaticData.lastAllianceColor = allianceColor;
+        StaticData.allianceColor = instantiateAllianceColor();
 
         robot = instantiateRobot();
         gamepadMapping1 = instantiateGamepadMapping1();
         gamepadMapping2 = instantiateGamepadMapping2();
-        robot.init(hardwareMap, instantiateStartPose(), allianceColor);
+        robot.init(hardwareMap, instantiateStartPose());
 
         opModeTypeSpecificInit();
 
@@ -81,7 +80,7 @@ public abstract class OpModeBase<Robot extends RobotBase> extends OpMode {
         telemetry.addLine("");
 
         if (robot.getFollower() != null) {
-            telemetry.addLine("- Position -");
+            telemetry.addLine("- DRIVETRAIN -");
             telemetry.addData("x", robot.getFollower().getPose().getX());
             telemetry.addData("y", robot.getFollower().getPose().getY());
             telemetry.addData("heading", Math.toDegrees(robot.getFollower().getPose().getHeading()));
@@ -95,7 +94,6 @@ public abstract class OpModeBase<Robot extends RobotBase> extends OpMode {
         telemetry.addLine("");
         telemetry.addLine("- Charger Robotics -");
         telemetry.addLine("- DON'T TOUCH THAT RYAN! -");
-        telemetry.update();
 
         telemetryManager.update(this.telemetry);
     }

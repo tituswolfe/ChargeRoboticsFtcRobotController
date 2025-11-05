@@ -1,10 +1,18 @@
 package org.firstinspires.ftc.teamcode.robots.jetfire;
 
+import com.pedropathing.geometry.BezierPoint;
+import com.pedropathing.geometry.Pose;
+import com.pedropathing.paths.Path;
+import com.pedropathing.paths.PathChain;
+import com.qualcomm.robotcore.hardware.DcMotor;
+import com.qualcomm.robotcore.hardware.PIDFCoefficients;
+
 import org.firstinspires.ftc.teamcode.robots.base.GamepadMapping;
+import org.firstinspires.ftc.teamcode.robots.base.StaticData;
+import org.firstinspires.ftc.teamcode.robots.base.opmodes.OpModeBase;
 
 public class JetFireGamepadMapping extends GamepadMapping<JetFireRobot> {
     boolean isIntakeActive = false;
-    boolean areFlywheelsActive = false;
 
     public JetFireGamepadMapping(JetFireRobot decodeRobot) {
         super(decodeRobot);
@@ -22,12 +30,19 @@ public class JetFireGamepadMapping extends GamepadMapping<JetFireRobot> {
 
     @Override
     public void onAPressed() {
-
+        // robot.getTopFlywheel().getDcMotorEx().setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(JetFireRobot.p, JetFireRobot.i, JetFireRobot.d, JetFireRobot.f));
+        // robot.getBottomFlywheel().getDcMotorEx().setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(JetFireRobot.p, JetFireRobot.i, JetFireRobot.d, JetFireRobot.f));
     }
 
     @Override
     public void onXPressed() {
-        // TODO: Rotate toward goal
+        Pose currentPose = robot.getFollower().getPose();
+
+        if (StaticData.allianceColor == OpModeBase.AllianceColor.RED) {
+            robot.getFollower().turnTo(Math.atan2(robot.redGoal.getY() - currentPose.getY(), robot.redGoal.getX() - currentPose.getX()));
+        } else {
+            robot.getFollower().turnTo(Math.atan2(robot.redGoal.mirror().getY() - currentPose.getY(), robot.redGoal.mirror().getX() - currentPose.getX()));
+        }
     }
 
     @Override
@@ -41,16 +56,13 @@ public class JetFireGamepadMapping extends GamepadMapping<JetFireRobot> {
     }
 
     @Override
-    public void joysticks(float leftX, float leftY, float rightX, float rightY) {
-
-    }
-
-    @Override
     public void leftTrigger(float val) {
         if (val > 0.1) {
             robot.reverseIntake();
         } else if (isIntakeActive) {
             robot.startIntake();
+        } else {
+            robot.stopIntake();
         }
     }
 
@@ -88,16 +100,12 @@ public class JetFireGamepadMapping extends GamepadMapping<JetFireRobot> {
         } else {
             robot.stopIntake();
         }
+        // isIntakeActive = toggle(isIntakeActive, robot::startIntake, robot::stopIntake);
     }
 
     @Override
     public void onRightBumperPressed() {
-        areFlywheelsActive = !areFlywheelsActive;
-        if (areFlywheelsActive) {
-            robot.startFlywheels();
-        } else {
-            robot.stopFlywheels();
-        }
+        robot.toggleFlywheelPreset();
     }
 
     @Override

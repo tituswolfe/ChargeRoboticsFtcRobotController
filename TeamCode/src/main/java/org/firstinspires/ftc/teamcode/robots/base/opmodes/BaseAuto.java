@@ -40,6 +40,7 @@ public abstract class BaseAuto<Robot extends RobotBase> extends OpModeBase<Robot
         pathTimer.resetTimer();
     }
 
+    // TODO: Gamepad auto init controls?
     @Override
     protected GamepadMapping<Robot> instantiateGamepadMapping1() {
         return null;

@@ -22,6 +22,8 @@ public abstract class TeleOpBase<Robot extends RobotBase> extends OpModeBase<Rob
 
         if (opmodeTimer.getElapsedTimeSeconds() > 150) isEndgame = true;
 
+        if (robot.getFollower() != null && !robot.getFollower().isBusy() && !robot.getFollower().isTeleopDrive()) robot.getFollower().startTeleopDrive();
+
         super.loop();
     }
 
@@ -32,7 +34,7 @@ public abstract class TeleOpBase<Robot extends RobotBase> extends OpModeBase<Rob
 
     @Override
     protected AllianceColor instantiateAllianceColor() {
-        return StaticData.lastAllianceColor;
+        return StaticData.allianceColor;
     }
 
     @Override

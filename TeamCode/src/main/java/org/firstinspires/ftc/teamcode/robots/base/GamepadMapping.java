@@ -25,7 +25,13 @@ public abstract class GamepadMapping<Robot extends RobotBase> {
     public abstract void rightJoystick(float x, float y);
     public void joysticks(float leftX, float leftY, float rightX, float rightY) {
         if (robot.getFollower() == null) return;
-        robot.getFollower().setTeleOpDrive(leftY * robot.speedFactor, leftX * robot.speedFactor, rightX * robot.speedFactor, robot.isRobotCentric, robot.fieldCentricOffset);
+        if (robot.getFollower().isBusy()) return;
+
+        if (robot.isRobotCentric) {
+            robot.getFollower().setTeleOpDrive(leftY * robot.speedFactor, leftX * robot.speedFactor, rightX * robot.speedFactor, true);
+        } else {
+            robot.getFollower().setTeleOpDrive(leftY * robot.speedFactor, leftX * robot.speedFactor, rightX * robot.speedFactor, false, robot.fieldCentricOffset);
+        }
     };
 
     public void onLeftStickPressed() {
@@ -101,6 +107,16 @@ public abstract class GamepadMapping<Robot extends RobotBase> {
 
         wasLeftTriggerPressed = isLeftTriggerPressed;
         wasRightTriggerPressed = isRightTriggerPressed;
+    }
+
+    public boolean toggle(boolean state, Runnable onTrue, Runnable onFalse) {
+        if (state) {
+            onFalse.run();
+        } else {
+            onTrue.run();
+        }
+
+        return !state;
     }
 }
 

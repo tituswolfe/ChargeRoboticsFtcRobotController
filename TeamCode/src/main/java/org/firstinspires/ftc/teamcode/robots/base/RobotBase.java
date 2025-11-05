@@ -34,7 +34,6 @@ import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.PathBuilder;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
-import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.teamcode.hardware.drivetrain.pedroPathing.Constants;
@@ -62,7 +61,7 @@ public abstract class RobotBase {
     public double speedFactor = 1;
     public boolean isRobotCentric = false;
     public boolean isSlowMode = false;
-    public double fieldCentricOffset;
+    public double fieldCentricOffset = 0;
 
     public static double slowSpeedFactor = 0.3;
 
@@ -73,19 +72,18 @@ public abstract class RobotBase {
      * Called in {@link OpModeBase#init()}
      * @param hardwareMap hardware map
      * @param startPose start pose
-     * @param allianceColor alliance color
      */
-    public void init(HardwareMap hardwareMap, Pose startPose, OpModeBase.AllianceColor allianceColor) {
+    public void init(HardwareMap hardwareMap, Pose startPose) {
         fieldType = instantiateFieldType();
         follower = instantiateFollower(hardwareMap);
         limelight3A = instantiateLimelight3A(hardwareMap);
         initHardware(hardwareMap);
 
-        switch(allianceColor) {
+        switch(StaticData.allianceColor) {
             case RED:
-                fieldCentricOffset = -90;
+                fieldCentricOffset = Math.toRadians(90);
             case BLUE:
-                fieldCentricOffset = (fieldType == FieldType.DIAMOND) ? 180 : 90;
+                fieldCentricOffset = (fieldType == FieldType.DIAMOND) ? Math.toRadians(180) : Math.toRadians(-90);
         }
 
         if (follower != null) {
