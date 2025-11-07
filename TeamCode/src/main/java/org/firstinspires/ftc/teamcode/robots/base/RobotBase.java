@@ -87,9 +87,9 @@ public abstract class RobotBase {
         }
 
         if (follower != null) {
+            // TODO: Better soulution for mirrored autos
             follower.setStartingPose(startPose);
             follower.update();
-            buildPaths(follower.pathBuilder());
         }
     }
 
@@ -107,7 +107,12 @@ public abstract class RobotBase {
      */
     public abstract void startConfiguration();
 
-    public abstract void buildPaths(PathBuilder pathBuilder);
+    public void updateHardwareStates() {
+        if (follower != null) {
+            follower.update();
+            StaticData.lastPose = follower.getPose();
+        }
+    }
 
 
     protected abstract FieldType instantiateFieldType();

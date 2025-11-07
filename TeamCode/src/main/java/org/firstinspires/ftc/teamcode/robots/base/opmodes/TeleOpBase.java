@@ -22,7 +22,7 @@ public abstract class TeleOpBase<Robot extends RobotBase> extends OpModeBase<Rob
 
         if (opmodeTimer.getElapsedTimeSeconds() > 150) isEndgame = true;
 
-        if (robot.getFollower() != null && !robot.getFollower().isBusy() && !robot.getFollower().isTeleopDrive()) robot.getFollower().startTeleopDrive();
+        if (robot.getFollower() != null && !robot.getFollower().isBusy() && !robot.getFollower().isTeleopDrive() && !robot.getFollower().isTurning()) robot.getFollower().startTeleopDrive();
 
         super.loop();
     }

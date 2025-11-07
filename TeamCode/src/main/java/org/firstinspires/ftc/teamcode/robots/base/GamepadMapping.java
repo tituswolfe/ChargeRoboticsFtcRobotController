@@ -25,7 +25,7 @@ public abstract class GamepadMapping<Robot extends RobotBase> {
     public abstract void rightJoystick(float x, float y);
     public void joysticks(float leftX, float leftY, float rightX, float rightY) {
         if (robot.getFollower() == null) return;
-        if (robot.getFollower().isBusy()) return;
+        if (!robot.getFollower().isTeleopDrive()) return;
 
         if (robot.isRobotCentric) {
             robot.getFollower().setTeleOpDrive(leftY * robot.speedFactor, leftX * robot.speedFactor, rightX * robot.speedFactor, true);

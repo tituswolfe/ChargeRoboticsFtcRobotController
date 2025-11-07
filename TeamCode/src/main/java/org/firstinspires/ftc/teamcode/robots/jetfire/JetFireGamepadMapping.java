@@ -30,19 +30,18 @@ public class JetFireGamepadMapping extends GamepadMapping<JetFireRobot> {
 
     @Override
     public void onAPressed() {
-        // robot.getTopFlywheel().getDcMotorEx().setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(JetFireRobot.p, JetFireRobot.i, JetFireRobot.d, JetFireRobot.f));
-        // robot.getBottomFlywheel().getDcMotorEx().setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(JetFireRobot.p, JetFireRobot.i, JetFireRobot.d, JetFireRobot.f));
+
     }
 
     @Override
     public void onXPressed() {
-        Pose currentPose = robot.getFollower().getPose();
-
-        if (StaticData.allianceColor == OpModeBase.AllianceColor.RED) {
-            robot.getFollower().turnTo(Math.atan2(robot.redGoal.getY() - currentPose.getY(), robot.redGoal.getX() - currentPose.getX()));
-        } else {
-            robot.getFollower().turnTo(Math.atan2(robot.redGoal.mirror().getY() - currentPose.getY(), robot.redGoal.mirror().getX() - currentPose.getX()));
-        }
+//        Pose currentPose = robot.getFollower().getPose();
+//
+//        if (StaticData.allianceColor == OpModeBase.AllianceColor.RED) {
+//            robot.getFollower().turnTo(Math.atan2(robot.redGoal.getY() - currentPose.getY(), robot.redGoal.getX() - currentPose.getX()));
+//        } else {
+//            robot.getFollower().turnTo(Math.atan2(robot.redGoal.mirror().getY() - currentPose.getY(), robot.redGoal.mirror().getX() - currentPose.getX()));
+//        }
     }
 
     @Override

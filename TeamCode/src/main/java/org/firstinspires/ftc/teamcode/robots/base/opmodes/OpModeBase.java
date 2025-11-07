@@ -1,7 +1,10 @@
 package org.firstinspires.ftc.teamcode.robots.base.opmodes;
 
+
+
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.bylazar.telemetry.TelemetryManager;
+import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.pedropathing.util.Timer;
@@ -52,6 +55,8 @@ public abstract class OpModeBase<Robot extends RobotBase> extends OpMode {
         gamepadMapping2 = instantiateGamepadMapping2();
         robot.init(hardwareMap, instantiateStartPose());
 
+        if (robot.getFollower() != null) buildPaths(robot.getFollower());
+
         opModeTypeSpecificInit();
 
         telemetry.addLine("READY");
@@ -59,6 +64,7 @@ public abstract class OpModeBase<Robot extends RobotBase> extends OpMode {
     }
 
     public abstract void opModeTypeSpecificInit();
+    public abstract void buildPaths(Follower follower);
 
 
     @Override
@@ -68,10 +74,7 @@ public abstract class OpModeBase<Robot extends RobotBase> extends OpMode {
 
     @Override
     public void loop() {
-        if (robot.getFollower() != null) {
-            robot.getFollower().update();
-            StaticData.lastPose = robot.getFollower().getPose();
-        }
+        robot.updateHardwareStates();
 
         updateTelemetry(telemetryManager);
     }
@@ -102,10 +105,6 @@ public abstract class OpModeBase<Robot extends RobotBase> extends OpMode {
         return isEndgame;
     }
 
-    public static void activeSleep(long mills) {
-        sleepTimer.resetTimer();
-        while(sleepTimer.getElapsedTime() < mills);
-    }
 
     protected abstract Robot instantiateRobot();
     protected abstract Pose instantiateStartPose();

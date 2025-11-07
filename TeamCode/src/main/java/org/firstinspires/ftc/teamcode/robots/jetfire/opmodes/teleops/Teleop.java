@@ -1,19 +1,15 @@
 package org.firstinspires.ftc.teamcode.robots.jetfire.opmodes.teleops;
 
-
-import com.bylazar.configurables.annotations.Configurable;
-import com.bylazar.field.PanelsField;
 import com.bylazar.telemetry.TelemetryManager;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
-import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.PIDCoefficients;
 
+import org.firstinspires.ftc.teamcode.hardware.controllers.servo.RGBIndicatorLightController;
 import org.firstinspires.ftc.teamcode.robots.base.GamepadMapping;
 import org.firstinspires.ftc.teamcode.robots.base.opmodes.TeleOpBase;
 import org.firstinspires.ftc.teamcode.robots.jetfire.JetFireRobot;
 import org.firstinspires.ftc.teamcode.robots.jetfire.JetFireGamepadMapping;
+import org.firstinspires.ftc.teamcode.robots.jetfire.JetFireGamepadMapping2;
 
-import java.time.temporal.ValueRange;
 
 @TeleOp(name = "JetFire")
 public class Teleop extends TeleOpBase<JetFireRobot> {
@@ -23,31 +19,21 @@ public class Teleop extends TeleOpBase<JetFireRobot> {
         double topFlywheelCurrentRPS = robot.getTopFlywheel().getCurrentRPS();
         double bottomFlywheelCurrentRPS = robot.getBottomFlywheel().getCurrentRPS();
 
-//        double topFlywheelConfiguredRPS = robot.getTopFlywheel().getConfiguredRPS();
-//        double bottomFlywheelConfiguredRPS = robot.getBottomFlywheel().getConfiguredRPS();
-
         if (isWithinRange(topFlywheelCurrentRPS, robot.getFlywheelSpeedFactor() * JetFireRobot.topFlywheelBaseSpeed,2) && isWithinRange(bottomFlywheelCurrentRPS, robot.getFlywheelSpeedFactor() * JetFireRobot.bottomFlywheelBaseSpeed, 2)) {
             switch (robot.flywheelDistancePreset) {
                 case OFF:
-                    if (isRed) {
-                        robot.indicatorRed();
-                        isRed = true;
-                    }
-                    isRed = false;
+                    robot.getRgbIndicatorLightController().setColor(RGBIndicatorLightController.Color.OFF);
                     break;
                 case CLOSE:
-                    robot.indicatorGreen();
+                    robot.getRgbIndicatorLightController().setColor(RGBIndicatorLightController.Color.GREEN);
                     break;
                 case FAR:
-                    robot.indicatorIndigo();
+                    robot.getRgbIndicatorLightController().setColor(RGBIndicatorLightController.Color.VIOLET);
                     break;
             }
+        } else {
+            robot.getRgbIndicatorLightController().setColor(RGBIndicatorLightController.Color.RED);
         }
-//
-//        if (topFlywheelCurrentRPS > topFlywheelConfiguredRPS - 2 && topFlywheelCurrentRPS < topFlywheelConfiguredRPS + 2 && bottomFlywheelCurrentRPS > bottomFlywheelConfiguredRPS - 2 && bottomFlywheelCurrentRPS < bottomFlywheelConfiguredRPS + 2) {
-//        } else {
-//            robot.indicatorRed();
-//        }
 
         super.loop();
     }
@@ -80,11 +66,11 @@ public class Teleop extends TeleOpBase<JetFireRobot> {
 
     @Override
     protected GamepadMapping instantiateGamepadMapping2() {
-        return null;
+        return null; // new JetFireGamepadMapping2(robot);
     }
 
 
-    public boolean isWithinRange(double val, double target, double margin) {
+    public static boolean isWithinRange(double val, double target, double margin) {
         return val > target - margin && val < target + margin;
     }
 }

@@ -1,13 +1,15 @@
 package org.firstinspires.ftc.teamcode.robots.base.opmodes;
 
+import com.bylazar.telemetry.TelemetryManager;
 import com.pedropathing.util.Timer;
 
 import org.firstinspires.ftc.teamcode.robots.base.GamepadMapping;
 import org.firstinspires.ftc.teamcode.robots.base.RobotBase;
 
 public abstract class BaseAuto<Robot extends RobotBase> extends OpModeBase<Robot> {
-    private Timer pathTimer;
-    private int pathState;
+    protected Timer pathTimer = new Timer();
+    protected Timer actionTimer = new Timer();
+    private int pathState = 0;
 
     /**
      * See <a href="https://pedropathing.com/docs/pathing/examples/auto">Example Auto (Pedro Pathing)</a>
@@ -23,9 +25,15 @@ public abstract class BaseAuto<Robot extends RobotBase> extends OpModeBase<Robot
     }
 
     @Override
+    public void updateTelemetry(TelemetryManager telemetry) {
+        telemetry.addData("Path State", pathState);
+        super.updateTelemetry(telemetry);
+    }
+
+    @Override
     public void start() {
-        pathTimer = new Timer();
-        setPathState(0);
+        pathTimer.resetTimer();
+        actionTimer.resetTimer();
         super.start();
     }
 
@@ -35,12 +43,12 @@ public abstract class BaseAuto<Robot extends RobotBase> extends OpModeBase<Robot
         super.loop();
     }
 
-    public void setPathState(int pState) {
+    public void setPathState(int pState, boolean resetActionTimer) {
         pathState = pState;
         pathTimer.resetTimer();
+        if (resetActionTimer) actionTimer.resetTimer();
     }
 
-    // TODO: Gamepad auto init controls?
     @Override
     protected GamepadMapping<Robot> instantiateGamepadMapping1() {
         return null;
