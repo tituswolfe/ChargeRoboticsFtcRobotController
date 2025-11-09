@@ -35,6 +35,11 @@ public class JetFireGamepadMapping extends GamepadMapping<JetFireRobot> {
 
     @Override
     public void onXPressed() {
+        Pose currentPos = robot.getFollower().getPose();
+        double targetAngle = Math.atan2(robot.redGoal
+                .getY()-currentPos.getY(),robot.redGoal
+                .getX()-currentPos.getX());
+        robot.getFollower().turnTo(targetAngle);
 //        Pose currentPose = robot.getFollower().getPose();
 //
 //        if (StaticData.allianceColor == OpModeBase.AllianceColor.RED) {
