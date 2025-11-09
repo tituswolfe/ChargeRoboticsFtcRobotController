@@ -5,15 +5,18 @@ import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.PathChain;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 
 import org.firstinspires.ftc.teamcode.robots.base.opmodes.BaseAuto;
 import org.firstinspires.ftc.teamcode.robots.jetfire.JetFireRobot;
 
-@Autonomous(name = "Blue Far", preselectTeleOp = "JetFire")
-public class BlueFar extends BaseAuto<JetFireRobot> {
-    public Pose startPose = new Pose(57.8, -24, Math.toRadians(-180));
-    public Pose shootPose = new Pose(33.8, -24, Math.toRadians(-180));
-    public Pose startLine3Pose = new Pose(35, -23, Math.toRadians(90));
+@Autonomous(name = "Red Far Shoot", preselectTeleOp = "JetFire")
+@Disabled
+public class RedFarShoot extends BaseAuto<JetFireRobot> {
+    public Pose startPose = new Pose(57.8, 24, Math.toRadians(-180));
+    public Pose shootPose = new Pose(51.24, 18.57, Math.toRadians(150));
+
+    public Pose startLine3Pose = new Pose(34, 32, Math.toRadians(-90));
     public Pose finishLine3Pose = new Pose(35, -54, Math.toRadians(90));
 
     public PathChain shootFar;
@@ -94,6 +97,6 @@ public class BlueFar extends BaseAuto<JetFireRobot> {
 
     @Override
     protected AllianceColor instantiateAllianceColor() {
-        return AllianceColor.BLUE;
+        return AllianceColor.RED;
     }
 }

@@ -9,10 +9,11 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import org.firstinspires.ftc.teamcode.robots.base.opmodes.BaseAuto;
 import org.firstinspires.ftc.teamcode.robots.jetfire.JetFireRobot;
 
-@Autonomous(name = "Blue Far", preselectTeleOp = "JetFire")
-public class BlueFar extends BaseAuto<JetFireRobot> {
-    public Pose startPose = new Pose(57.8, -24, Math.toRadians(-180));
-    public Pose shootPose = new Pose(33.8, -24, Math.toRadians(-180));
+@Autonomous(name = "Red Far", preselectTeleOp = "JetFire")
+public class RedFar extends BaseAuto<JetFireRobot> {
+    public Pose startPose = new Pose(57.8, 24, Math.toRadians(-180));
+    public Pose shootPose = new Pose(33.8, 24, Math.toRadians(-180));
+
     public Pose startLine3Pose = new Pose(35, -23, Math.toRadians(90));
     public Pose finishLine3Pose = new Pose(35, -54, Math.toRadians(90));
 
@@ -94,6 +95,6 @@ public class BlueFar extends BaseAuto<JetFireRobot> {
 
     @Override
     protected AllianceColor instantiateAllianceColor() {
-        return AllianceColor.BLUE;
+        return AllianceColor.RED;
     }
 }

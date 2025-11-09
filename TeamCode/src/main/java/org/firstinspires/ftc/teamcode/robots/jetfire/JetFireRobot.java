@@ -85,7 +85,7 @@ public class JetFireRobot extends RobotBase {
         lanchServo = hardwareMap.get(Servo.class, "launch");
 
         thing1 = hardwareMap.get(Servo.class, "thing1");
-        thing1.setPosition(0.625);
+        thing1.setPosition(0.575);
 
         rgbIndicatorLightController = new RGBIndicatorLightController(hardwareMap.get(Servo.class, "indicator"));
     }
@@ -128,7 +128,7 @@ public class JetFireRobot extends RobotBase {
                 flywheelDistancePreset = FlywheelDistancePreset.CLOSE;
                 break;
             case CLOSE:
-                startFlywheels(1.3);
+                startFlywheels(1.4);
                 flywheelDistancePreset = FlywheelDistancePreset.FAR;
                 break;
             case FAR:
@@ -174,7 +174,7 @@ public class JetFireRobot extends RobotBase {
 
     @Override
     public void updateHardwareStates() {
-        if (isLaunchingArtifact && launchServoTimer.getElapsedTime() > 250)  {
+        if (isLaunchingArtifact && launchServoTimer.getElapsedTime() > 300)  {
             isLaunchingArtifact = false;
             lanchServo.setPosition(0.27);
 
@@ -182,7 +182,7 @@ public class JetFireRobot extends RobotBase {
 
         if (flicker && flickerTimer.getElapsedTime() > 250)  {
             flicker = false;
-            thing1.setPosition(0.625);
+            thing1.setPosition(0.575);
 
         }
 

@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.robots.jetfire.opmodes.teleops;
 
 import com.bylazar.telemetry.TelemetryManager;
+import com.pedropathing.follower.Follower;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.hardware.controllers.servo.RGBIndicatorLightController;
@@ -13,13 +14,17 @@ import org.firstinspires.ftc.teamcode.robots.jetfire.JetFireGamepadMapping2;
 
 @TeleOp(name = "JetFire")
 public class Teleop extends TeleOpBase<JetFireRobot> {
-    boolean isRed;
+    @Override
+    public void buildPaths(Follower follower) {
+
+    }
+
     @Override
     public void loop() {
         double topFlywheelCurrentRPS = robot.getTopFlywheel().getCurrentRPS();
         double bottomFlywheelCurrentRPS = robot.getBottomFlywheel().getCurrentRPS();
 
-        if (isWithinRange(topFlywheelCurrentRPS, robot.getFlywheelSpeedFactor() * JetFireRobot.topFlywheelBaseSpeed,2) && isWithinRange(bottomFlywheelCurrentRPS, robot.getFlywheelSpeedFactor() * JetFireRobot.bottomFlywheelBaseSpeed, 2)) {
+        if (isWithinRange(topFlywheelCurrentRPS, robot.getFlywheelSpeedFactor() * JetFireRobot.topFlywheelBaseSpeed,1.6) && isWithinRange(bottomFlywheelCurrentRPS, robot.getFlywheelSpeedFactor() * JetFireRobot.bottomFlywheelBaseSpeed, 1.6)) {
             switch (robot.flywheelDistancePreset) {
                 case OFF:
                     robot.getRgbIndicatorLightController().setColor(RGBIndicatorLightController.Color.OFF);

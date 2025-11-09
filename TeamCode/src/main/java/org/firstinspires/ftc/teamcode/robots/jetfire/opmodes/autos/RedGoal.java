@@ -11,11 +11,11 @@ import org.firstinspires.ftc.teamcode.robots.jetfire.JetFireRobot;
 
 @Autonomous(name = "Red Goal", group = "decode", preselectTeleOp = "JetFire")
 public class RedGoal extends BaseAuto<JetFireRobot> {
-    Pose startPose = new Pose(-60, -45, Math.toRadians(-124));
-    Pose shootClosePose = new Pose(-33, -18.8, Math.toRadians(-135));
-    Pose startIntakeLine1Pose = new Pose(-9.85, -20, Math.toRadians(90));
-    Pose finishIntakeLine1Pose = new Pose(-9.85, -50, Math.toRadians(90));
-    Pose autoEndPose = new Pose(-5, -42.7, Math.toRadians(90));
+    Pose startPose = new Pose(-60, 45, Math.toRadians(132));
+    Pose shootClosePose = new Pose(-23, 17.7, Math.toRadians(127.7));
+    Pose startIntakeLine1Pose = new Pose(-16.75, 25, Math.toRadians(-90));
+    Pose finishIntakeLine1Pose = new Pose(-16.75, 53, Math.toRadians(-90));
+    Pose autoEndPose = new Pose(-10, 35, Math.toRadians(-90));
 
     PathChain shoot1;
     PathChain intakeLine1;
@@ -51,7 +51,7 @@ public class RedGoal extends BaseAuto<JetFireRobot> {
                 }
                 break;
             case 4:
-                if (actionTimer.getElapsedTimeSeconds() > 4) {
+                if (actionTimer.getElapsedTimeSeconds() > 2) {
                     robot.launchArtifact();
                     setPathState(5, true);
                 }
@@ -63,7 +63,7 @@ public class RedGoal extends BaseAuto<JetFireRobot> {
                 }
                 break;
             case 6:
-                if (!robot.getFollower().isBusy()) {
+                if (!robot.getFollower().isBusy() && actionTimer.getElapsedTimeSeconds() > 1) {
                     robot.getFollower().followPath(shoot2, true);
                     setPathState(7, true);
                 }
@@ -86,8 +86,9 @@ public class RedGoal extends BaseAuto<JetFireRobot> {
                 }
                 break;
             case 10:
-                if (actionTimer.getElapsedTimeSeconds() > 4) {
+                if (actionTimer.getElapsedTimeSeconds() > 2) {
                     robot.launchArtifact();
+                    robot.flicker();
                     setPathState(11, true);
                 }
                 break;

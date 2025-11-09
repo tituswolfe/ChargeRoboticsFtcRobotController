@@ -51,7 +51,7 @@ public class BlueGoal extends BaseAuto<JetFireRobot> {
                 }
                 break;
             case 4:
-                if (actionTimer.getElapsedTimeSeconds() > 4) {
+                if (actionTimer.getElapsedTimeSeconds() > 2) {
                     robot.launchArtifact();
                     setPathState(5, true);
                 }
@@ -63,7 +63,7 @@ public class BlueGoal extends BaseAuto<JetFireRobot> {
                 }
                 break;
             case 6:
-                if (!robot.getFollower().isBusy()) {
+                if (!robot.getFollower().isBusy() && actionTimer.getElapsedTimeSeconds() > 1) {
                     robot.getFollower().followPath(shoot2, true);
                     setPathState(7, true);
                 }
@@ -86,7 +86,8 @@ public class BlueGoal extends BaseAuto<JetFireRobot> {
                 }
                 break;
             case 10:
-                if (actionTimer.getElapsedTimeSeconds() > 4) {
+                if (actionTimer.getElapsedTimeSeconds() > 2) {
+                    robot.flicker();
                     robot.launchArtifact();
                     setPathState(11, true);
                 }

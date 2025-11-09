@@ -81,13 +81,13 @@ public abstract class RobotBase {
 
         switch(StaticData.allianceColor) {
             case RED:
-                fieldCentricOffset = Math.toRadians(90);
+                fieldCentricOffset = Math.toRadians(-90);
             case BLUE:
-                fieldCentricOffset = (fieldType == FieldType.DIAMOND) ? Math.toRadians(180) : Math.toRadians(-90);
+                fieldCentricOffset = Math.toRadians(90);
+                // fieldCentricOffset = (fieldType == FieldType.DIAMOND) ? Math.toRadians(180) : Math.toRadians(-90);
         }
 
         if (follower != null) {
-            // TODO: Better soulution for mirrored autos
             follower.setStartingPose(startPose);
             follower.update();
         }

@@ -3,12 +3,14 @@ package org.firstinspires.ftc.teamcode.robots.jetfire.opmodes.teleops;
 import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.telemetry.TelemetryManager;
 import com.pedropathing.geometry.Pose;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 
 @TeleOp(name = "JetFire Debug")
 @Configurable
+@Disabled
 public class DebugTeleOp extends Teleop {
     public static double flywheelP = 100;
     public static double flywheelI = 5;
