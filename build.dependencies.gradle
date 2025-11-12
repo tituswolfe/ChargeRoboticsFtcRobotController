@@ -5,6 +5,9 @@ repositories {
 
     // panels
     maven { url = "https://mymaven.bylazar.com/releases" }
+
+    // homeostasis
+    maven { url 'https://jitpack.io' }
 }
 
 dependencies {
@@ -24,6 +27,7 @@ dependencies {
 
     // panels
     implementation 'com.bylazar:fullpanels:1.0.9'
-    // implementation "com.bylazar:panels:1.0.3"
+
+    implementation 'com.github.Thermal-Equilibrium:homeostasis-FTC:1.0.8'
 }
 

@@ -170,7 +170,6 @@ public class JetFireRobot extends RobotBase {
 
     @Override
     public void updateHardwareStates() {
-
         // TODO: MORE INDICATOR LIGHTS WAHAHAHAHA!
 
         flywheelSpeed = switch (flywheelSpeedMode) {
@@ -201,11 +200,9 @@ public class JetFireRobot extends RobotBase {
     public RPSController getTopFlywheel() {
         return topFlywheel;
     }
+
     public RPSController getBottomFlywheel() {
         return bottomFlywheel;
-    }
-    public RGBIndicatorLightController getRgbIndicatorLightController() {
-        return rgbIndicatorLightController;
     }
 
     public Pose getTargetGoal() {

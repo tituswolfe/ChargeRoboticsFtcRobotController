@@ -1,11 +1,13 @@
 package org.firstinspires.ftc.teamcode.robots.season.decode.jetfire;
 
+import com.pedropathing.control.PIDFController;
 import com.pedropathing.geometry.Pose;
 
 import org.firstinspires.ftc.teamcode.robots.base.GamepadMapping;
 
 public class JetFireGamepadMapping extends GamepadMapping<JetFireRobot> {
     boolean isIntakeActive = false;
+    boolean headingLock = false;
 
     public JetFireGamepadMapping(JetFireRobot decodeRobot) {
         super(decodeRobot);
@@ -23,7 +25,7 @@ public class JetFireGamepadMapping extends GamepadMapping<JetFireRobot> {
 
     @Override
     public void onAPressed() {
-
+        headingLock = !headingLock;
     }
 
     @Override
@@ -46,6 +48,28 @@ public class JetFireGamepadMapping extends GamepadMapping<JetFireRobot> {
     @Override
     public void rightJoystick(float x, float y) {
 
+    }
+
+    PIDFController controller = new PIDFController(robot.getFollower().constants.coefficientsHeadingPIDF);
+
+    @Override
+    public void joysticks(float leftX, float leftY, float rightX, float rightY) {
+        if (robot.getFollower() == null) return;
+        if (!robot.getFollower().isTeleopDrive()) return;
+
+        Pose displacedPose = robot.getTargetGoal().minus(robot.getFollower().getPose());
+        double targetHeading = Math.atan2(displacedPose.getY(), displacedPose.getX());;
+        double headingError = targetHeading - robot.getFollower().getHeading();
+        // controller.setCoefficients(robot.getFollower().constants.coefficientsHeadingPIDF);
+        controller.updateError(headingError);
+
+        robot.getFollower().setTeleOpDrive(
+                leftY * robot.speedFactor,
+                leftX * robot.speedFactor,
+                (headingLock ? controller.run() : rightX * robot.speedFactor),
+                robot.isRobotCentric,
+                (robot.isRobotCentric ? 0 : robot.fieldCentricOffset)
+        );
     }
 
     @Override
