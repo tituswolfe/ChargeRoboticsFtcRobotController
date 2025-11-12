@@ -62,8 +62,8 @@ public class RedFar extends BaseAuto<JetFireRobot> {
 //                break;
             case -1:
                 if (!robot.getFollower().isBusy()) {
-                    robot.stopFlywheels();
-                    robot.stopIntake();
+                    robot.setFlywheelSpeedMode(JetFireRobot.FlywheelSpeedMode.OFF);
+                    robot.setIntakeMode(JetFireRobot.IntakeMode.OFF);
                 }
                 break;
         }

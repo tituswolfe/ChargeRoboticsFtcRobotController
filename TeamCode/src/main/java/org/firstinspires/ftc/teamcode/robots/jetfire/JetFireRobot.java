@@ -39,23 +39,23 @@ public class JetFireRobot extends RobotBase {
     private RPSController topFlywheel;
     private RPSController bottomFlywheel;
     private LinearInterpolator flywheelSpeedByDistanceInterpolator;
-    enum FlywheelSpeedMode {
+    public enum FlywheelSpeedMode {
         AUTO,
         MANUEL,
         OFF
     } // CLOSE, AND FAR?
-    FlywheelSpeedMode flywheelSpeedMode = FlywheelSpeedMode.OFF;
+    private FlywheelSpeedMode flywheelSpeedMode = FlywheelSpeedMode.OFF;
     private static final double CLOSE_SHOT_FLYWHEEL_SPEED = 30;
 
     // INTAKE
     private static final double INTAKE_SPEED = 35;
     public RPSController intake;
-    enum IntakeMode {
+    public enum IntakeMode {
         OFF,
         INTAKE,
         REVERSE
     }
-    IntakeMode intakeMode = IntakeMode.OFF;
+    private IntakeMode intakeMode = IntakeMode.OFF;
 
     // SERVOS
     ServoTimerController launchServoController;

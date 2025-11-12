@@ -19,7 +19,7 @@ public class DebugTeleOp extends Teleop {
     @Override
     public void updateTelemetry(TelemetryManager telemetry) {
         Pose currentPose = robot.getFollower().getPose();
-        telemetry.addData("angle toward goal", Math.toDegrees(Math.atan2(robot.targetGoal.getY() - currentPose.getY(), robot.targetGoal.getX() - currentPose.getX())));
+        telemetry.addData("angle toward goal", Math.toDegrees(Math.atan2(robot.getTargetGoal().getY() - currentPose.getY(), robot.getTargetGoal().getX() - currentPose.getX())));
         telemetry.addData("Distance from goal", robot.getFollower().getPose());
 
         PIDFCoefficients flywheelPIDFCoefficients =  robot.getBottomFlywheel().getDcMotorEx().getPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER);

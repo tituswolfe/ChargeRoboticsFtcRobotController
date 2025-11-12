@@ -26,8 +26,8 @@ public class BlueGoal extends BaseAuto<JetFireRobot> {
     public void autonomousPathUpdate(int pathState) {
         switch (pathState) {
             case 0:
-                robot.startFlywheels(1);
-                robot.startIntake();
+                robot.setFlywheelSpeedMode(JetFireRobot.FlywheelSpeedMode.AUTO);
+                robot.setIntakeMode(JetFireRobot.IntakeMode.INTAKE);
 
                 robot.getFollower().followPath(shoot1, true);
 
@@ -99,8 +99,8 @@ public class BlueGoal extends BaseAuto<JetFireRobot> {
                 }
             case -1:
                 if (!robot.getFollower().isBusy()) {
-                    robot.stopIntake();
-                    robot.stopFlywheels();
+                    robot.setFlywheelSpeedMode(JetFireRobot.FlywheelSpeedMode.OFF);
+                    robot.setIntakeMode(JetFireRobot.IntakeMode.OFF);
                 }
                 break;
         }
