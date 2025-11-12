@@ -19,29 +19,6 @@ public class Teleop extends TeleOpBase<JetFireRobot> {
 
     }
 
-    @Override
-    public void loop() {
-        double topFlywheelCurrentRPS = robot.getTopFlywheel().getCurrentRPS();
-        double bottomFlywheelCurrentRPS = robot.getBottomFlywheel().getCurrentRPS();
-
-        if (isWithinRange(topFlywheelCurrentRPS, robot.getFlywheelSpeedFactor() * JetFireRobot.topFlywheelBaseSpeed,1.6) && isWithinRange(bottomFlywheelCurrentRPS, robot.getFlywheelSpeedFactor() * JetFireRobot.bottomFlywheelBaseSpeed, 1.6)) {
-            switch (robot.flywheelDistancePreset) {
-                case OFF:
-                    robot.getRgbIndicatorLightController().setColor(RGBIndicatorLightController.Color.OFF);
-                    break;
-                case CLOSE:
-                    robot.getRgbIndicatorLightController().setColor(RGBIndicatorLightController.Color.GREEN);
-                    break;
-                case FAR:
-                    robot.getRgbIndicatorLightController().setColor(RGBIndicatorLightController.Color.VIOLET);
-                    break;
-            }
-        } else {
-            robot.getRgbIndicatorLightController().setColor(RGBIndicatorLightController.Color.RED);
-        }
-
-        super.loop();
-    }
 
     @Override
     public void updateTelemetry(TelemetryManager telemetry) {
@@ -72,10 +49,5 @@ public class Teleop extends TeleOpBase<JetFireRobot> {
     @Override
     protected GamepadMapping instantiateGamepadMapping2() {
         return null; // new JetFireGamepadMapping2(robot);
-    }
-
-
-    public static boolean isWithinRange(double val, double target, double margin) {
-        return val > target - margin && val < target + margin;
     }
 }

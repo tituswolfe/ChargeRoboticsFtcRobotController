@@ -1,15 +1,10 @@
 package org.firstinspires.ftc.teamcode.robots.jetfire;
 
 import static org.firstinspires.ftc.teamcode.hardware.drivetrain.pedroPathing.Constants.createFollower;
-import static org.firstinspires.ftc.teamcode.robots.jetfire.opmodes.teleops.Teleop.isWithinRange;
 
 import com.bylazar.configurables.annotations.Configurable;
 import com.pedropathing.follower.Follower;
-import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
-import com.pedropathing.paths.PathBuilder;
-import com.pedropathing.paths.PathChain;
-import com.pedropathing.util.Timer;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -20,52 +15,76 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.hardware.controllers.motor.RPSController;
 import org.firstinspires.ftc.teamcode.hardware.controllers.servo.RGBIndicatorLightController;
+import org.firstinspires.ftc.teamcode.hardware.controllers.servo.ServoTimerController;
 import org.firstinspires.ftc.teamcode.robots.base.RobotBase;
 import org.firstinspires.ftc.teamcode.robots.base.StaticData;
 import org.firstinspires.ftc.teamcode.robots.base.opmodes.OpModeBase;
+import org.firstinspires.ftc.teamcode.util.LinearInterpolator;
+import org.firstinspires.ftc.teamcode.util.LogicUtil;
+
+import java.util.TreeMap;
 
 @Configurable
 public class JetFireRobot extends RobotBase {
-    public static final int redGoalAprilTagID = 22;
-    public static final int blueGoalAprilTagID = 22;
-    public static final int purpleGreenPorpleMotif = 22;
+    public static final int BLUE_GOAL_AP_ID = 20;
+    public static final int RED_GOAL_AP_ID = 24;
 
+    public static final int OBELISK_GPP_AP_ID = 21;
+    public static final int OBELISK_PGP_AP_ID = 22;
+    public static final int OBELISK_PPG_AP_ID = 23;
 
-    // Hardware
-    public static final double topFlywheelBaseSpeed = 15;
-    public static final double bottomFlywheelBaseSpeed = 30;
-
-    public double flywheelSpeedFactor = 0;
-
+    // FLYWHEELS
+    public static final double topFlywheelRatio = 0.5;
+    public double flywheelSpeed = 0;
     private RPSController topFlywheel;
     private RPSController bottomFlywheel;
+    private LinearInterpolator flywheelSpeedByDistanceInterpolator;
+    enum FlywheelSpeedMode {
+        AUTO,
+        MANUEL,
+        OFF
+    } // CLOSE, AND FAR?
+    FlywheelSpeedMode flywheelSpeedMode = FlywheelSpeedMode.OFF;
+    private static final double CLOSE_SHOT_FLYWHEEL_SPEED = 30;
 
-    public enum FlywheelDistancePreset {
-        OFF,
-        CLOSE,
-        FAR
-    }
-    public FlywheelDistancePreset flywheelDistancePreset = FlywheelDistancePreset.OFF;
-
-    public final double intakeSpeed = 35;
+    // INTAKE
+    private static final double INTAKE_SPEED = 35;
     public RPSController intake;
+    enum IntakeMode {
+        OFF,
+        INTAKE,
+        REVERSE
+    }
+    IntakeMode intakeMode = IntakeMode.OFF;
 
-    public Servo lanchServo;
-    public Servo thing1;
+    // SERVOS
+    ServoTimerController launchServoController;
+    private static final double LAUNCH_SERVO_UP = 0.7;
+    private static final double LAUNCH_SERVO_DOWN = 0.27;
 
+    ServoTimerController pushServoController;
+    private static final double PUSH_SERVO_OUT = 0.3;
+    private static final double PUSH_SERVO_IN = 0.575;
+
+    // LIGHTS
     private RGBIndicatorLightController rgbIndicatorLightController;
 
-
-    public Pose redGoal = new Pose(-72, 72);
-
+    private Pose targetGoal;
 
     @Override
     public void startConfiguration() {
-
+        launchServoController.getServo().setPosition(LAUNCH_SERVO_DOWN);
+        pushServoController.getServo().setPosition(PUSH_SERVO_IN);
     }
 
     @Override
     public void initHardware(HardwareMap hardwareMap) {
+        TreeMap<Double, Double> flywheelSpeedByDistance = new TreeMap<>();
+        flywheelSpeedByDistance.put(60.0, 1.0);
+
+        flywheelSpeedByDistanceInterpolator = new LinearInterpolator(flywheelSpeedByDistance);
+
+        // Flywheels
         DcMotorEx flywheelMotor1 = hardwareMap.get(DcMotorEx.class, "top-flywheel");
         flywheelMotor1.setDirection(DcMotorSimple.Direction.FORWARD);
         flywheelMotor1.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(900, 5, 0, 0));
@@ -77,17 +96,24 @@ public class JetFireRobot extends RobotBase {
         topFlywheel = new RPSController(flywheelMotor1, 28);
         bottomFlywheel = new RPSController(flywheelMotor2, 28);
 
+        // Intake
         DcMotorEx intakeMotor = hardwareMap.get(DcMotorEx.class, "intake");
         intakeMotor.setDirection(DcMotorSimple.Direction.REVERSE);
 
         intake = new RPSController(intakeMotor, 384.5);
 
-        lanchServo = hardwareMap.get(Servo.class, "launch");
+        // Servos
+        launchServoController = new ServoTimerController(hardwareMap.get(Servo.class, "launch"));
+        pushServoController = new ServoTimerController(hardwareMap.get(Servo.class, "thing1")); // TODO: Rename push servo
 
-        thing1 = hardwareMap.get(Servo.class, "thing1");
-        thing1.setPosition(0.575);
-
+        // Other
         rgbIndicatorLightController = new RGBIndicatorLightController(hardwareMap.get(Servo.class, "indicator"));
+
+        // TODO: Check for pedro vs ftc coords
+        targetGoal = new Pose(
+                -72,
+                (StaticData.allianceColor == OpModeBase.AllianceColor.RED ? 72 : -72)
+        );
     }
 
     @Override
@@ -106,89 +132,69 @@ public class JetFireRobot extends RobotBase {
     }
 
     // Robot functions
+// TODO: Override auto flywheel speeds
 
-    public void startFlywheels(double flywheelSpeedFactor) {
-        this.flywheelSpeedFactor = flywheelSpeedFactor;
-        topFlywheel.setRPS(topFlywheelBaseSpeed * flywheelSpeedFactor);
-        bottomFlywheel.setRPS(bottomFlywheelBaseSpeed * flywheelSpeedFactor);
-    }
-    public void stopFlywheels() {
-        topFlywheel.setRPS(0);
-        bottomFlywheel.setRPS(0);
+    public FlywheelSpeedMode getFlywheelSpeedMode() {
+        return flywheelSpeedMode;
     }
 
-    public double getFlywheelSpeedFactor() {
-        return flywheelSpeedFactor;
+    public void setFlywheelSpeedMode(FlywheelSpeedMode flywheelSpeedMode) {
+        this.flywheelSpeedMode = flywheelSpeedMode;
+        if (flywheelSpeedMode == FlywheelSpeedMode.MANUEL) flywheelSpeed = CLOSE_SHOT_FLYWHEEL_SPEED;
     }
 
-    public void toggleFlywheelPreset() {
-        switch (flywheelDistancePreset) {
-            case OFF:
-                startFlywheels(1);
-                flywheelDistancePreset = FlywheelDistancePreset.CLOSE;
-                break;
-            case CLOSE:
-                startFlywheels(1.4);
-                flywheelDistancePreset = FlywheelDistancePreset.FAR;
-                break;
-            case FAR:
-                stopFlywheels();
-                flywheelDistancePreset = FlywheelDistancePreset.OFF;
-                break;
-        }
+    public double getFlywheelSpeed() {
+        return flywheelSpeed;
     }
 
-    public void startIntake() {
-        intake.setRPS(intakeSpeed);
+    public void setIntakeMode(IntakeMode intakeMode) {
+        this.intakeMode = intakeMode;
+        intake.setRPS(switch (intakeMode) {
+            case OFF -> 0.0;
+            case INTAKE -> INTAKE_SPEED;
+            case REVERSE -> -INTAKE_SPEED;
+        });
     }
-    public void stopIntake() {
-        intake.setRPS(0);
-    }
-    public void reverseIntake() {
-        intake.setRPS(-intakeSpeed);
+
+    public IntakeMode getIntakeMode() {
+        return intakeMode;
     }
 
     public void launchArtifact() {
-        lanchServo.setPosition(0.7);
-        isLaunchingArtifact = true;
-        launchServoTimer.resetTimer();
+        launchServoController.setPosition(LAUNCH_SERVO_UP, 250, LAUNCH_SERVO_DOWN);
     }
 
-    public void flicker() {
-        thing1.setPosition(0.3);
-        flicker = true;
-        flickerTimer.resetTimer();
-//        activeSleep(250);
-//        thing1.setPosition(0.625);
+    public void pushArtifact() {
+        pushServoController.setPosition(PUSH_SERVO_OUT, 200, PUSH_SERVO_IN);
     }
-
-    public boolean areFlywheelsReady() {
-        return (isWithinRange(topFlywheel.getCurrentRPS(), flywheelSpeedFactor * topFlywheelBaseSpeed,2) && isWithinRange(bottomFlywheel.getCurrentRPS(), flywheelSpeedFactor * topFlywheelBaseSpeed, 2));
-    }
-
-    boolean flicker = false;
-    Timer flickerTimer = new Timer();
-
-    boolean isLaunchingArtifact = false;
-    Timer launchServoTimer = new Timer();
 
     @Override
     public void updateHardwareStates() {
-        if (isLaunchingArtifact && launchServoTimer.getElapsedTime() > 300)  {
-            isLaunchingArtifact = false;
-            lanchServo.setPosition(0.27);
 
+        // TODO: MORE INDICATOR LIGHTS WAHAHAHAHA!
+
+        flywheelSpeed = switch (flywheelSpeedMode) {
+            case AUTO -> flywheelSpeedByDistanceInterpolator.interpolate(follower.getPose().distanceFrom(targetGoal));
+            case MANUEL -> flywheelSpeed;
+            case OFF -> 0.0;
+        };
+
+        if (bottomFlywheel.getConfiguredRPS() != flywheelSpeed) {
+            bottomFlywheel.setRPS(flywheelSpeed);
+            topFlywheel.setRPS(flywheelSpeed * topFlywheelRatio);
         }
 
-        if (flicker && flickerTimer.getElapsedTime() > 250)  {
-            flicker = false;
-            thing1.setPosition(0.575);
+        launchServoController.update();
+        pushServoController.update();
 
-        }
+        rgbIndicatorLightController.setColor(areFlywheelsReady() ? RGBIndicatorLightController.Color.GREEN : RGBIndicatorLightController.Color.RED);
 
         super.updateHardwareStates();
     }
 
+    public boolean areFlywheelsReady() {
+        return LogicUtil.isWithinRange(topFlywheel.getCurrentRPS(), flywheelSpeed * topFlywheelRatio,2) && LogicUtil.isWithinRange(bottomFlywheel.getCurrentRPS(), flywheelSpeed, 2);
+    }
 
     // getters
 
@@ -200,5 +206,9 @@ public class JetFireRobot extends RobotBase {
     }
     public RGBIndicatorLightController getRgbIndicatorLightController() {
         return rgbIndicatorLightController;
+    }
+
+    public Pose getTargetGoal() {
+        return targetGoal;
     }
 }

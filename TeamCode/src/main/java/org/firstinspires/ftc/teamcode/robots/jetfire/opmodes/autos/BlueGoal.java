@@ -87,7 +87,7 @@ public class BlueGoal extends BaseAuto<JetFireRobot> {
                 break;
             case 10:
                 if (actionTimer.getElapsedTimeSeconds() > 2) {
-                    robot.flicker();
+                    robot.pushArtifact();
                     robot.launchArtifact();
                     setPathState(11, true);
                 }

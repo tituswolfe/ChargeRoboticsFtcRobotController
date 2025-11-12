@@ -1,10 +1,10 @@
 package org.firstinspires.ftc.teamcode.hardware.controllers.servo;
 
 import com.qualcomm.robotcore.hardware.Servo;
-import com.qualcomm.robotcore.hardware.ServoControllerEx;
 
 import java.util.HashMap;
 
+@Deprecated
 public class ServoPositionController<Position extends Enum> {
     private final Servo servo;
     private final HashMap<Position, Double> positionMap;
@@ -15,8 +15,12 @@ public class ServoPositionController<Position extends Enum> {
     }
 
     public void setPosition(Position position) {
-        double servoPosition = positionMap.get(position);
-        servo.setPosition(servoPosition);
+        if (positionMap == null || positionMap.get(position) == null) return;
+        servo.setPosition(positionMap.get(position));
+    }
+
+    public void setPosition(double position) {
+        servo.setPosition(position);
     }
 
     public Servo getServo() {

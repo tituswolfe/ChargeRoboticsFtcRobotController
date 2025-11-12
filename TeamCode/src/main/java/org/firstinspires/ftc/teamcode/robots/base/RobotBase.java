@@ -57,7 +57,7 @@ public abstract class RobotBase {
     private FieldType fieldType;
 
     // Drivetrain
-    private Follower follower;
+    protected Follower follower;
     public double speedFactor = 1;
     public boolean isRobotCentric = false;
     public boolean isSlowMode = false;

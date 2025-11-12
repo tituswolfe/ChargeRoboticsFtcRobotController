@@ -1,15 +1,8 @@
 package org.firstinspires.ftc.teamcode.robots.jetfire;
 
-import com.pedropathing.geometry.BezierPoint;
 import com.pedropathing.geometry.Pose;
-import com.pedropathing.paths.Path;
-import com.pedropathing.paths.PathChain;
-import com.qualcomm.robotcore.hardware.DcMotor;
-import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 
 import org.firstinspires.ftc.teamcode.robots.base.GamepadMapping;
-import org.firstinspires.ftc.teamcode.robots.base.StaticData;
-import org.firstinspires.ftc.teamcode.robots.base.opmodes.OpModeBase;
 
 public class JetFireGamepadMapping extends GamepadMapping<JetFireRobot> {
     boolean isIntakeActive = false;
@@ -20,7 +13,7 @@ public class JetFireGamepadMapping extends GamepadMapping<JetFireRobot> {
 
     @Override
     public void onYPressed() {
-        robot.flicker();
+        robot.pushArtifact();
     }
 
     @Override
@@ -35,18 +28,14 @@ public class JetFireGamepadMapping extends GamepadMapping<JetFireRobot> {
 
     @Override
     public void onXPressed() {
-        Pose currentPos = robot.getFollower().getPose();
-        double targetAngle = Math.atan2(robot.redGoal
-                .getY()-currentPos.getY(),robot.redGoal
-                .getX()-currentPos.getX());
-        robot.getFollower().turnTo(targetAngle);
-//        Pose currentPose = robot.getFollower().getPose();
-//
-//        if (StaticData.allianceColor == OpModeBase.AllianceColor.RED) {
-//            robot.getFollower().turnTo(Math.atan2(robot.redGoal.getY() - currentPose.getY(), robot.redGoal.getX() - currentPose.getX()));
-//        } else {
-//            robot.getFollower().turnTo(Math.atan2(robot.redGoal.mirror().getY() - currentPose.getY(), robot.redGoal.mirror().getX() - currentPose.getX()));
-//        }
+        Pose displacedPose = robot.getTargetGoal().minus(robot.getFollower().getPose());
+        robot.getFollower().turnTo(Math.atan2(displacedPose.getY(), displacedPose.getX()));
+
+//        Pose currentPos = robot.getFollower().getPose();
+//        double targetAngle = Math.atan2(robot.targetGoal
+//                .getY()-currentPos.getY(),robot.targetGoal
+//                .getX()-currentPos.getX());
+//        robot.getFollower().turnTo(targetAngle);
     }
 
     @Override
@@ -62,11 +51,11 @@ public class JetFireGamepadMapping extends GamepadMapping<JetFireRobot> {
     @Override
     public void leftTrigger(float val) {
         if (val > 0.1) {
-            robot.reverseIntake();
+            robot.setIntakeMode(JetFireRobot.IntakeMode.REVERSE);
         } else if (isIntakeActive) {
-            robot.startIntake();
+            robot.setIntakeMode(JetFireRobot.IntakeMode.INTAKE);
         } else {
-            robot.stopIntake();
+            robot.setIntakeMode(JetFireRobot.IntakeMode.OFF);
         }
     }
 
@@ -100,36 +89,39 @@ public class JetFireGamepadMapping extends GamepadMapping<JetFireRobot> {
     public void onLeftBumperPressed() {
         isIntakeActive = !isIntakeActive;
         if (isIntakeActive) {
-            robot.startIntake();
+            robot.setIntakeMode(JetFireRobot.IntakeMode.INTAKE);
         } else {
-            robot.stopIntake();
+            robot.setIntakeMode(JetFireRobot.IntakeMode.OFF);
         }
-        // isIntakeActive = toggle(isIntakeActive, robot::startIntake, robot::stopIntake);
+        // isIntakeActive = toggle(isIntakeActive, robot::setIntakeMode, robot::stopIntake);
     }
 
     @Override
     public void onRightBumperPressed() {
-        robot.toggleFlywheelPreset();
+        robot.setFlywheelSpeedMode(switch (robot.getFlywheelSpeedMode()) {
+            case AUTO -> JetFireRobot.FlywheelSpeedMode.MANUEL;
+            case MANUEL -> JetFireRobot.FlywheelSpeedMode.OFF;
+            case OFF -> JetFireRobot.FlywheelSpeedMode.AUTO;
+        });
+
     }
 
     @Override
     public void onDpadUpPressed() {
-        robot.getTopFlywheel().setRPS(robot.getTopFlywheel().getConfiguredRPS() + 1);
+        robot.flywheelSpeed++;
     }
 
     @Override
     public void onDpadRightPressed() {
-        robot.getBottomFlywheel().setRPS(robot.getBottomFlywheel().getConfiguredRPS() + 1);
     }
 
     @Override
     public void onDpadDownPressed() {
-        robot.getTopFlywheel().setRPS(robot.getTopFlywheel().getConfiguredRPS() - 1);
 
     }
 
     @Override
     public void onDpadLeftPressed() {
-        robot.getBottomFlywheel().setRPS(robot.getBottomFlywheel().getConfiguredRPS() - 1);
+        robot.flywheelSpeed--;
     }
 }

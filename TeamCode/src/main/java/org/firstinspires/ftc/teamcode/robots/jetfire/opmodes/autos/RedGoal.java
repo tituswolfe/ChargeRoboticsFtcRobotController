@@ -88,7 +88,7 @@ public class RedGoal extends BaseAuto<JetFireRobot> {
             case 10:
                 if (actionTimer.getElapsedTimeSeconds() > 2) {
                     robot.launchArtifact();
-                    robot.flicker();
+                    robot.pushArtifact();
                     setPathState(11, true);
                 }
                 break;

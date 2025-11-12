@@ -26,7 +26,7 @@ public class RGBIndicatorLightController {
         color = Color.OFF;
     }
 
-// https://www.gobilda.com/rgb-indicator-light-pwm-controlled/
+    // https://www.gobilda.com/rgb-indicator-light-pwm-controlled/
     public void setColor(Color color) {
         if (this.color == color) return;
         this.color = color;
