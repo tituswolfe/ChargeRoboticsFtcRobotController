@@ -4,12 +4,10 @@ import com.bylazar.telemetry.TelemetryManager;
 import com.pedropathing.follower.Follower;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
-import org.firstinspires.ftc.teamcode.hardware.controllers.servo.RGBIndicatorLightController;
 import org.firstinspires.ftc.teamcode.robots.base.GamepadMapping;
 import org.firstinspires.ftc.teamcode.robots.base.opmodes.TeleOpBase;
 import org.firstinspires.ftc.teamcode.robots.jetfire.JetFireRobot;
 import org.firstinspires.ftc.teamcode.robots.jetfire.JetFireGamepadMapping;
-import org.firstinspires.ftc.teamcode.robots.jetfire.JetFireGamepadMapping2;
 
 
 @TeleOp(name = "JetFire")
@@ -18,7 +16,6 @@ public class Teleop extends TeleOpBase<JetFireRobot> {
     public void buildPaths(Follower follower) {
 
     }
-
 
     @Override
     public void updateTelemetry(TelemetryManager telemetry) {
@@ -42,12 +39,12 @@ public class Teleop extends TeleOpBase<JetFireRobot> {
     }
 
     @Override
-    protected GamepadMapping instantiateGamepadMapping1() {
+    protected GamepadMapping<JetFireRobot> instantiateGamepadMapping1() {
         return new JetFireGamepadMapping(robot);
     }
 
     @Override
-    protected GamepadMapping instantiateGamepadMapping2() {
+    protected GamepadMapping<JetFireRobot> instantiateGamepadMapping2() {
         return null; // new JetFireGamepadMapping2(robot);
     }
 }
