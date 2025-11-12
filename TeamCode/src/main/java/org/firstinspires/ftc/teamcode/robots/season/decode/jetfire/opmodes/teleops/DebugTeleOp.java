@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.robots.jetfire.opmodes.teleops;
+package org.firstinspires.ftc.teamcode.robots.season.decode.jetfire.opmodes.teleops;
 
 import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.telemetry.TelemetryManager;

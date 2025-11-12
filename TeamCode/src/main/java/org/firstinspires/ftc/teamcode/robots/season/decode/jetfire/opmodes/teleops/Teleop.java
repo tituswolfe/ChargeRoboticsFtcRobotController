@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.robots.jetfire.opmodes.teleops;
+package org.firstinspires.ftc.teamcode.robots.season.decode.jetfire.opmodes.teleops;
 
 import com.bylazar.telemetry.TelemetryManager;
 import com.pedropathing.follower.Follower;
@@ -6,8 +6,8 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.robots.base.GamepadMapping;
 import org.firstinspires.ftc.teamcode.robots.base.opmodes.TeleOpBase;
-import org.firstinspires.ftc.teamcode.robots.jetfire.JetFireRobot;
-import org.firstinspires.ftc.teamcode.robots.jetfire.JetFireGamepadMapping;
+import org.firstinspires.ftc.teamcode.robots.season.decode.jetfire.JetFireRobot;
+import org.firstinspires.ftc.teamcode.robots.season.decode.jetfire.JetFireGamepadMapping;
 
 
 @TeleOp(name = "JetFire")

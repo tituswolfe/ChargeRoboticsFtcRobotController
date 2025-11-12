@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.robots.jetfire.opmodes.autos;
+package org.firstinspires.ftc.teamcode.robots.season.decode.jetfire.opmodes.autos;
 
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.BezierLine;
@@ -7,7 +7,7 @@ import com.pedropathing.paths.PathChain;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
 import org.firstinspires.ftc.teamcode.robots.base.opmodes.BaseAuto;
-import org.firstinspires.ftc.teamcode.robots.jetfire.JetFireRobot;
+import org.firstinspires.ftc.teamcode.robots.season.decode.jetfire.JetFireRobot;
 
 @Autonomous(name = "Blue Goal", group = "decode", preselectTeleOp = "JetFire")
 public class BlueGoal extends BaseAuto<JetFireRobot> {
