@@ -19,9 +19,7 @@ public class Teleop extends TeleOpBase<JetFireRobot> {
 
     @Override
     public void start() {
-//
-//        robot.launchServoController.getServo().setPosition(LAUNCH_SERVO_DOWN);
-//        robot.pushServoController.getServo().setPosition(PUSH_SERVO_IN);
+        robot.startConfiguration();
         super.start();
     }
 
