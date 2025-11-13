@@ -85,9 +85,9 @@ public class Constants {
                 .lateralZeroPowerAcceleration(-67.5)
                 .translationalPIDFCoefficients(new PIDFCoefficients(0.1, 0, 0.01, 0))
                 .headingPIDFCoefficients(new PIDFCoefficients(
-                        1,
+                        1.05,
                         0,
-                        0,
+                        0.01,
                         0.01)), hardwareMap)
                 .pathConstraints(new PathConstraints(0.99, 100, 1, 1))
                 .mecanumDrivetrain(new MecanumConstants()

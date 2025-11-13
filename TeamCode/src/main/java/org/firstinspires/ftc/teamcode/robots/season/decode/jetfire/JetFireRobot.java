@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.robots.season.decode.jetfire;
 import static org.firstinspires.ftc.teamcode.hardware.drivetrain.pedroPathing.Constants.createFollower;
 
 import com.bylazar.configurables.annotations.Configurable;
+import com.pedropathing.control.PIDFController;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
@@ -70,7 +71,9 @@ public class JetFireRobot extends RobotBase {
     private RGBIndicatorLightController rgbIndicatorLightController;
 
     private Pose targetGoal;
+    private Pose targetGoalAim;
 
+    private PIDFController headingPIDFController;
     @Override
     public void startConfiguration() {
         launchServoController.getServo().setPosition(LAUNCH_SERVO_DOWN);
@@ -79,8 +82,14 @@ public class JetFireRobot extends RobotBase {
 
     @Override
     public void initHardware(HardwareMap hardwareMap) {
+
+        headingPIDFController = new PIDFController(follower.constants.coefficientsHeadingPIDF);
+
         TreeMap<Double, Double> flywheelSpeedByDistance = new TreeMap<>();
-        flywheelSpeedByDistance.put(60.0, 1.0);
+        flywheelSpeedByDistance.put(63.0, 30.0);
+        flywheelSpeedByDistance.put(82.0, 30.0);
+        flywheelSpeedByDistance.put(100.0, 30.0);
+        flywheelSpeedByDistance.put(135.0, 41.0);
 
         flywheelSpeedByDistanceInterpolator = new LinearInterpolator(flywheelSpeedByDistance);
 
@@ -113,6 +122,11 @@ public class JetFireRobot extends RobotBase {
         targetGoal = new Pose(
                 -72,
                 (StaticData.allianceColor == OpModeBase.AllianceColor.RED ? 72 : -72)
+        );
+
+        targetGoalAim = new Pose(
+                -72,
+                (StaticData.allianceColor == OpModeBase.AllianceColor.RED ? 92 : -55)
         );
     }
 
@@ -192,7 +206,7 @@ public class JetFireRobot extends RobotBase {
     }
 
     public boolean areFlywheelsReady() {
-        return LogicUtil.isWithinRange(topFlywheel.getCurrentRPS(), flywheelSpeed * topFlywheelRatio,2) && LogicUtil.isWithinRange(bottomFlywheel.getCurrentRPS(), flywheelSpeed, 2);
+        return LogicUtil.isWithinRange(topFlywheel.getCurrentRPS(), flywheelSpeed * topFlywheelRatio,1.5) && LogicUtil.isWithinRange(bottomFlywheel.getCurrentRPS(), flywheelSpeed, 1.5);
     }
 
     // getters
@@ -207,5 +221,13 @@ public class JetFireRobot extends RobotBase {
 
     public Pose getTargetGoal() {
         return targetGoal;
+    }
+
+    public Pose getTargetGoalAim() {
+        return targetGoalAim;
+    }
+
+    public PIDFController getHeadingPIDFController() {
+        return headingPIDFController;
     }
 }

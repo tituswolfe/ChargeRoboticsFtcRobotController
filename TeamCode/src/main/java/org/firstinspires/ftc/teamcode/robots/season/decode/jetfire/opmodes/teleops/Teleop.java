@@ -18,6 +18,14 @@ public class Teleop extends TeleOpBase<JetFireRobot> {
     }
 
     @Override
+    public void start() {
+//
+//        robot.launchServoController.getServo().setPosition(LAUNCH_SERVO_DOWN);
+//        robot.pushServoController.getServo().setPosition(PUSH_SERVO_IN);
+        super.start();
+    }
+
+    @Override
     public void updateTelemetry(TelemetryManager telemetry) {
         telemetry.addLine("- FLYWHEEL DATA -");
         telemetry.addData("Top Flywheel RPS", robot.getTopFlywheel().getCurrentRPS());

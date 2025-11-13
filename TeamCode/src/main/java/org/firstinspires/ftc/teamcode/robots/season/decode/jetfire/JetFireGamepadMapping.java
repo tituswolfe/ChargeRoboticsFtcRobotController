@@ -25,13 +25,13 @@ public class JetFireGamepadMapping extends GamepadMapping<JetFireRobot> {
 
     @Override
     public void onAPressed() {
-        headingLock = !headingLock;
     }
 
     @Override
     public void onXPressed() {
-        Pose displacedPose = robot.getTargetGoal().minus(robot.getFollower().getPose());
-        robot.getFollower().turnTo(Math.atan2(displacedPose.getY(), displacedPose.getX()));
+        headingLock = !headingLock;
+//        Pose displacedPose = robot.getTargetGoal().minus(robot.getFollower().getPose());
+//        robot.getFollower().turnTo(Math.atan2(displacedPose.getY(), displacedPose.getX()));
 
 //        Pose currentPos = robot.getFollower().getPose();
 //        double targetAngle = Math.atan2(robot.targetGoal
@@ -50,23 +50,21 @@ public class JetFireGamepadMapping extends GamepadMapping<JetFireRobot> {
 
     }
 
-    PIDFController controller = new PIDFController(robot.getFollower().constants.coefficientsHeadingPIDF);
 
     @Override
     public void joysticks(float leftX, float leftY, float rightX, float rightY) {
         if (robot.getFollower() == null) return;
         if (!robot.getFollower().isTeleopDrive()) return;
 
-        Pose displacedPose = robot.getTargetGoal().minus(robot.getFollower().getPose());
+        Pose displacedPose = robot.getTargetGoalAim().minus(robot.getFollower().getPose());
         double targetHeading = Math.atan2(displacedPose.getY(), displacedPose.getX());;
         double headingError = targetHeading - robot.getFollower().getHeading();
-        // controller.setCoefficients(robot.getFollower().constants.coefficientsHeadingPIDF);
-        controller.updateError(headingError);
+        robot.getHeadingPIDFController().updateError(headingError);
 
         robot.getFollower().setTeleOpDrive(
                 leftY * robot.speedFactor,
                 leftX * robot.speedFactor,
-                (headingLock ? controller.run() : rightX * robot.speedFactor),
+                (headingLock ? robot.getHeadingPIDFController().run() : rightX * robot.speedFactor),
                 robot.isRobotCentric,
                 (robot.isRobotCentric ? 0 : robot.fieldCentricOffset)
         );
@@ -141,11 +139,11 @@ public class JetFireGamepadMapping extends GamepadMapping<JetFireRobot> {
 
     @Override
     public void onDpadDownPressed() {
+        robot.flywheelSpeed--;
 
     }
 
     @Override
     public void onDpadLeftPressed() {
-        robot.flywheelSpeed--;
     }
 }

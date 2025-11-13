@@ -83,8 +83,8 @@ public abstract class RobotBase {
             case RED:
                 fieldCentricOffset = Math.toRadians(-90);
             case BLUE:
-                fieldCentricOffset = Math.toRadians(90);
-                // fieldCentricOffset = (fieldType == FieldType.DIAMOND) ? Math.toRadians(180) : Math.toRadians(-90);
+                //fieldCentricOffset = Math.toRadians(-90);
+                fieldCentricOffset = (fieldType == FieldType.DIAMOND) ? Math.toRadians(180) : Math.toRadians(-90);
         }
 
         if (follower != null) {
