@@ -14,7 +14,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
 
-import org.firstinspires.ftc.teamcode.hardware.controllers.motor.RPSController;
+import org.firstinspires.ftc.teamcode.hardware.controllers.motor.VelocityMotorController;
 import org.firstinspires.ftc.teamcode.hardware.controllers.servo.RGBIndicatorLightController;
 import org.firstinspires.ftc.teamcode.hardware.controllers.servo.ServoTimerController;
 import org.firstinspires.ftc.teamcode.robots.base.RobotBase;
@@ -37,8 +37,8 @@ public class JetFireRobot extends RobotBase {
     // FLYWHEELS
     public static final double topFlywheelRatio = 0.5;
     public double flywheelSpeed = 0;
-    private RPSController topFlywheel;
-    private RPSController bottomFlywheel;
+    private VelocityMotorController topFlywheel;
+    private VelocityMotorController bottomFlywheel;
     private LinearInterpolator flywheelSpeedByDistanceInterpolator;
     public enum FlywheelSpeedMode {
         AUTO,
@@ -50,7 +50,7 @@ public class JetFireRobot extends RobotBase {
 
     // INTAKE
     private static final double INTAKE_SPEED = 35;
-    public RPSController intake;
+    public VelocityMotorController intake;
     public enum IntakeMode {
         OFF,
         INTAKE,
@@ -102,14 +102,14 @@ public class JetFireRobot extends RobotBase {
         flywheelMotor2.setDirection(DcMotorSimple.Direction.REVERSE);
         flywheelMotor2.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(900, 5, 0, 0));
 
-        topFlywheel = new RPSController(flywheelMotor1, 28);
-        bottomFlywheel = new RPSController(flywheelMotor2, 28);
+        topFlywheel = new VelocityMotorController(flywheelMotor1, 28);
+        bottomFlywheel = new VelocityMotorController(flywheelMotor2, 28);
 
         // Intake
         DcMotorEx intakeMotor = hardwareMap.get(DcMotorEx.class, "intake");
         intakeMotor.setDirection(DcMotorSimple.Direction.REVERSE);
 
-        intake = new RPSController(intakeMotor, 384.5);
+        intake = new VelocityMotorController(intakeMotor, 384.5);
 
         // Servos
         launchServoController = new ServoTimerController(hardwareMap.get(Servo.class, "launch"));
@@ -118,7 +118,6 @@ public class JetFireRobot extends RobotBase {
         // Other
         rgbIndicatorLightController = new RGBIndicatorLightController(hardwareMap.get(Servo.class, "indicator"));
 
-        // TODO: Check for pedro vs ftc coords
         targetGoal = new Pose(
                 -72,
                 (StaticData.allianceColor == OpModeBase.AllianceColor.RED ? 72 : -72)
@@ -163,7 +162,7 @@ public class JetFireRobot extends RobotBase {
 
     public void setIntakeMode(IntakeMode intakeMode) {
         this.intakeMode = intakeMode;
-        intake.setRPS(switch (intakeMode) {
+        intake.setTargetVelocity(switch (intakeMode) {
             case OFF -> 0.0;
             case INTAKE -> INTAKE_SPEED;
             case REVERSE -> -INTAKE_SPEED;
@@ -193,8 +192,8 @@ public class JetFireRobot extends RobotBase {
         };
 
         if (bottomFlywheel.getConfiguredRPS() != flywheelSpeed) {
-            bottomFlywheel.setRPS(flywheelSpeed);
-            topFlywheel.setRPS(flywheelSpeed * topFlywheelRatio);
+            bottomFlywheel.setTargetVelocity(flywheelSpeed);
+            topFlywheel.setTargetVelocity(flywheelSpeed * topFlywheelRatio);
         }
 
         launchServoController.update();
@@ -211,11 +210,11 @@ public class JetFireRobot extends RobotBase {
 
     // getters
 
-    public RPSController getTopFlywheel() {
+    public VelocityMotorController getTopFlywheel() {
         return topFlywheel;
     }
 
-    public RPSController getBottomFlywheel() {
+    public VelocityMotorController getBottomFlywheel() {
         return bottomFlywheel;
     }
 
