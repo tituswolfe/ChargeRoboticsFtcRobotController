@@ -76,8 +76,6 @@ public class JetFireRobot extends RobotBase {
     private PIDFController headingPIDFController;
     @Override
     public void startConfiguration() {
-        launchServoController.getServo().setPosition(LAUNCH_SERVO_DOWN);
-        pushServoController.getServo().setPosition(PUSH_SERVO_IN);
     }
 
     @Override
@@ -96,11 +94,11 @@ public class JetFireRobot extends RobotBase {
         // Flywheels
         DcMotorEx flywheelMotor1 = hardwareMap.get(DcMotorEx.class, "top-flywheel");
         flywheelMotor1.setDirection(DcMotorSimple.Direction.FORWARD);
-        flywheelMotor1.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(900, 5, 0, 0));
+        flywheelMotor1.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(300, 15, 20, 0));
 
         DcMotorEx flywheelMotor2 = hardwareMap.get(DcMotorEx.class, "bottom-flywheel");
         flywheelMotor2.setDirection(DcMotorSimple.Direction.REVERSE);
-        flywheelMotor2.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(900, 5, 0, 0));
+        flywheelMotor2.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(300, 15, 20, 0));
 
         topFlywheel = new VelocityMotorController(flywheelMotor1, 28);
         bottomFlywheel = new VelocityMotorController(flywheelMotor2, 28);
@@ -125,8 +123,12 @@ public class JetFireRobot extends RobotBase {
 
         targetGoalAim = new Pose(
                 -72,
-                (StaticData.allianceColor == OpModeBase.AllianceColor.RED ? 92 : -55)
+                (StaticData.allianceColor == OpModeBase.AllianceColor.RED ? 92 : -51)
         );
+
+
+        launchServoController.setPosition(LAUNCH_SERVO_DOWN, 0, LAUNCH_SERVO_DOWN);
+        pushServoController.setPosition(PUSH_SERVO_IN, 0, PUSH_SERVO_IN);
     }
 
     @Override

@@ -6,10 +6,12 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.robots.base.GamepadMapping;
 import org.firstinspires.ftc.teamcode.robots.base.opmodes.TeleOpBase;
+import org.firstinspires.ftc.teamcode.robots.season.decode.jetfire.JetFireGamepadMapping;
+import org.firstinspires.ftc.teamcode.robots.season.decode.jetfire.JetFireRobot;
 
 
 @TeleOp(name = "DugJetFire2")
-public class TestTeleop extends TeleOpBase<JetFire2Robot> {
+public class TestTeleop extends TeleOpBase<DugJetFire2Robot> {
     @Override
     public void buildPaths(Follower follower) {
 
@@ -25,13 +27,13 @@ public class TestTeleop extends TeleOpBase<JetFire2Robot> {
     }
 
     @Override
-    protected JetFire2Robot instantiateRobot() {
-        return new JetFire2Robot();
+    protected DugJetFire2Robot instantiateRobot() {
+        return new DugJetFire2Robot();
     }
 
     @Override
-    protected GamepadMapping<JetFire2Robot> instantiateGamepadMapping1() {
-        return new GamepadMapping<JetFire2Robot>(robot) {
+    protected GamepadMapping<DugJetFire2Robot> instantiateGamepadMapping1() {
+        return new GamepadMapping<DugJetFire2Robot>(robot) {
             @Override
             public void onYPressed() {
 
@@ -125,7 +127,7 @@ public class TestTeleop extends TeleOpBase<JetFire2Robot> {
     }
 
     @Override
-    protected GamepadMapping<JetFire2Robot> instantiateGamepadMapping2() {
+    protected GamepadMapping<DugJetFire2Robot> instantiateGamepadMapping2() {
         return null; // new JetFireGamepadMapping2(robot);
     }
 }
