@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.robots.season.decode.dugjetfire2;
+package org.firstinspires.ftc.teamcode.robots.season.decode.dug;
 
 import static org.firstinspires.ftc.teamcode.hardware.drivetrain.pedroPathing.Constants.createDecodeFollower;
 
@@ -13,7 +13,7 @@ import org.firstinspires.ftc.teamcode.hardware.controllers.subsystems.Turret;
 import org.firstinspires.ftc.teamcode.robots.base.RobotBase;
 import org.firstinspires.ftc.teamcode.util.math.Angle;
 
-public class JetFire2Robot extends RobotBase {
+public class DugRobot extends RobotBase {
     Turret turret;
 
     @Override
