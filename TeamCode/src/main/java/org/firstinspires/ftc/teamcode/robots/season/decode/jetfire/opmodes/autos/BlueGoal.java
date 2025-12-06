@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.robots.season.decode.jetfire.opmodes.autos;
 
 import com.pedropathing.follower.Follower;
+import com.pedropathing.geometry.BezierCurve;
 import com.pedropathing.geometry.BezierLine;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.PathChain;
@@ -14,17 +15,25 @@ public class BlueGoal extends BaseAuto<JetFireRobot> {
     Pose startPose = new Pose(-60, -45, Math.toRadians(-124));
     Pose shootClosePose = new Pose(-33, -18.8, Math.toRadians(-135));
     Pose startIntakeLine1Pose = new Pose(-9.85, -20, Math.toRadians(90));
-    Pose finishIntakeLine1Pose = new Pose(-9.85, -50, Math.toRadians(90));
-    Pose autoEndPose = new Pose(-5, -42.7, Math.toRadians(90));
+    Pose finishIntakeLine1Pose = new Pose(-9.85, -52, Math.toRadians(90));
+
+    Pose startIntakeLine2Pose = new Pose(12.2, -20, Math.toRadians(90));
+    Pose finishIntakeLine2Pose = new Pose(15.2, -55, Math.toRadians(90));
+    Pose autoEndPose = new Pose(-5, -42.7, Math.toRadians(0));
 
     PathChain shoot1;
     PathChain intakeLine1;
+    PathChain intakeLine2;
     PathChain shoot2;
+    PathChain shoot3;
     PathChain endAuto;
+
+    private int returnPathState = 0;
 
     @Override
     public void autonomousPathUpdate(int pathState) {
         switch (pathState) {
+            // START / GO TO SHOOT POS
             case 0:
                 robot.setFlywheelSpeedMode(JetFireRobot.FlywheelSpeedMode.AUTO);
                 robot.setIntakeMode(JetFireRobot.IntakeMode.INTAKE);
@@ -33,71 +42,101 @@ public class BlueGoal extends BaseAuto<JetFireRobot> {
 
                 setPathState(1, true);
                 break;
+            // SHOOT ARTIFACTS #1
             case 1:
                 if (!robot.getFollower().isBusy()) {
-                    setPathState(2, true);
+                    returnPathState = 2;
+                    setPathState(20, true);
                 }
                 break;
+            // INTAKE LINE #1
             case 2:
-                if (actionTimer.getElapsedTimeSeconds() > 1) {
-                    robot.launchArtifact();
+                if (actionTimer.getElapsedTimeSeconds() > 0.25) {
+                    robot.getFollower().followPath(intakeLine1, 0.5, true);
                     setPathState(3, true);
                 }
                 break;
+            // GO TO SHOOT POS
             case 3:
-                if (actionTimer.getElapsedTimeSeconds() > 2) {
-                    robot.launchArtifact();
+                if (!robot.getFollower().isBusy()) {
+                    robot.getFollower().followPath(shoot2, true);
                     setPathState(4, true);
                 }
                 break;
+            // SHOOT #2
             case 4:
-                if (actionTimer.getElapsedTimeSeconds() > 2) {
-                    robot.launchArtifact();
-                    setPathState(5, true);
+                if (!robot.getFollower().isBusy()) {
+                    returnPathState = 5;
+                    setPathState(20, true);
                 }
                 break;
+            // INTAKE LINE #2
             case 5:
-                if (actionTimer.getElapsedTimeSeconds() > 2) {
-                    robot.getFollower().followPath(intakeLine1, true);
+                if (actionTimer.getElapsedTimeSeconds() > 0.25) {
+                    robot.getFollower().followPath(intakeLine2, 1, true);
                     setPathState(6, true);
                 }
                 break;
+            // GO TO SHOOT POS
             case 6:
-                if (!robot.getFollower().isBusy() && actionTimer.getElapsedTimeSeconds() > 1) {
-                    robot.getFollower().followPath(shoot2, true);
+                if (!robot.getFollower().isBusy()) {
+                    robot.getFollower().followPath(shoot3, true);
                     setPathState(7, true);
                 }
                 break;
+            // SHOOT #3
             case 7:
                 if (!robot.getFollower().isBusy()) {
-                    setPathState(8, true);
+                    returnPathState = -1;
+                    setPathState(20, true);
                 }
                 break;
-            case 8:
-                if (actionTimer.getElapsedTimeSeconds() > 2) {
+
+
+            // - SHOOT THREE ARTIFACTS -
+            // SHOOT #1
+            case 20:
+                if (robot.areFlywheelsReady()) {
                     robot.launchArtifact();
-                    setPathState(9, true);
+                    setPathState(21, true);
                 }
                 break;
-            case 9:
-                if (actionTimer.getElapsedTimeSeconds() > 2) {
+            // PUSH
+            case 21:
+                if (actionTimer.getElapsedTimeSeconds() > 0.25) {
+                    robot.pushArtifact();
+                    setPathState(22, true);
+                }
+                break;
+            // SHOOT #2
+            case 22:
+                if (robot.areFlywheelsReady() && actionTimer.getElapsedTimeSeconds() > 0.25) {
                     robot.launchArtifact();
-                    setPathState(10, true);
+                    setPathState(23, true);
                 }
                 break;
-            case 10:
+            // PUSH
+            case 23:
                 if (actionTimer.getElapsedTimeSeconds() > 2) {
                     robot.pushArtifact();
-                    robot.launchArtifact();
-                    setPathState(11, true);
+                    setPathState(24, true);
                 }
                 break;
-            case 11:
-                if (actionTimer.getElapsedTimeSeconds() > 2) {
-                    robot.getFollower().followPath(endAuto, true);
-                    setPathState(-1, true);
+            // SHOOT #3
+            case 24:
+                if (robot.areFlywheelsReady() && actionTimer.getElapsedTimeSeconds() > 0.25) {
+                    robot.launchArtifact();
+                    setPathState(returnPathState, true);
                 }
+                break;
+
+            // END AUTO
             case -1:
+                if (actionTimer.getElapsedTimeSeconds() > 1 && !robot.getFollower().isBusy()) {
+                    robot.getFollower().followPath(endAuto, true);
+                    setPathState(-2, true);
+                }
+            case -2:
                 if (!robot.getFollower().isBusy()) {
                     robot.setFlywheelSpeedMode(JetFireRobot.FlywheelSpeedMode.OFF);
                     robot.setIntakeMode(JetFireRobot.IntakeMode.OFF);
@@ -122,9 +161,21 @@ public class BlueGoal extends BaseAuto<JetFireRobot> {
                 .setLinearHeadingInterpolation(startIntakeLine1Pose.getHeading(), finishIntakeLine1Pose.getHeading())
                 .build();
 
+        intakeLine2 = follower.pathBuilder()
+                .addPath(new BezierLine(shootClosePose, startIntakeLine2Pose))
+                .setLinearHeadingInterpolation(shootClosePose.getHeading(), startIntakeLine2Pose.getHeading())
+                .addPath(new BezierLine(startIntakeLine2Pose, finishIntakeLine2Pose))
+                .setLinearHeadingInterpolation(startIntakeLine2Pose.getHeading(), finishIntakeLine2Pose.getHeading())
+                .build();
+
         shoot2 = follower.pathBuilder()
                 .addPath(new BezierLine(finishIntakeLine1Pose, shootClosePose))
                 .setLinearHeadingInterpolation(finishIntakeLine1Pose.getHeading(), shootClosePose.getHeading())
+                .build();
+
+        shoot3 = follower.pathBuilder()
+                .addPath(new BezierCurve(finishIntakeLine2Pose, new Pose(0, -24), shootClosePose))
+                .setLinearHeadingInterpolation(finishIntakeLine2Pose.getHeading(), shootClosePose.getHeading())
                 .build();
 
         endAuto = follower.pathBuilder()

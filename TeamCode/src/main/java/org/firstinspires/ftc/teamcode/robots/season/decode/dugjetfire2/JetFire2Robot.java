@@ -18,16 +18,16 @@ public class JetFire2Robot extends RobotBase {
 
     @Override
     public void initHardware(HardwareMap hardwareMap) {
-        turret = new Turret(
-                new VelocityMotorController(hardwareMap.get(DcMotorEx.class, "flywheel"), 28, 1),
-                new AngleMotorController(
-                        hardwareMap.get(DcMotorEx.class, "turntable"),
-                        384.5,
-                        ((double) 16 / 45),
-                        new Angle(120, false),
-                        new Angle(-120, false)
-                )
-        );
+//        turret = new Turret(
+//                new VelocityMotorController(hardwareMap.get(DcMotorEx.class, "flywheel"), 28, 1),
+//                new AngleMotorController(
+//                        hardwareMap.get(DcMotorEx.class, "turntable"),
+//                        384.5,
+//                        ((double) 16 / 45),
+//                        new Angle(120, false),
+//                        new Angle(-120, false)
+//                )
+//        );
     }
 
     @Override

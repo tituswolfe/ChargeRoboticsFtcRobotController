@@ -3,12 +3,14 @@ package org.firstinspires.ftc.teamcode.robots.season.decode.jetfire.opmodes.tele
 import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.telemetry.TelemetryManager;
 import com.pedropathing.geometry.Pose;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 
 @TeleOp(name = "JetFire Debug")
 @Configurable
+@Disabled
 public class DebugTeleOp extends Teleop {
     public static double flywheelP = 0;
     public static double flywheelI = 0;
@@ -18,8 +20,8 @@ public class DebugTeleOp extends Teleop {
     @Override
     public void updateTelemetry(TelemetryManager telemetry) {
         Pose currentPose = robot.getFollower().getPose();
-        telemetry.addData("angle toward goal", Math.toDegrees(Math.atan2(robot.getTargetGoalAim().getY() - currentPose.getY(), robot.getTargetGoalAim().getX() - currentPose.getX())));
-        telemetry.addData("Distance from goal", robot.getFollower().getPose().distanceFrom(robot.getTargetGoal()));
+        telemetry.addData("GOAL_HEADING_ERROR", Math.toDegrees(robot.getGoalHeadingError()));
+        telemetry.addData("GOAL_DISTANCE", robot.getFollower().getPose().distanceFrom(robot.getTargetGoal()));
 
         PIDFCoefficients flywheelPIDFCoefficients =  robot.getBottomFlywheel().getDcMotorEx().getPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER);
 

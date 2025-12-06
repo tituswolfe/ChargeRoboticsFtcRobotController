@@ -25,15 +25,23 @@ public class Teleop extends TeleOpBase<JetFireRobot> {
 
     @Override
     public void updateTelemetry(TelemetryManager telemetry) {
-        telemetry.addLine("- FLYWHEEL DATA -");
-        telemetry.addData("Top Flywheel RPS", robot.getTopFlywheel().getCurrentRPS());
-        telemetry.addData("Bottom Flywheel RPS", robot.getBottomFlywheel().getCurrentRPS());
+        telemetry.addLine("- FLYWHEEL -");
+        telemetry.addData("TOP_RPM", robot.getTopFlywheel().getVelocity());
+        telemetry.addData("BOTTOM_RPM", robot.getBottomFlywheel().getVelocity());
         telemetry.addLine("");
-        telemetry.addData("top target RPS", robot.getTopFlywheel().getConfiguredRPS());
-        telemetry.addData("bottom target RPS", robot.getBottomFlywheel().getConfiguredRPS());
+        telemetry.addData("TOP_TARGET_RPM", robot.getTopFlywheel().getTargetVelocity());
+        telemetry.addData("BOTTOM_TARGET_RPM", robot.getBottomFlywheel().getTargetVelocity());
         telemetry.addLine("");
-        telemetry.addData("top pow", robot.getTopFlywheel().getDcMotorEx().getPower());
-        telemetry.addData("bottom pow", robot.getBottomFlywheel().getDcMotorEx().getPower());
+        telemetry.addData("TOP_POWER", robot.getTopFlywheel().getDcMotorEx().getPower());
+        telemetry.addData("BOTTOM_POWER", robot.getBottomFlywheel().getDcMotorEx().getPower());
+        telemetry.addLine("");
+        telemetry.addData("TOP_FLYWHEEL_RATIO", robot.topFlywheelRatio);
+        telemetry.addLine("");
+
+        telemetry.addLine("- INTAKE -");
+        telemetry.addData("INTAKE_POWER", robot.getIntake().getDcMotorEx().getPower());
+        telemetry.addLine("");
+
 
 
         super.updateTelemetry(telemetry);

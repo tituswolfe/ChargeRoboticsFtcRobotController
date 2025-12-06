@@ -1,7 +1,5 @@
 package org.firstinspires.ftc.teamcode.robots.season.decode.jetfire;
 
-import com.pedropathing.control.PIDFController;
-import com.pedropathing.geometry.Pose;
 
 import org.firstinspires.ftc.teamcode.robots.base.GamepadMapping;
 
@@ -20,7 +18,7 @@ public class JetFireGamepadMapping extends GamepadMapping<JetFireRobot> {
 
     @Override
     public void onBPressed() {
-
+        robot.fieldCentricOffset += Math.toRadians(90);
     }
 
     @Override
@@ -30,14 +28,6 @@ public class JetFireGamepadMapping extends GamepadMapping<JetFireRobot> {
     @Override
     public void onXPressed() {
         headingLock = !headingLock;
-//        Pose displacedPose = robot.getTargetGoal().minus(robot.getFollower().getPose());
-//        robot.getFollower().turnTo(Math.atan2(displacedPose.getY(), displacedPose.getX()));
-
-//        Pose currentPos = robot.getFollower().getPose();
-//        double targetAngle = Math.atan2(robot.targetGoal
-//                .getY()-currentPos.getY(),robot.targetGoal
-//                .getX()-currentPos.getX());
-//        robot.getFollower().turnTo(targetAngle);
     }
 
     @Override
@@ -55,11 +45,6 @@ public class JetFireGamepadMapping extends GamepadMapping<JetFireRobot> {
     public void joysticks(float leftX, float leftY, float rightX, float rightY) {
         if (robot.getFollower() == null) return;
         if (!robot.getFollower().isTeleopDrive()) return;
-
-        Pose displacedPose = robot.getTargetGoalAim().minus(robot.getFollower().getPose());
-        double targetHeading = Math.atan2(displacedPose.getY(), displacedPose.getX());;
-        double headingError = targetHeading - robot.getFollower().getHeading();
-        robot.getHeadingPIDFController().updateError(headingError);
 
         robot.getFollower().setTeleOpDrive(
                 leftY * robot.speedFactor,
@@ -130,7 +115,7 @@ public class JetFireGamepadMapping extends GamepadMapping<JetFireRobot> {
 
     @Override
     public void onDpadUpPressed() {
-        robot.flywheelSpeed++;
+        robot.flywheelSpeed += 100;
     }
 
     @Override
@@ -139,7 +124,7 @@ public class JetFireGamepadMapping extends GamepadMapping<JetFireRobot> {
 
     @Override
     public void onDpadDownPressed() {
-        robot.flywheelSpeed--;
+        robot.flywheelSpeed -= 100;
 
     }
 

@@ -22,6 +22,7 @@ import org.firstinspires.ftc.teamcode.robots.base.StaticData;
 import org.firstinspires.ftc.teamcode.robots.base.opmodes.OpModeBase;
 import org.firstinspires.ftc.teamcode.util.LinearInterpolator;
 import org.firstinspires.ftc.teamcode.util.LogicUtil;
+import org.firstinspires.ftc.teamcode.util.math.Angle;
 
 import java.util.TreeMap;
 
@@ -35,21 +36,22 @@ public class JetFireRobot extends RobotBase {
     public static final int OBELISK_PPG_AP_ID = 23;
 
     // FLYWHEELS
-    public static final double topFlywheelRatio = 0.5;
     public double flywheelSpeed = 0;
+    public double topFlywheelRatio = 0;
     private VelocityMotorController topFlywheel;
     private VelocityMotorController bottomFlywheel;
     private LinearInterpolator flywheelSpeedByDistanceInterpolator;
+    private LinearInterpolator topFlywheelRatioByDistanceInterpolator;
     public enum FlywheelSpeedMode {
         AUTO,
         MANUEL,
         OFF
     } // CLOSE, AND FAR?
     private FlywheelSpeedMode flywheelSpeedMode = FlywheelSpeedMode.OFF;
-    private static final double CLOSE_SHOT_FLYWHEEL_SPEED = 30;
+    private static final double CLOSE_SHOT_FLYWHEEL_SPEED = 1800;
 
     // INTAKE
-    private static final double INTAKE_SPEED = 35;
+    private static final double INTAKE_SPEED = 435;
     public VelocityMotorController intake;
     public enum IntakeMode {
         OFF,
@@ -64,32 +66,41 @@ public class JetFireRobot extends RobotBase {
     private static final double LAUNCH_SERVO_DOWN = 0.27;
 
     ServoTimerController pushServoController;
-    private static final double PUSH_SERVO_OUT = 0.3;
-    private static final double PUSH_SERVO_IN = 0.575;
+    private static final double PUSH_SERVO_OUT = 0.41;
+    private static final double PUSH_SERVO_IN = 0.555;
 
     // LIGHTS
     private RGBIndicatorLightController rgbIndicatorLightController;
 
     private Pose targetGoal;
-    private Pose targetGoalAim;
-
+    // private Pose targetGoalAim;
     private PIDFController headingPIDFController;
+    public static Angle headingGoalOffset = new Angle(-16.5, false);
+    private double goalHeadingError;
+
     @Override
     public void startConfiguration() {
     }
 
     @Override
     public void initHardware(HardwareMap hardwareMap) {
-
         headingPIDFController = new PIDFController(follower.constants.coefficientsHeadingPIDF);
 
         TreeMap<Double, Double> flywheelSpeedByDistance = new TreeMap<>();
-        flywheelSpeedByDistance.put(63.0, 30.0);
-        flywheelSpeedByDistance.put(82.0, 30.0);
-        flywheelSpeedByDistance.put(100.0, 30.0);
-        flywheelSpeedByDistance.put(135.0, 41.0);
+        flywheelSpeedByDistance.put(60.0, 1800.0);
+        flywheelSpeedByDistance.put(70.0, 1800.0);
+        flywheelSpeedByDistance.put(80.0, 1800.0);
+        flywheelSpeedByDistance.put(90.0, 1800.0);
+        flywheelSpeedByDistance.put(100.0, 1900.0);
+        flywheelSpeedByDistance.put(110.0, 2000.0);
+        flywheelSpeedByDistance.put(120.0, 2100.0);
+        flywheelSpeedByDistance.put(150.0, 2200.0);
+
+        TreeMap<Double, Double> topFlywheelRatioByDistance = new TreeMap<>();
+        topFlywheelRatioByDistance.put(100.0, 0.5);
 
         flywheelSpeedByDistanceInterpolator = new LinearInterpolator(flywheelSpeedByDistance);
+        topFlywheelRatioByDistanceInterpolator = new LinearInterpolator(topFlywheelRatioByDistance);
 
         // Flywheels
         DcMotorEx flywheelMotor1 = hardwareMap.get(DcMotorEx.class, "top-flywheel");
@@ -100,18 +111,18 @@ public class JetFireRobot extends RobotBase {
         flywheelMotor2.setDirection(DcMotorSimple.Direction.REVERSE);
         flywheelMotor2.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(300, 15, 20, 0));
 
-        topFlywheel = new VelocityMotorController(flywheelMotor1, 28);
-        bottomFlywheel = new VelocityMotorController(flywheelMotor2, 28);
+        topFlywheel = new VelocityMotorController(flywheelMotor1, 28, 1);
+        bottomFlywheel = new VelocityMotorController(flywheelMotor2, 28, 1);
 
         // Intake
         DcMotorEx intakeMotor = hardwareMap.get(DcMotorEx.class, "intake");
         intakeMotor.setDirection(DcMotorSimple.Direction.REVERSE);
 
-        intake = new VelocityMotorController(intakeMotor, 384.5);
+        intake = new VelocityMotorController(intakeMotor, 384.5, 1);
 
         // Servos
         launchServoController = new ServoTimerController(hardwareMap.get(Servo.class, "launch"));
-        pushServoController = new ServoTimerController(hardwareMap.get(Servo.class, "thing1")); // TODO: Rename push servo
+        pushServoController = new ServoTimerController(hardwareMap.get(Servo.class, "flicker")); // TODO: Rename push servo
 
         // Other
         rgbIndicatorLightController = new RGBIndicatorLightController(hardwareMap.get(Servo.class, "indicator"));
@@ -121,10 +132,6 @@ public class JetFireRobot extends RobotBase {
                 (StaticData.allianceColor == OpModeBase.AllianceColor.RED ? 72 : -72)
         );
 
-        targetGoalAim = new Pose(
-                -72,
-                (StaticData.allianceColor == OpModeBase.AllianceColor.RED ? 92 : -51)
-        );
 
 
         launchServoController.setPosition(LAUNCH_SERVO_DOWN, 0, LAUNCH_SERVO_DOWN);
@@ -193,7 +200,10 @@ public class JetFireRobot extends RobotBase {
             case OFF -> 0.0;
         };
 
-        if (bottomFlywheel.getConfiguredRPS() != flywheelSpeed) {
+
+        topFlywheelRatio = 0.5; //topFlywheelRatioByDistanceInterpolator.interpolate(follower.getPose().distanceFrom(targetGoal));
+
+        if (bottomFlywheel.getVelocity() != flywheelSpeed) {
             bottomFlywheel.setTargetVelocity(flywheelSpeed);
             topFlywheel.setTargetVelocity(flywheelSpeed * topFlywheelRatio);
         }
@@ -201,13 +211,20 @@ public class JetFireRobot extends RobotBase {
         launchServoController.update();
         pushServoController.update();
 
-        rgbIndicatorLightController.setColor(areFlywheelsReady() ? RGBIndicatorLightController.Color.GREEN : RGBIndicatorLightController.Color.RED);
+        rgbIndicatorLightController.setColor(areFlywheelsReady() ? flywheelSpeedMode == FlywheelSpeedMode.AUTO ? RGBIndicatorLightController.Color.GREEN : RGBIndicatorLightController.Color.INDIGO : RGBIndicatorLightController.Color.RED);
+
+
+        Pose displacedPose = targetGoal.minus(follower.getPose());
+        double targetHeading = Math.atan2(displacedPose.getY(), displacedPose.getX()) + headingGoalOffset.getAngle(Angle.AngleUnit.RADIANS, Angle.AngleSystem.SIGNED); // Math.toRadians(-7);
+        goalHeadingError = targetHeading - follower.getHeading();
+        headingPIDFController.updateError(goalHeadingError);
 
         super.updateHardwareStates();
     }
 
     public boolean areFlywheelsReady() {
-        return LogicUtil.isWithinRange(topFlywheel.getCurrentRPS(), flywheelSpeed * topFlywheelRatio,1.5) && LogicUtil.isWithinRange(bottomFlywheel.getCurrentRPS(), flywheelSpeed, 1.5);
+        if (flywheelSpeedMode == FlywheelSpeedMode.OFF) return false;
+        return LogicUtil.isWithinRange(topFlywheel.getVelocity(), flywheelSpeed * topFlywheelRatio,60) && LogicUtil.isWithinRange(bottomFlywheel.getVelocity(), flywheelSpeed, 60);
     }
 
     // getters
@@ -224,11 +241,15 @@ public class JetFireRobot extends RobotBase {
         return targetGoal;
     }
 
-    public Pose getTargetGoalAim() {
-        return targetGoalAim;
+    public double getGoalHeadingError() {
+        return goalHeadingError;
     }
 
     public PIDFController getHeadingPIDFController() {
         return headingPIDFController;
+    }
+
+    public VelocityMotorController getIntake() {
+        return intake;
     }
 }
