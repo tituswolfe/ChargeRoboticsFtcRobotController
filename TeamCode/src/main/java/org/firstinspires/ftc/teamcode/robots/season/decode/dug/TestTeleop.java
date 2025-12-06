@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.robots.season.decode.dugjetfire2;
+package org.firstinspires.ftc.teamcode.robots.season.decode.dug;
 
 import com.bylazar.telemetry.TelemetryManager;
 import com.pedropathing.follower.Follower;
@@ -7,8 +7,6 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.robots.base.GamepadMapping;
 import org.firstinspires.ftc.teamcode.robots.base.opmodes.TeleOpBase;
-import org.firstinspires.ftc.teamcode.robots.season.decode.jetfire.JetFireGamepadMapping;
-import org.firstinspires.ftc.teamcode.robots.season.decode.jetfire.JetFireRobot;
 
 
 @TeleOp(name = "DugJetFire2")
