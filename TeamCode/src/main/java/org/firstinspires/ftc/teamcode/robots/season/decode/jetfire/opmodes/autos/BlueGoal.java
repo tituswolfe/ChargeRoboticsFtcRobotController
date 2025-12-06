@@ -10,7 +10,7 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import org.firstinspires.ftc.teamcode.robots.base.opmodes.BaseAuto;
 import org.firstinspires.ftc.teamcode.robots.season.decode.jetfire.JetFireRobot;
 
-@Autonomous(name = "Blue Goal", group = "decode", preselectTeleOp = "JetFire")
+@Autonomous(name = "Blue Goal", group = "jetfire", preselectTeleOp = "JetFire")
 public class BlueGoal extends BaseAuto<JetFireRobot> {
     Pose startPose = new Pose(-60, -45, Math.toRadians(-124));
     Pose shootClosePose = new Pose(-33, -18.8, Math.toRadians(-135));

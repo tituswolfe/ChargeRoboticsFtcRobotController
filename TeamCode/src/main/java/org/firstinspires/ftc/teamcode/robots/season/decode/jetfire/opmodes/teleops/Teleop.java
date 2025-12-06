@@ -10,7 +10,7 @@ import org.firstinspires.ftc.teamcode.robots.season.decode.jetfire.JetFireRobot;
 import org.firstinspires.ftc.teamcode.robots.season.decode.jetfire.JetFireGamepadMapping;
 
 
-@TeleOp(name = "JetFire")
+@TeleOp(name = "JetFire", group = "jetfire")
 public class Teleop extends TeleOpBase<JetFireRobot> {
     @Override
     public void buildPaths(Follower follower) {
