@@ -11,7 +11,7 @@ import org.firstinspires.ftc.teamcode.robots.base.opmodes.TeleOpBase;
 
 @TeleOp(name = "DugJetFire2")
 @Disabled
-public class TestTeleop extends TeleOpBase<JetFire2Robot> {
+public class TestTeleop extends TeleOpBase<DugRobot> {
     @Override
     public void buildPaths(Follower follower) {
 
@@ -27,13 +27,13 @@ public class TestTeleop extends TeleOpBase<JetFire2Robot> {
     }
 
     @Override
-    protected JetFire2Robot instantiateRobot() {
-        return new JetFire2Robot();
+    protected DugRobot instantiateRobot() {
+        return new DugRobot();
     }
 
     @Override
-    protected GamepadMapping<JetFire2Robot> instantiateGamepadMapping1() {
-        return new GamepadMapping<JetFire2Robot>(robot) {
+    protected GamepadMapping<DugRobot> instantiateGamepadMapping1() {
+        return new GamepadMapping<DugRobot>(robot) {
             @Override
             public void onYPressed() {
 
@@ -127,7 +127,7 @@ public class TestTeleop extends TeleOpBase<JetFire2Robot> {
     }
 
     @Override
-    protected GamepadMapping<JetFire2Robot> instantiateGamepadMapping2() {
+    protected GamepadMapping<DugRobot> instantiateGamepadMapping2() {
         return null; // new JetFireGamepadMapping2(robot);
     }
 }
