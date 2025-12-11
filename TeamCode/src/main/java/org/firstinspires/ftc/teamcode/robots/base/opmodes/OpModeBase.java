@@ -48,12 +48,10 @@ public abstract class OpModeBase<Robot extends RobotBase> extends OpMode {
         telemetry.addLine("Please wait . . .");
         telemetry.update();
 
-        StaticData.allianceColor = instantiateAllianceColor();
-
         robot = instantiateRobot();
         gamepadMapping1 = instantiateGamepadMapping1();
         gamepadMapping2 = instantiateGamepadMapping2();
-        robot.init(hardwareMap, instantiateStartPose());
+        robot.init(hardwareMap, instantiateStartPose(), instantiateAllianceColor());
 
         if (robot.getFollower() != null) buildPaths(robot.getFollower());
 
@@ -61,6 +59,12 @@ public abstract class OpModeBase<Robot extends RobotBase> extends OpMode {
 
         telemetry.addLine("READY");
         telemetry.update();
+    }
+
+    @Override
+    public void init_loop() {
+        // TODO: Auto select options
+        super.init_loop();
     }
 
     public abstract void opModeTypeSpecificInit();
@@ -82,16 +86,19 @@ public abstract class OpModeBase<Robot extends RobotBase> extends OpMode {
     public void updateTelemetry(TelemetryManager telemetry) {
         telemetry.addLine("");
 
+
         if (robot.getFollower() != null) {
             telemetry.addLine("- DRIVETRAIN -");
             telemetry.addData("x", robot.getFollower().getPose().getX());
             telemetry.addData("y", robot.getFollower().getPose().getY());
             telemetry.addData("heading", Math.toDegrees(robot.getFollower().getPose().getHeading()));
+            telemetry.addData("Field Centric Offset (Deg)", Math.toDegrees(robot.fieldCentricOffset));
             telemetry.addData("isSlowMode", robot.isSlowMode);
             telemetry.addLine("");
         }
 
         telemetry.addLine("- OpMode info -");
+        telemetry.addData("Alliance Color", StaticData.allianceColor);
         telemetry.addData("Elapsed time (sec)", opmodeTimer.getElapsedTimeSeconds());
         telemetry.addData("isEndgame", isEndgame);
         telemetry.addLine("");
@@ -104,7 +111,6 @@ public abstract class OpModeBase<Robot extends RobotBase> extends OpMode {
     public boolean isEndgame() {
         return isEndgame;
     }
-
 
     protected abstract Robot instantiateRobot();
     protected abstract Pose instantiateStartPose();

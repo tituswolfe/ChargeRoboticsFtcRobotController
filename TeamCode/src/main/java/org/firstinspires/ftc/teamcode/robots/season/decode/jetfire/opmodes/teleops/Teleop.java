@@ -37,11 +37,7 @@ public class Teleop extends TeleOpBase<JetFireRobot> {
         telemetry.addLine("");
         telemetry.addData("TOP_FLYWHEEL_RATIO", robot.topFlywheelRatio);
         telemetry.addLine("");
-
-        telemetry.addLine("- INTAKE -");
-        telemetry.addData("INTAKE_POWER", robot.getIntake().getDcMotorEx().getPower());
-        telemetry.addLine("");
-
+        telemetry.addData("Goal Heading Offset", robot.headingGoalOffsetDeg);
 
 
         super.updateTelemetry(telemetry);

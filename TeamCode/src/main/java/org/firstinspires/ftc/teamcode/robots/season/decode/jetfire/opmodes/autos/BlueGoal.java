@@ -15,11 +15,11 @@ public class BlueGoal extends BaseAuto<JetFireRobot> {
     Pose startPose = new Pose(-60, -45, Math.toRadians(-124));
     Pose shootClosePose = new Pose(-33, -18.8, Math.toRadians(-135));
     Pose startIntakeLine1Pose = new Pose(-9.85, -20, Math.toRadians(90));
-    Pose finishIntakeLine1Pose = new Pose(-9.85, -52, Math.toRadians(90));
+    Pose finishIntakeLine1Pose = new Pose(-9.85, -48, Math.toRadians(90));
 
     Pose startIntakeLine2Pose = new Pose(12.2, -20, Math.toRadians(90));
     Pose finishIntakeLine2Pose = new Pose(15.2, -55, Math.toRadians(90));
-    Pose autoEndPose = new Pose(-5, -42.7, Math.toRadians(0));
+    Pose autoEndPose = new Pose(-5, -35, Math.toRadians(0));
 
     PathChain shoot1;
     PathChain intakeLine1;

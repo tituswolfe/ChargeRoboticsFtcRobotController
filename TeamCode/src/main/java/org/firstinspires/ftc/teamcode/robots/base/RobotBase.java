@@ -73,23 +73,39 @@ public abstract class RobotBase {
      * @param hardwareMap hardware map
      * @param startPose start pose
      */
-    public void init(HardwareMap hardwareMap, Pose startPose) {
+    public void init(HardwareMap hardwareMap, Pose startPose, OpModeBase.AllianceColor allianceColor) {
         fieldType = instantiateFieldType();
         follower = instantiateFollower(hardwareMap);
         limelight3A = instantiateLimelight3A(hardwareMap);
         initHardware(hardwareMap);
 
-        switch(StaticData.allianceColor) {
-            case RED:
-                fieldCentricOffset = Math.toRadians(90);
-            case BLUE:
-                //fieldCentricOffset = Math.toRadians(-90);
-                fieldCentricOffset = (fieldType == FieldType.DIAMOND) ? Math.toRadians(180) : Math.toRadians(-90);
+        if (allianceColor != null) {
+            StaticData.allianceColor = allianceColor;
+        } else if (StaticData.allianceColor == null) {
+            StaticData.allianceColor = OpModeBase.AllianceColor.BLUE; // DEFAULT TO BLUE
         }
 
+        setAllianceColor(StaticData.allianceColor);
+
         if (follower != null) {
+            if (startPose == null) {
+                startPose = new Pose(0, 0, 0);
+            }
             follower.setStartingPose(startPose);
+            StaticData.lastPose = startPose;
             follower.update();
+        }
+    }
+
+    public void setAllianceColor(OpModeBase.AllianceColor allianceColor) {
+        StaticData.allianceColor = allianceColor;
+        switch(allianceColor) {
+            case RED:
+                fieldCentricOffset = Math.toRadians(90);
+                break;
+            case BLUE:
+                fieldCentricOffset = (fieldType == FieldType.DIAMOND) ? Math.toRadians(180) : Math.toRadians(-90);
+                break;
         }
     }
 

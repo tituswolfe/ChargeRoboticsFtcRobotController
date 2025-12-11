@@ -75,7 +75,7 @@ public class JetFireRobot extends RobotBase {
     private Pose targetGoal;
     // private Pose targetGoalAim;
     private PIDFController headingPIDFController;
-    public static Angle headingGoalOffset = new Angle(-16.5, false);
+    public double headingGoalOffsetDeg = -15;
     private double goalHeadingError;
 
     @Override
@@ -127,15 +127,20 @@ public class JetFireRobot extends RobotBase {
         // Other
         rgbIndicatorLightController = new RGBIndicatorLightController(hardwareMap.get(Servo.class, "indicator"));
 
-        targetGoal = new Pose(
-                -72,
-                (StaticData.allianceColor == OpModeBase.AllianceColor.RED ? 72 : -72)
-        );
-
 
 
         launchServoController.setPosition(LAUNCH_SERVO_DOWN, 0, LAUNCH_SERVO_DOWN);
         pushServoController.setPosition(PUSH_SERVO_IN, 0, PUSH_SERVO_IN);
+    }
+
+    @Override
+    public void setAllianceColor(OpModeBase.AllianceColor allianceColor) {
+        super.setAllianceColor(allianceColor);
+
+        targetGoal = new Pose(
+                -72,
+                (StaticData.allianceColor == OpModeBase.AllianceColor.RED ? 72 : -72)
+        );
     }
 
     @Override
@@ -215,8 +220,8 @@ public class JetFireRobot extends RobotBase {
 
 
         Pose displacedPose = targetGoal.minus(follower.getPose());
-        double targetHeading = Math.atan2(displacedPose.getY(), displacedPose.getX()) + headingGoalOffset.getAngle(Angle.AngleUnit.RADIANS, Angle.AngleSystem.SIGNED); // Math.toRadians(-7);
-        goalHeadingError = targetHeading - follower.getHeading();
+        double targetHeading = Math.atan2(displacedPose.getY(), displacedPose.getX()) + new Angle(headingGoalOffsetDeg, false).getAngle(Angle.AngleUnit.RADIANS, Angle.AngleSystem.SIGNED); // Math.toRadians(-7);
+        goalHeadingError = new Angle(targetHeading - follower.getHeading()).getAngle(Angle.AngleUnit.RADIANS, Angle.AngleSystem.SIGNED);
         headingPIDFController.updateError(goalHeadingError);
 
         super.updateHardwareStates();

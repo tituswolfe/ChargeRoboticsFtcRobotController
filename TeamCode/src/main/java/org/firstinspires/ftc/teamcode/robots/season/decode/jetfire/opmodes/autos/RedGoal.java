@@ -12,14 +12,14 @@ import org.firstinspires.ftc.teamcode.robots.season.decode.jetfire.JetFireRobot;
 
 @Autonomous(name = "Red Goal", group = "jetfire", preselectTeleOp = "JetFire")
 public class RedGoal extends BaseAuto<JetFireRobot> {
-    Pose startPose = new Pose(-60, 47, Math.toRadians(130));
-    Pose shootClosePose = new Pose(-33, 18.8, Math.toRadians(135));
+    Pose startPose = new Pose(-60, 47, Math.toRadians(124));
+    Pose shootClosePose = new Pose(-33, 18.8, Math.toRadians(120));
     Pose startIntakeLine1Pose = new Pose(-17.6, 31, Math.toRadians(-90));
-    Pose finishIntakeLine1Pose = new Pose(-17.6, 57, Math.toRadians(-90));
+    Pose finishIntakeLine1Pose = new Pose(-17.6, 48, Math.toRadians(-90));
 
     Pose startIntakeLine2Pose = new Pose(5.5, 33, Math.toRadians(-90));
-    Pose finishIntakeLine2Pose = new Pose(8, 67, Math.toRadians(-90));
-    Pose autoEndPose = new Pose(-2, 44.7, Math.toRadians(0));
+    Pose finishIntakeLine2Pose = new Pose(8, 55, Math.toRadians(-90));
+    Pose autoEndPose = new Pose(-5, 35, Math.toRadians(0));
 
     PathChain shoot1;
     PathChain intakeLine1;

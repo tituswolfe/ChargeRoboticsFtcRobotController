@@ -34,7 +34,7 @@ public abstract class TeleOpBase<Robot extends RobotBase> extends OpModeBase<Rob
 
     @Override
     protected AllianceColor instantiateAllianceColor() {
-        return StaticData.allianceColor;
+        return null;
     }
 
     @Override

@@ -1,7 +1,11 @@
 package org.firstinspires.ftc.teamcode.robots.season.decode.jetfire;
 
 
+import com.pedropathing.geometry.Pose;
+
 import org.firstinspires.ftc.teamcode.robots.base.GamepadMapping;
+import org.firstinspires.ftc.teamcode.robots.base.StaticData;
+import org.firstinspires.ftc.teamcode.robots.base.opmodes.OpModeBase;
 
 public class JetFireGamepadMapping extends GamepadMapping<JetFireRobot> {
     boolean isIntakeActive = false;
@@ -18,7 +22,7 @@ public class JetFireGamepadMapping extends GamepadMapping<JetFireRobot> {
 
     @Override
     public void onBPressed() {
-        robot.fieldCentricOffset += Math.toRadians(90);
+        robot.setAllianceColor((StaticData.allianceColor == OpModeBase.AllianceColor.BLUE) ? OpModeBase.AllianceColor.RED : OpModeBase.AllianceColor.BLUE);
     }
 
     @Override
@@ -106,7 +110,7 @@ public class JetFireGamepadMapping extends GamepadMapping<JetFireRobot> {
     @Override
     public void onRightBumperPressed() {
         robot.setFlywheelSpeedMode(switch (robot.getFlywheelSpeedMode()) {
-            case AUTO -> JetFireRobot.FlywheelSpeedMode.MANUEL;
+            case AUTO -> JetFireRobot.FlywheelSpeedMode.OFF;
             case MANUEL -> JetFireRobot.FlywheelSpeedMode.OFF;
             case OFF -> JetFireRobot.FlywheelSpeedMode.AUTO;
         });
@@ -120,6 +124,7 @@ public class JetFireGamepadMapping extends GamepadMapping<JetFireRobot> {
 
     @Override
     public void onDpadRightPressed() {
+        robot.headingGoalOffsetDeg -= 1;
     }
 
     @Override
@@ -130,5 +135,6 @@ public class JetFireGamepadMapping extends GamepadMapping<JetFireRobot> {
 
     @Override
     public void onDpadLeftPressed() {
+        robot.headingGoalOffsetDeg += 1;
     }
 }
