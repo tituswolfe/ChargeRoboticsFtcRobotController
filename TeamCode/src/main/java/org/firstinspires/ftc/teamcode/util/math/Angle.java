@@ -3,7 +3,7 @@ package org.firstinspires.ftc.teamcode.util.math;
 import static com.ThermalEquilibrium.homeostasis.Utils.MathUtils.TAU;
 
 public class Angle {
-    public double angleInRadians;
+    private double angleInRadians;
 
     public enum AngleUnit {
         DEGREES,
@@ -35,4 +35,18 @@ public class Angle {
 
         return (angleUnit == AngleUnit.DEGREES) ? Math.toDegrees(requestedAngle) : requestedAngle;
     }
+
+    /**
+     * @param angleSystem signed (-180 to 180, two-quadrant) or unsigned (0 to 360, positive or full clockwise circle rotation)
+     * @return angle in {@link AngleUnit#RADIANS} with the specified {@link AngleSystem}
+     */
+    public double getAngle(AngleSystem angleSystem) {
+        return getAngle(AngleUnit.RADIANS, angleSystem);
+    }
+
+//    public Angle minus(Angle angle) {
+//        return new Angle(get)
+//    }
+
+    // TODO: Angle maths
 }

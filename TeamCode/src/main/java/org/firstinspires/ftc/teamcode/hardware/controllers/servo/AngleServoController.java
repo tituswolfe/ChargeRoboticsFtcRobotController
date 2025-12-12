@@ -4,7 +4,7 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.util.math.Angle;
 
-public class AngleServoController extends ServoController{
+public class AngleServoController extends ServoController {
     public final Angle offset; // TODO: Make sure signed and unsigned logic works for this
     public final Angle maxPositiveLimit;
     public final Angle minNegativeLimit;

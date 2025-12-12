@@ -1,8 +1,5 @@
 package org.firstinspires.ftc.teamcode.robots.season.decode.jetfire;
 
-
-import com.pedropathing.geometry.Pose;
-
 import org.firstinspires.ftc.teamcode.robots.base.GamepadMapping;
 import org.firstinspires.ftc.teamcode.robots.base.StaticData;
 import org.firstinspires.ftc.teamcode.robots.base.opmodes.OpModeBase;
@@ -83,7 +80,6 @@ public class JetFireGamepadMapping extends GamepadMapping<JetFireRobot> {
     @Override
     public void onRightTriggerPressed() {
         robot.launchArtifact();
-
     }
 
     @Override
@@ -114,7 +110,6 @@ public class JetFireGamepadMapping extends GamepadMapping<JetFireRobot> {
             case MANUEL -> JetFireRobot.FlywheelSpeedMode.OFF;
             case OFF -> JetFireRobot.FlywheelSpeedMode.AUTO;
         });
-
     }
 
     @Override

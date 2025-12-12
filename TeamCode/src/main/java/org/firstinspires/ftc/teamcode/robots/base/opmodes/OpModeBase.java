@@ -84,23 +84,15 @@ public abstract class OpModeBase<Robot extends RobotBase> extends OpMode {
     }
 
     public void updateTelemetry(TelemetryManager telemetry) {
-        telemetry.addLine("");
-
-
-        if (robot.getFollower() != null) {
-            telemetry.addLine("- DRIVETRAIN -");
-            telemetry.addData("x", robot.getFollower().getPose().getX());
-            telemetry.addData("y", robot.getFollower().getPose().getY());
-            telemetry.addData("heading", Math.toDegrees(robot.getFollower().getPose().getHeading()));
-            telemetry.addData("Field Centric Offset (Deg)", Math.toDegrees(robot.fieldCentricOffset));
-            telemetry.addData("isSlowMode", robot.isSlowMode);
-            telemetry.addLine("");
-        }
 
         telemetry.addLine("- OpMode info -");
         telemetry.addData("Alliance Color", StaticData.allianceColor);
         telemetry.addData("Elapsed time (sec)", opmodeTimer.getElapsedTimeSeconds());
         telemetry.addData("isEndgame", isEndgame);
+
+
+        robot.hardwareTelemetry(telemetry);
+
         telemetry.addLine("");
         telemetry.addLine("- Charger Robotics -");
         telemetry.addLine("- DON'T TOUCH THAT RYAN! -");

@@ -1,10 +1,9 @@
 package org.firstinspires.ftc.teamcode.hardware.controllers.subsystems;
 
-import com.qualcomm.robotcore.hardware.Servo;
-
 import org.firstinspires.ftc.teamcode.hardware.controllers.motor.AngleMotorController;
 import org.firstinspires.ftc.teamcode.hardware.controllers.motor.VelocityMotorController;
 import org.firstinspires.ftc.teamcode.hardware.controllers.servo.AngleServoController;
+import org.firstinspires.ftc.teamcode.util.math.Angle;
 
 public class Turret {
     private final VelocityMotorController flywheelController;
@@ -23,5 +22,13 @@ public class Turret {
 
     public AngleMotorController getTurntableController() {
         return turntableController;
+    }
+
+    public AngleServoController getHoodServoController() {
+        return hoodServoController;
+    }
+
+    public void update(double targetVelRPM, Angle turntableAngle) {
+
     }
 }

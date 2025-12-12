@@ -30,12 +30,14 @@
 package org.firstinspires.ftc.teamcode.robots.base;
 
 import com.bylazar.configurables.annotations.Configurable;
+import com.bylazar.telemetry.TelemetryManager;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.PathBuilder;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
+import org.firstinspires.ftc.robotcore.external.Telemetry;
 import org.firstinspires.ftc.teamcode.hardware.drivetrain.pedroPathing.Constants;
 import org.firstinspires.ftc.teamcode.robots.base.opmodes.OpModeBase;
 
@@ -106,6 +108,18 @@ public abstract class RobotBase {
             case BLUE:
                 fieldCentricOffset = (fieldType == FieldType.DIAMOND) ? Math.toRadians(180) : Math.toRadians(-90);
                 break;
+        }
+    }
+
+    public void hardwareTelemetry(TelemetryManager telemetry) {
+        if (follower != null) {
+            telemetry.addLine("- DRIVETRAIN -");
+            telemetry.addData("x", follower.getPose().getX());
+            telemetry.addData("y", follower.getPose().getY());
+            telemetry.addData("heading", Math.toDegrees(follower.getPose().getHeading()));
+            telemetry.addData("Field Centric Offset (Deg)", Math.toDegrees(fieldCentricOffset));
+            telemetry.addData("isSlowMode", isSlowMode);
+            telemetry.addLine("");
         }
     }
 
