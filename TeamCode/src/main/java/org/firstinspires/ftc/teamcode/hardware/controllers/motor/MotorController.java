@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.hardware.controllers.motor;
 
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
 import org.firstinspires.ftc.teamcode.util.math.MathUtil;
 
@@ -16,8 +17,9 @@ public abstract class MotorController {
      * @param ticksPerRevolution encoder ticks per revolution (check motor for info)
      * @param totalGearRatio amount of motor rotations per 1 output rotations -> totalGearRatio (input) : 1 (output)
      */
-    public MotorController(DcMotorEx dcMotorEx, double ticksPerRevolution, double totalGearRatio) {
+    public MotorController(DcMotorEx dcMotorEx, DcMotorSimple.Direction direction, double ticksPerRevolution, double totalGearRatio) {
         this.dcMotorEx = dcMotorEx;
+        this.dcMotorEx.setDirection(direction);
         this.ticksPerRevolution = ticksPerRevolution;
         this.ticksPerOutputDegree = (ticksPerRevolution *  totalGearRatio) / 360;
         this.ticksPerOutputRadian = (ticksPerRevolution *  totalGearRatio) / MathUtil.TAU;

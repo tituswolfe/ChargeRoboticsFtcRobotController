@@ -82,8 +82,8 @@ public class DugRobot extends RobotBase {
                         hardwareMap.get(Servo.class, "hood"),
                         new Angle(0),
                         new Angle(22, false),
-                        new Angle(22, false),
-                        new Angle(43)
+                        new Angle(22 + 19, false),
+                        new Angle(22)
                 )
         );
 
@@ -108,6 +108,7 @@ public class DugRobot extends RobotBase {
         telemetry.addLine("");
         telemetry.addLine("- TURRET -");
         telemetry.addData("Heading Towards Goal", headingTowardsGoal.getAngle(Angle.AngleUnit.DEGREES, Angle.AngleSystem.SIGNED));
+        telemetry.addData("Turret Heading Error", headingTowardsGoal.getAngle(Angle.AngleUnit.DEGREES, Angle.AngleSystem.SIGNED) - absoluteTurntableHeading.getAngle(Angle.AngleUnit.DEGREES, Angle.AngleSystem.SIGNED));
         telemetry.addData("Distance From Goal", distanceFromGoal);
         telemetry.addData("Relative Turntable Heading", relativeTurntableHeading.getAngle(Angle.AngleUnit.DEGREES, Angle.AngleSystem.SIGNED));
         telemetry.addData("Absolute Turntable Heading", absoluteTurntableHeading.getAngle(Angle.AngleUnit.DEGREES, Angle.AngleSystem.SIGNED));
@@ -136,7 +137,8 @@ public class DugRobot extends RobotBase {
         turret.getTurntableController().setTargetHeading(new Angle(headingTowardsGoal.getAngle(Angle.AngleSystem.SIGNED) - follower.getHeading()));
         turret.getTurntableController().update();
 
-        // turret.getHoodServoController().setTargetAngle(new Angle(25, false));
+        //turret.getHoodServoController().setTargetAngle(new Angle(25, false));
+        turret.getFlywheelController().setTargetVelocity(3000);
 
 //        turret.getHoodServoController().setTargetAngle(new Angle(hoodAngleByDistanceInterpolator.interpolate(distanceFromGoal)));
 //
