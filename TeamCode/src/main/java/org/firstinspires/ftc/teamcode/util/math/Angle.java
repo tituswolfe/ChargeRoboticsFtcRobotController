@@ -3,7 +3,7 @@ package org.firstinspires.ftc.teamcode.util.math;
 import static com.ThermalEquilibrium.homeostasis.Utils.MathUtils.TAU;
 
 public class Angle {
-    private double angleInRadians;
+    public double angleInRadians;
 
     public enum AngleUnit {
         DEGREES,

@@ -2,7 +2,9 @@ package org.firstinspires.ftc.teamcode.robots.season.decode.dug;
 
 import static org.firstinspires.ftc.teamcode.hardware.drivetrain.pedroPathing.Constants.createDecodeFollower;
 
+import com.bylazar.telemetry.TelemetryManager;
 import com.pedropathing.control.PIDFCoefficients;
+import com.pedropathing.control.PIDFController;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.follower.FollowerConstants;
 import com.pedropathing.ftc.FollowerBuilder;
@@ -12,6 +14,7 @@ import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.PathConstraints;
 import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
@@ -34,7 +37,7 @@ import org.firstinspires.ftc.teamcode.util.math.Angle;
 import java.util.TreeMap;
 
 public class DugRobot extends RobotBase {
-    Turret turret;
+    public Turret turret;
 
     enum TurretMode {
         SET_ANGLE,
@@ -69,12 +72,12 @@ public class DugRobot extends RobotBase {
                 new AngleMotorController(
                         hardwareMap.get(DcMotorEx.class, "turntable"),
                         384.5,
-                        ((double) 16 / 45),
+                        (double) 64 / 16,
                         new Angle(130, false),
                         new Angle(-130, false)
                 ),
                 new AngleServoController(
-                        hardwareMap.get(Servo.class, "hood-servo"),
+                        hardwareMap.get(Servo.class, "hood"),
                         new Angle(0),
                         new Angle(22, false),
                         new Angle(22, false),
@@ -82,18 +85,29 @@ public class DugRobot extends RobotBase {
                 )
         );
 
+//
+//
+//        DcMotorEx intakeMotor = hardwareMap.get(DcMotorEx.class, "intake");
+//        //intakeMotor.setDirection(DcMotorSimple.Direction.REVERSE);
+//        intakeController = new VelocityMotorController(intakeMotor, 384.5, 1);
+//
+//        TreeMap<Double, Double> flywheelSpeedByDistanceMap = new TreeMap<>();
+//        flywheelSpeedByDistanceMap.put(60.0, 1800.0);
+//        flywheelSpeedByDistanceInterpolator = new LinearInterpolator(flywheelSpeedByDistanceMap);
+//
+//        TreeMap<Double, Double> hoodAngleByDistanceMap = new TreeMap<>();
+//        hoodAngleByDistanceMap.put(60.0, 18.5); // TODO: RADIANS
+//        hoodAngleByDistanceInterpolator = new LinearInterpolator(hoodAngleByDistanceMap);
+    }
 
-        DcMotorEx intakeMotor = hardwareMap.get(DcMotorEx.class, "intake");
-        //intakeMotor.setDirection(DcMotorSimple.Direction.REVERSE);
-        intakeController = new VelocityMotorController(intakeMotor, 384.5, 1);
+    @Override
+    public void hardwareTelemetry(TelemetryManager telemetry) {
+        super.hardwareTelemetry(telemetry);
+        telemetry.addData("Heading Towards Goal", headingTowardsGoal.getAngle(Angle.AngleUnit.DEGREES, Angle.AngleSystem.SIGNED));
+        telemetry.addData("Distance From Goal", distanceFromGoal);;
+        telemetry.addData("Relative Turntable Heading", turret.getTurntableController().getAngle().getAngle(Angle.AngleUnit.DEGREES, Angle.AngleSystem.SIGNED));
+        telemetry.addData("Absolute Turntable Heading", turret.getTurntableController().getAngle().getAngle(Angle.AngleUnit.DEGREES, Angle.AngleSystem.SIGNED) + follower.getHeading());
 
-        TreeMap<Double, Double> flywheelSpeedByDistanceMap = new TreeMap<>();
-        flywheelSpeedByDistanceMap.put(60.0, 1800.0);
-        flywheelSpeedByDistanceInterpolator = new LinearInterpolator(flywheelSpeedByDistanceMap);
-
-        TreeMap<Double, Double> hoodAngleByDistanceMap = new TreeMap<>();
-        hoodAngleByDistanceMap.put(60.0, 18.5); // TODO: RADIANS
-        hoodAngleByDistanceInterpolator = new LinearInterpolator(hoodAngleByDistanceMap);
     }
 
     @Override
@@ -113,11 +127,14 @@ public class DugRobot extends RobotBase {
         headingTowardsGoal = new Angle(Math.atan2(displacedPose.getY(), displacedPose.getX()));
         distanceFromGoal = follower.getPose().distanceFrom(targetGoal);
 
-        turret.getFlywheelController().setTargetVelocity(flywheelSpeedByDistanceInterpolator.interpolate(distanceFromGoal));
-        turret.getTurntableController().setTargetAngle(new Angle(headingTowardsGoal.getAngle(Angle.AngleSystem.SIGNED) - follower.getPose().getHeading()));
-        turret.getHoodServoController().setTargetAngle(new Angle(hoodAngleByDistanceInterpolator.interpolate(distanceFromGoal)));
+        turret.getTurntableController().setTargetHeading(new Angle(headingTowardsGoal.getAngle(Angle.AngleSystem.SIGNED)));
+        turret.getTurntableController().update();
 
-        launchServoController.update();
+        // turret.getHoodServoController().setTargetAngle(new Angle(25, false));
+
+//        turret.getHoodServoController().setTargetAngle(new Angle(hoodAngleByDistanceInterpolator.interpolate(distanceFromGoal)));
+//
+//        launchServoController.update();
 
         super.updateHardwareStates();
     }
@@ -161,7 +178,7 @@ public class DugRobot extends RobotBase {
                         .leftRearMotorName("rear-left")
                         .leftFrontMotorName("front-left")
                         .leftFrontMotorDirection(DcMotorSimple.Direction.REVERSE)
-                        .leftRearMotorDirection(DcMotorSimple.Direction.REVERSE)
+                        .leftRearMotorDirection(DcMotorSimple.Direction.FORWARD)
                         .rightFrontMotorDirection(DcMotorSimple.Direction.FORWARD)
                         .rightRearMotorDirection(DcMotorSimple.Direction.FORWARD)
                         .xVelocity(79.5)
@@ -172,8 +189,8 @@ public class DugRobot extends RobotBase {
                         .distanceUnit(DistanceUnit.MM)
                         .hardwareMapName("odometry")
                         .encoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD)
-                        .forwardEncoderDirection(GoBildaPinpointDriver.EncoderDirection.REVERSED)
-                        .strafeEncoderDirection(GoBildaPinpointDriver.EncoderDirection.REVERSED))
+                        .forwardEncoderDirection(GoBildaPinpointDriver.EncoderDirection.FORWARD)
+                        .strafeEncoderDirection(GoBildaPinpointDriver.EncoderDirection.FORWARD))
                 .build();
     }
 

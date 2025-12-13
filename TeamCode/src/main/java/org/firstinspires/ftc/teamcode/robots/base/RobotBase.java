@@ -117,6 +117,7 @@ public abstract class RobotBase {
             telemetry.addData("x", follower.getPose().getX());
             telemetry.addData("y", follower.getPose().getY());
             telemetry.addData("heading", Math.toDegrees(follower.getPose().getHeading()));
+            telemetry.addData("isRobotCentric", isRobotCentric);
             telemetry.addData("Field Centric Offset (Deg)", Math.toDegrees(fieldCentricOffset));
             telemetry.addData("isSlowMode", isSlowMode);
             telemetry.addLine("");
