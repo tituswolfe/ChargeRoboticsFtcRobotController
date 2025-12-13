@@ -12,7 +12,7 @@ import org.firstinspires.ftc.teamcode.util.math.Angle;
 public class AngleMotorController extends MotorController {
     public final Angle maxPositiveLimit;
     public final Angle minNegativeLimit;
-    PIDFController pidfController = new PIDFController(new PIDFCoefficients(0.001, 0, 0, 0));
+    PIDFController pidfController = new PIDFController(new PIDFCoefficients(0.012, 0, 0, 0));
     private Angle targetHeading = new Angle(0);
 
     public AngleMotorController(DcMotorEx dcMotorEx, double ticksPerRevolution, double totalGearRatio, Angle maxPositiveLimit, Angle minNegativeLimit) {

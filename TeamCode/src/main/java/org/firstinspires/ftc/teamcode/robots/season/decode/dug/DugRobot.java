@@ -54,6 +54,8 @@ public class DugRobot extends RobotBase {
     private Pose targetGoal;
     private Angle headingTowardsGoal;
     private double distanceFromGoal;
+    private Angle relativeTurntableHeading;
+    private Angle absoluteTurntableHeading;
 
     private LinearInterpolator flywheelSpeedByDistanceInterpolator;
     private LinearInterpolator hoodAngleByDistanceInterpolator;
@@ -103,10 +105,12 @@ public class DugRobot extends RobotBase {
     @Override
     public void hardwareTelemetry(TelemetryManager telemetry) {
         super.hardwareTelemetry(telemetry);
+        telemetry.addLine("");
+        telemetry.addLine("- TURRET -");
         telemetry.addData("Heading Towards Goal", headingTowardsGoal.getAngle(Angle.AngleUnit.DEGREES, Angle.AngleSystem.SIGNED));
-        telemetry.addData("Distance From Goal", distanceFromGoal);;
-        telemetry.addData("Relative Turntable Heading", turret.getTurntableController().getAngle().getAngle(Angle.AngleUnit.DEGREES, Angle.AngleSystem.SIGNED));
-        telemetry.addData("Absolute Turntable Heading", turret.getTurntableController().getAngle().getAngle(Angle.AngleUnit.DEGREES, Angle.AngleSystem.SIGNED) + follower.getHeading());
+        telemetry.addData("Distance From Goal", distanceFromGoal);
+        telemetry.addData("Relative Turntable Heading", relativeTurntableHeading.getAngle(Angle.AngleUnit.DEGREES, Angle.AngleSystem.SIGNED));
+        telemetry.addData("Absolute Turntable Heading", absoluteTurntableHeading.getAngle(Angle.AngleUnit.DEGREES, Angle.AngleSystem.SIGNED));
 
     }
 
@@ -126,8 +130,10 @@ public class DugRobot extends RobotBase {
         Pose displacedPose = targetGoal.minus(follower.getPose());
         headingTowardsGoal = new Angle(Math.atan2(displacedPose.getY(), displacedPose.getX()));
         distanceFromGoal = follower.getPose().distanceFrom(targetGoal);
+        relativeTurntableHeading = turret.getTurntableController().getAngle();
+        absoluteTurntableHeading = new Angle(turret.getTurntableController().getAngle().getAngle(Angle.AngleUnit.RADIANS, Angle.AngleSystem.SIGNED) + follower.getHeading());
 
-        turret.getTurntableController().setTargetHeading(new Angle(headingTowardsGoal.getAngle(Angle.AngleSystem.SIGNED)));
+        turret.getTurntableController().setTargetHeading(new Angle(headingTowardsGoal.getAngle(Angle.AngleSystem.SIGNED) - follower.getHeading()));
         turret.getTurntableController().update();
 
         // turret.getHoodServoController().setTargetAngle(new Angle(25, false));
