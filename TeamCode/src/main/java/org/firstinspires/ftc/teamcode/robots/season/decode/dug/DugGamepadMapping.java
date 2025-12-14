@@ -2,8 +2,8 @@ package org.firstinspires.ftc.teamcode.robots.season.decode.dug;
 
 import org.firstinspires.ftc.teamcode.robots.base.GamepadMapping;
 
-public class DugGamepadMapping extends GamepadMapping<DugRobot> {
-    public DugGamepadMapping(DugRobot dugRobot) {
+public class DugGamepadMapping extends GamepadMapping<JetFireRobot> {
+    public DugGamepadMapping(JetFireRobot dugRobot) {
         super(dugRobot);
     }
 
@@ -74,7 +74,7 @@ public class DugGamepadMapping extends GamepadMapping<DugRobot> {
 
     @Override
     public void onRightBumperPressed() {
-
+        robot.setAutoAimOn(!robot.isAutoAimOn());
     }
 
     @Override

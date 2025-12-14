@@ -10,54 +10,41 @@ import org.firstinspires.ftc.teamcode.util.math.Angle;
 
 // without limit version
 public class AngleMotorController extends MotorController {
-    public final Angle maxPositiveLimit;
-    public final Angle minNegativeLimit;
-    PIDFController pidfController = new PIDFController(new PIDFCoefficients(0.015, 0, 0, 0));
-    private Angle targetHeading = new Angle(0);
-    private Angle error = new Angle(0);
 
-    public AngleMotorController(DcMotorEx dcMotorEx, double ticksPerRevolution, double totalGearRatio, Angle maxPositiveLimit, Angle minNegativeLimit) {
-        super(dcMotorEx, ticksPerRevolution, totalGearRatio);
+    private final Angle maxPositiveLimit; // MAKE PRIVATE
+    private final Angle minNegativeLimit;
+    private Angle targetHeading = new Angle(0);
+    private final boolean reversePower;
+
+    public AngleMotorController(DcMotorEx dcMotorEx, DcMotorSimple.Direction direction, PIDFCoefficients pidfCoefficients, double ticksPerRevolution, double totalGearRatio, Angle maxPositiveLimit, Angle minNegativeLimit, boolean reversePower) {
+        super(dcMotorEx, direction, pidfCoefficients, ticksPerRevolution, totalGearRatio);
+
+        assert maxPositiveLimit.getAngle(Angle.AngleSystem.SIGNED) > minNegativeLimit.getAngle(Angle.AngleSystem.SIGNED);
         this.maxPositiveLimit = maxPositiveLimit;
         this.minNegativeLimit = minNegativeLimit;
 
-        assert maxPositiveLimit.getAngle(Angle.AngleSystem.SIGNED) > minNegativeLimit.getAngle(Angle.AngleSystem.SIGNED);
+        this.reversePower = reversePower;
 
-        this.dcMotorEx.setDirection(DcMotorSimple.Direction.FORWARD);
-        this.dcMotorEx.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
         this.dcMotorEx.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
     }
 
-    public void setTargetHeading(Angle targetHeading) {
-
-        // -130 - 130 =-260 ( go backwards )
-        // 130 - -130 = 260
-
-        // -130 - 0 = -130
-        //error = new Angle(targetHeading.getAngle(Angle.AngleUnit.DEGREES, Angle.AngleSystem.SIGNED) -  getAngle().getAngle(Angle.AngleUnit.DEGREES, Angle.AngleSystem.SIGNED));
-        error = new Angle(getConstrainedTurn(targetHeading.getAngle(Angle.AngleUnit.DEGREES, Angle.AngleSystem.SIGNED),  getAngle().getAngle(Angle.AngleUnit.DEGREES, Angle.AngleSystem.SIGNED)));
-
-        if (targetHeading.getAngle(Angle.AngleSystem.SIGNED) >= maxPositiveLimit.getAngle(Angle.AngleSystem.SIGNED)) {
-            this.targetHeading = maxPositiveLimit;
-        } else if (targetHeading.getAngle(Angle.AngleSystem.SIGNED) < minNegativeLimit.getAngle(Angle.AngleSystem.SIGNED)) {
-            this.targetHeading = minNegativeLimit;
-        } else {
-            this.targetHeading = targetHeading; // Use the multi-turn-aware target
-        }
-//
-//        if (Math.abs(error) > Math.toRadians(180)) {
-//            targetHeading = new Angle(0);
-//        }
-    }
-
+    @Override
     public void update() {
         pidfController.updateError(getConstrainedTurn(targetHeading.getAngle(Angle.AngleUnit.DEGREES, Angle.AngleSystem.SIGNED),  getAngle().getAngle(Angle.AngleUnit.DEGREES, Angle.AngleSystem.SIGNED)));
-
-        double motorPower = -pidfController.run();
-
-
-        this.dcMotorEx.setPower(motorPower);
+        double power =  pidfController.run();
+        this.dcMotorEx.setPower(reversePower ? -power : power);
     }
+
+    public void setTargetHeading(Angle targetHeading) {
+        this.targetHeading = new Angle(Math.min(
+                maxPositiveLimit.getAngle(Angle.AngleSystem.SIGNED),
+                Math.max(
+                        minNegativeLimit.getAngle(Angle.AngleSystem.SIGNED),
+                        targetHeading.getAngle(Angle.AngleSystem.SIGNED)
+                )
+        ));
+    }
+
 
     /**
      * Calculates the required turn (error) to reach the target,
@@ -84,7 +71,7 @@ public class AngleMotorController extends MotorController {
 
         // Scenario 1: Shortest path goes beyond the MAX hardstop (130)
         // AND the shortest path turn is Clockwise (positive error).
-        if (predictedPosition > 130 && shortestError > 0) {
+        if (predictedPosition > maxPositiveLimit.getAngle(Angle.AngleUnit.DEGREES, Angle.AngleSystem.SIGNED) && shortestError > 0) {
 
             // This means the shortest path is CLOCKWISE, but it would crash.
             // The safe route is the longer COUNTER-CLOCKWISE path.
@@ -96,7 +83,7 @@ public class AngleMotorController extends MotorController {
 
         // Scenario 2: Shortest path goes beyond the MIN hardstop (-130)
         // AND the shortest path turn is Counter-Clockwise (negative error).
-        if (predictedPosition < -130 && shortestError < 0) {
+        if (predictedPosition < minNegativeLimit.getAngle(Angle.AngleUnit.DEGREES, Angle.AngleSystem.SIGNED)  && shortestError < 0) {
 
             // This means the shortest path is COUNTER-CLOCKWISE, but it would crash.
             // The safe route is the longer CLOCKWISE path.

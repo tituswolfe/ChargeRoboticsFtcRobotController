@@ -1,5 +1,8 @@
 package org.firstinspires.ftc.teamcode.hardware.controllers.motor;
 
+import com.pedropathing.control.PIDFCoefficients;
+import com.pedropathing.control.PIDFController;
+import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
@@ -8,23 +11,28 @@ import org.firstinspires.ftc.teamcode.util.math.MathUtil;
 public abstract class MotorController {
     protected final DcMotorEx dcMotorEx;
     protected final double ticksPerRevolution;
+    protected PIDFController pidfController;
+
+    private double totalGearRatio;
     protected double ticksPerOutputDegree;
     protected double ticksPerOutputRadian;
-    private double totalGearRatio;
 
     /**
      * @param dcMotorEx
      * @param ticksPerRevolution encoder ticks per revolution (check motor for info)
      * @param totalGearRatio amount of motor rotations per 1 output rotations -> totalGearRatio (input) : 1 (output)
      */
-    public MotorController(DcMotorEx dcMotorEx, DcMotorSimple.Direction direction, double ticksPerRevolution, double totalGearRatio) {
+    public MotorController(DcMotorEx dcMotorEx, DcMotorSimple.Direction direction, PIDFCoefficients pidfCoefficients, double ticksPerRevolution, double totalGearRatio) {
         this.dcMotorEx = dcMotorEx;
         this.dcMotorEx.setDirection(direction);
+        pidfController = new PIDFController(pidfCoefficients);
         this.ticksPerRevolution = ticksPerRevolution;
-        this.ticksPerOutputDegree = (ticksPerRevolution *  totalGearRatio) / 360;
-        this.ticksPerOutputRadian = (ticksPerRevolution *  totalGearRatio) / MathUtil.TAU;
-        this.totalGearRatio = totalGearRatio;
+        setTotalGearRatio(totalGearRatio);
+
+        this.dcMotorEx.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
     }
+
+    public abstract void update();
 
     public DcMotorEx getDcMotorEx() {
         return dcMotorEx;
@@ -34,8 +42,12 @@ public abstract class MotorController {
         return ticksPerRevolution;
     }
 
-    public double getTicksPerOutputDegree() {
-        return ticksPerOutputDegree;
+    public PIDFController getPidfController() {
+        return pidfController;
+    }
+
+    public void setPidfController(PIDFController pidfController) {
+        this.pidfController = pidfController;
     }
 
     public double getTotalGearRatio() {
@@ -46,5 +58,13 @@ public abstract class MotorController {
         this.totalGearRatio = totalGearRatio;
         this.ticksPerOutputDegree = (ticksPerRevolution *  totalGearRatio) / 360;
         this.ticksPerOutputRadian = (ticksPerRevolution *  totalGearRatio) / MathUtil.TAU;
+    }
+
+    public double getTicksPerOutputDegree() {
+        return ticksPerOutputDegree;
+    }
+
+    public double getTicksPerOutputRadian() {
+        return ticksPerOutputRadian;
     }
 }

@@ -8,10 +8,10 @@ import com.pedropathing.paths.PathChain;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
 import org.firstinspires.ftc.teamcode.robots.base.opmodes.BaseAuto;
-import org.firstinspires.ftc.teamcode.robots.season.decode.jetfire.JetFireRobot;
+import org.firstinspires.ftc.teamcode.robots.season.decode.jetfire.DugRobot;
 
-@Autonomous(name = "Red Goal", group = "jetfire", preselectTeleOp = "JetFire")
-public class RedGoal extends BaseAuto<JetFireRobot> {
+@Autonomous(name = "Red Goal", group = "dug", preselectTeleOp = "Dug")
+public class RedGoal extends BaseAuto<DugRobot> {
     Pose startPose = new Pose(-60, 47, Math.toRadians(124));
     Pose shootClosePose = new Pose(-33, 18.8, Math.toRadians(120));
     Pose startIntakeLine1Pose = new Pose(-17.6, 31, Math.toRadians(-90));
@@ -35,8 +35,8 @@ public class RedGoal extends BaseAuto<JetFireRobot> {
         switch (pathState) {
             // START / GO TO SHOOT POS
             case 0:
-                robot.setFlywheelSpeedMode(JetFireRobot.FlywheelSpeedMode.AUTO);
-                robot.setIntakeMode(JetFireRobot.IntakeMode.INTAKE);
+                robot.setFlywheelSpeedMode(DugRobot.FlywheelSpeedMode.AUTO);
+                robot.setIntakeMode(DugRobot.IntakeMode.INTAKE);
 
                 robot.getFollower().followPath(shoot1, true);
 
@@ -138,8 +138,8 @@ public class RedGoal extends BaseAuto<JetFireRobot> {
                 }
             case -2:
                 if (!robot.getFollower().isBusy()) {
-                    robot.setFlywheelSpeedMode(JetFireRobot.FlywheelSpeedMode.OFF);
-                    robot.setIntakeMode(JetFireRobot.IntakeMode.OFF);
+                    robot.setFlywheelSpeedMode(DugRobot.FlywheelSpeedMode.OFF);
+                    robot.setIntakeMode(DugRobot.IntakeMode.OFF);
                 }
                 break;
         }
@@ -185,8 +185,8 @@ public class RedGoal extends BaseAuto<JetFireRobot> {
     }
 
     @Override
-    protected JetFireRobot instantiateRobot() {
-        return new JetFireRobot();
+    protected DugRobot instantiateRobot() {
+        return new DugRobot();
     }
 
     @Override

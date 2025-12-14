@@ -7,11 +7,9 @@ import com.pedropathing.control.PIDFController;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
-import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
-import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.hardware.controllers.motor.VelocityMotorController;
@@ -27,7 +25,7 @@ import org.firstinspires.ftc.teamcode.util.math.Angle;
 import java.util.TreeMap;
 
 @Configurable
-public class JetFireRobot extends RobotBase {
+public class DugRobot extends RobotBase {
     public static final int BLUE_GOAL_AP_ID = 20;
     public static final int RED_GOAL_AP_ID = 24;
 
@@ -103,22 +101,15 @@ public class JetFireRobot extends RobotBase {
         topFlywheelRatioByDistanceInterpolator = new LinearInterpolator(topFlywheelRatioByDistance);
 
         // Flywheels
-        DcMotorEx flywheelMotor1 = hardwareMap.get(DcMotorEx.class, "top-flywheel");
-        flywheelMotor1.setDirection(DcMotorSimple.Direction.FORWARD);
-        flywheelMotor1.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(300, 15, 20, 0));
 
-        DcMotorEx flywheelMotor2 = hardwareMap.get(DcMotorEx.class, "bottom-flywheel");
-        flywheelMotor2.setDirection(DcMotorSimple.Direction.REVERSE);
-        flywheelMotor2.setPIDFCoefficients(DcMotor.RunMode.RUN_USING_ENCODER, new PIDFCoefficients(300, 15, 20, 0));
-
-        topFlywheel = new VelocityMotorController(flywheelMotor1, 28, 1);
-        bottomFlywheel = new VelocityMotorController(flywheelMotor2, 28, 1);
+        topFlywheel = new VelocityMotorController(hardwareMap.get(DcMotorEx.class, "top-flywheel"), DcMotorSimple.Direction.FORWARD, new com.pedropathing.control.PIDFCoefficients(300, 15, 20, 0), 28, 1);
+        bottomFlywheel = new VelocityMotorController(hardwareMap.get(DcMotorEx.class, "bottom-flywheel"), DcMotorSimple.Direction.REVERSE, new com.pedropathing.control.PIDFCoefficients(300, 15, 20, 0), 28, 1);
 
         // Intake
         DcMotorEx intakeMotor = hardwareMap.get(DcMotorEx.class, "intake");
         intakeMotor.setDirection(DcMotorSimple.Direction.REVERSE);
 
-        intake = new VelocityMotorController(intakeMotor, 384.5, 1);
+        intake = new VelocityMotorController(intakeMotor, DcMotorSimple.Direction.REVERSE, new com.pedropathing.control.PIDFCoefficients(300, 15, 20, 0),  384.5, 1); // DOESN'T NEED PID
 
         // Servos
         launchServoController = new ServoTimerController(hardwareMap.get(Servo.class, "launch"));

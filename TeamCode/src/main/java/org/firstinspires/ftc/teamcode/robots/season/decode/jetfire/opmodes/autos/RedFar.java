@@ -7,10 +7,10 @@ import com.pedropathing.paths.PathChain;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
 import org.firstinspires.ftc.teamcode.robots.base.opmodes.BaseAuto;
-import org.firstinspires.ftc.teamcode.robots.season.decode.jetfire.JetFireRobot;
+import org.firstinspires.ftc.teamcode.robots.season.decode.jetfire.DugRobot;
 
-@Autonomous(name = "Red Far", group = "jetfire", preselectTeleOp = "JetFire")
-public class RedFar extends BaseAuto<JetFireRobot> {
+@Autonomous(name = "Red Far", group = "dug", preselectTeleOp = "Dug")
+public class RedFar extends BaseAuto<DugRobot> {
     public Pose startPose = new Pose(57.8, 24, Math.toRadians(-180));
     public Pose endPose = new Pose(33.8, 24, Math.toRadians(-180));
 
@@ -37,8 +37,8 @@ public class RedFar extends BaseAuto<JetFireRobot> {
     }
 
     @Override
-    protected JetFireRobot instantiateRobot() {
-        return new JetFireRobot();
+    protected DugRobot instantiateRobot() {
+        return new DugRobot();
     }
 
     @Override

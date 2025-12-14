@@ -6,12 +6,12 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.robots.base.GamepadMapping;
 import org.firstinspires.ftc.teamcode.robots.base.opmodes.TeleOpBase;
-import org.firstinspires.ftc.teamcode.robots.season.decode.jetfire.JetFireRobot;
-import org.firstinspires.ftc.teamcode.robots.season.decode.jetfire.JetFireGamepadMapping;
+import org.firstinspires.ftc.teamcode.robots.season.decode.jetfire.DugRobot;
+import org.firstinspires.ftc.teamcode.robots.season.decode.jetfire.DugGamepadMapping;
 
 
-@TeleOp(name = "JetFire", group = "jetfire")
-public class Teleop extends TeleOpBase<JetFireRobot> {
+@TeleOp(name = "Dug", group = "dug")
+public class Teleop extends TeleOpBase<DugRobot> {
     @Override
     public void buildPaths(Follower follower) {
 
@@ -44,17 +44,17 @@ public class Teleop extends TeleOpBase<JetFireRobot> {
     }
 
     @Override
-    protected JetFireRobot instantiateRobot() {
-        return new JetFireRobot();
+    protected DugRobot instantiateRobot() {
+        return new DugRobot();
     }
 
     @Override
-    protected GamepadMapping<JetFireRobot> instantiateGamepadMapping1() {
-        return new JetFireGamepadMapping(robot);
+    protected GamepadMapping<DugRobot> instantiateGamepadMapping1() {
+        return new DugGamepadMapping(robot);
     }
 
     @Override
-    protected GamepadMapping<JetFireRobot> instantiateGamepadMapping2() {
+    protected GamepadMapping<DugRobot> instantiateGamepadMapping2() {
         return null; // new JetFireGamepadMapping2(robot);
     }
 }

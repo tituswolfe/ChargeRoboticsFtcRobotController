@@ -1,25 +1,29 @@
 package org.firstinspires.ftc.teamcode.hardware.controllers.motor;
 
+import com.pedropathing.control.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
+import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
 public class VelocityMotorController extends MotorController{
     private double targetRotationsPerMinute = 0;
 
-    public VelocityMotorController(DcMotorEx dcMotorEx, double ticksPerRevolution, double totalGearRatio) {
-        super(dcMotorEx, ticksPerRevolution, totalGearRatio);
-
+    public VelocityMotorController(DcMotorEx dcMotorEx, DcMotorSimple.Direction direction, PIDFCoefficients pidfCoefficients, double ticksPerRevolution, double totalGearRatio) {
+        super(dcMotorEx, direction, pidfCoefficients, ticksPerRevolution, totalGearRatio);
         this.dcMotorEx.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
     }
 
-    // TODO: ADJUST ALL INSTANCES
+    @Override
+    public void update() {
+        pidfController.updateError(targetRotationsPerMinute - getVelocity());
+        this.dcMotorEx.setPower(pidfController.run());
+    }
 
     /**
      * @param rotationsPerMinute
      */
     public void setTargetVelocity(double rotationsPerMinute) {
         this.targetRotationsPerMinute = rotationsPerMinute;
-        dcMotorEx.setVelocity((rotationsPerMinute / 60) * ticksPerRevolution);
     }
 
     /**

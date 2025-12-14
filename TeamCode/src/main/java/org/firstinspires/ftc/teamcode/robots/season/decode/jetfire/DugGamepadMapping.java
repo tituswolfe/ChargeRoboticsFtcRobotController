@@ -4,11 +4,11 @@ import org.firstinspires.ftc.teamcode.robots.base.GamepadMapping;
 import org.firstinspires.ftc.teamcode.robots.base.StaticData;
 import org.firstinspires.ftc.teamcode.robots.base.opmodes.OpModeBase;
 
-public class JetFireGamepadMapping extends GamepadMapping<JetFireRobot> {
+public class DugGamepadMapping extends GamepadMapping<DugRobot> {
     boolean isIntakeActive = false;
     boolean headingLock = false;
 
-    public JetFireGamepadMapping(JetFireRobot decodeRobot) {
+    public DugGamepadMapping(DugRobot decodeRobot) {
         super(decodeRobot);
     }
 
@@ -59,11 +59,11 @@ public class JetFireGamepadMapping extends GamepadMapping<JetFireRobot> {
     @Override
     public void leftTrigger(float val) {
         if (val > 0.1) {
-            robot.setIntakeMode(JetFireRobot.IntakeMode.REVERSE);
+            robot.setIntakeMode(DugRobot.IntakeMode.REVERSE);
         } else if (isIntakeActive) {
-            robot.setIntakeMode(JetFireRobot.IntakeMode.INTAKE);
+            robot.setIntakeMode(DugRobot.IntakeMode.INTAKE);
         } else {
-            robot.setIntakeMode(JetFireRobot.IntakeMode.OFF);
+            robot.setIntakeMode(DugRobot.IntakeMode.OFF);
         }
     }
 
@@ -96,9 +96,9 @@ public class JetFireGamepadMapping extends GamepadMapping<JetFireRobot> {
     public void onLeftBumperPressed() {
         isIntakeActive = !isIntakeActive;
         if (isIntakeActive) {
-            robot.setIntakeMode(JetFireRobot.IntakeMode.INTAKE);
+            robot.setIntakeMode(DugRobot.IntakeMode.INTAKE);
         } else {
-            robot.setIntakeMode(JetFireRobot.IntakeMode.OFF);
+            robot.setIntakeMode(DugRobot.IntakeMode.OFF);
         }
         // isIntakeActive = toggle(isIntakeActive, robot::setIntakeMode, robot::stopIntake);
     }
@@ -106,9 +106,9 @@ public class JetFireGamepadMapping extends GamepadMapping<JetFireRobot> {
     @Override
     public void onRightBumperPressed() {
         robot.setFlywheelSpeedMode(switch (robot.getFlywheelSpeedMode()) {
-            case AUTO -> JetFireRobot.FlywheelSpeedMode.OFF;
-            case MANUEL -> JetFireRobot.FlywheelSpeedMode.OFF;
-            case OFF -> JetFireRobot.FlywheelSpeedMode.AUTO;
+            case AUTO -> DugRobot.FlywheelSpeedMode.OFF;
+            case MANUEL -> DugRobot.FlywheelSpeedMode.OFF;
+            case OFF -> DugRobot.FlywheelSpeedMode.AUTO;
         });
     }
 

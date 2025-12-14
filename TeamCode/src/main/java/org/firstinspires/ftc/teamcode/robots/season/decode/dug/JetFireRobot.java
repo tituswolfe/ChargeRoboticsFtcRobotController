@@ -1,10 +1,8 @@
 package org.firstinspires.ftc.teamcode.robots.season.decode.dug;
 
-import static org.firstinspires.ftc.teamcode.hardware.drivetrain.pedroPathing.Constants.createDecodeFollower;
-
+import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.telemetry.TelemetryManager;
 import com.pedropathing.control.PIDFCoefficients;
-import com.pedropathing.control.PIDFController;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.follower.FollowerConstants;
 import com.pedropathing.ftc.FollowerBuilder;
@@ -14,7 +12,6 @@ import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.PathConstraints;
 import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
-import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
@@ -24,25 +21,19 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.hardware.controllers.motor.AngleMotorController;
 import org.firstinspires.ftc.teamcode.hardware.controllers.motor.VelocityMotorController;
 import org.firstinspires.ftc.teamcode.hardware.controllers.servo.AngleServoController;
-import org.firstinspires.ftc.teamcode.hardware.controllers.servo.ServoController;
 import org.firstinspires.ftc.teamcode.hardware.controllers.servo.ServoTimerController;
 import org.firstinspires.ftc.teamcode.hardware.controllers.subsystems.Turret;
 import org.firstinspires.ftc.teamcode.robots.base.RobotBase;
-import org.firstinspires.ftc.teamcode.robots.base.StaticData;
 import org.firstinspires.ftc.teamcode.robots.base.opmodes.OpModeBase;
-import org.firstinspires.ftc.teamcode.robots.season.decode.jetfire.JetFireRobot;
 import org.firstinspires.ftc.teamcode.util.LinearInterpolator;
 import org.firstinspires.ftc.teamcode.util.math.Angle;
 
 import java.util.TreeMap;
 
-public class DugRobot extends RobotBase {
+@Configurable
+public class JetFireRobot extends RobotBase {
     public Turret turret;
-
-    enum TurretMode {
-        SET_ANGLE,
-        AIM_AT_GOAL
-    }
+    private boolean isAutoAimOn = false;
 
     public enum IntakeMode {
         INTAKE,
@@ -56,8 +47,9 @@ public class DugRobot extends RobotBase {
     private double distanceFromGoal;
     private Angle relativeTurntableHeading;
     private Angle absoluteTurntableHeading;
+    private Angle targetTurntableHeading;
 
-    private LinearInterpolator flywheelSpeedByDistanceInterpolator;
+    private LinearInterpolator flywheelVelocityByDistanceInterpolator;
     private LinearInterpolator hoodAngleByDistanceInterpolator;
 
     ServoTimerController launchServoController;
@@ -67,16 +59,27 @@ public class DugRobot extends RobotBase {
     VelocityMotorController intakeController;
     private static final double INTAKE_SPEED = 435;
 
+    public static PIDFCoefficients flywheelPIDFCoefficients = new PIDFCoefficients(0.005, 0, 0, 0);
+
     @Override
     public void initHardware(HardwareMap hardwareMap) {
         turret = new Turret(
-                new VelocityMotorController(hardwareMap.get(DcMotorEx.class, "flywheel"), 28, 1),
+                new VelocityMotorController(
+                        hardwareMap.get(DcMotorEx.class, "flywheel"),
+                        DcMotorSimple.Direction.REVERSE,
+                        flywheelPIDFCoefficients,
+                        28,
+                        1
+                ),
                 new AngleMotorController(
-                        hardwareMap.get(DcMotorEx.class, "turntable"),
+                        hardwareMap.get(DcMotorEx.class, "turntable"), // TODO: STATIC HEADING MOVE OVER FROM AUTO
+                        DcMotorSimple.Direction.FORWARD, // To match odometry heading system
+                        new PIDFCoefficients(0.015, 0, 0, 0),
                         384.5,
                         (double) 64 / 16,
                         new Angle(130, false),
-                        new Angle(-130, false)
+                        new Angle(-130, false),
+                        true // reverse due to gearing
                 ),
                 new AngleServoController(
                         hardwareMap.get(Servo.class, "hood"),
@@ -85,6 +88,8 @@ public class DugRobot extends RobotBase {
                         new Angle(22 + 19, false),
                         new Angle(22)
                 )
+
+
         );
 
 //
@@ -92,27 +97,36 @@ public class DugRobot extends RobotBase {
 //        DcMotorEx intakeMotor = hardwareMap.get(DcMotorEx.class, "intake");
 //        //intakeMotor.setDirection(DcMotorSimple.Direction.REVERSE);
 //        intakeController = new VelocityMotorController(intakeMotor, 384.5, 1);
-//
-//        TreeMap<Double, Double> flywheelSpeedByDistanceMap = new TreeMap<>();
-//        flywheelSpeedByDistanceMap.put(60.0, 1800.0);
-//        flywheelSpeedByDistanceInterpolator = new LinearInterpolator(flywheelSpeedByDistanceMap);
-//
-//        TreeMap<Double, Double> hoodAngleByDistanceMap = new TreeMap<>();
-//        hoodAngleByDistanceMap.put(60.0, 18.5); // TODO: RADIANS
-//        hoodAngleByDistanceInterpolator = new LinearInterpolator(hoodAngleByDistanceMap);
+
+        TreeMap<Double, Double> flywheelSpeedByDistanceMap = new TreeMap<>();
+        // INCH, RPM
+        flywheelSpeedByDistanceMap.put(60.0, 1000.0);
+        flywheelVelocityByDistanceInterpolator = new LinearInterpolator(flywheelSpeedByDistanceMap);
+
+        TreeMap<Double, Double> hoodAngleByDistanceMap = new TreeMap<>();
+        // INCH, DEGREES
+        hoodAngleByDistanceMap.put(60.0, 18.5);
+        hoodAngleByDistanceInterpolator = new LinearInterpolator(hoodAngleByDistanceMap);
     }
 
     @Override
     public void hardwareTelemetry(TelemetryManager telemetry) {
         super.hardwareTelemetry(telemetry);
         telemetry.addLine("");
-        telemetry.addLine("- TURRET -");
+        telemetry.addLine("- TURNTABLE -");
         telemetry.addData("Heading Towards Goal", headingTowardsGoal.getAngle(Angle.AngleUnit.DEGREES, Angle.AngleSystem.SIGNED));
         telemetry.addData("Turret Heading Error", headingTowardsGoal.getAngle(Angle.AngleUnit.DEGREES, Angle.AngleSystem.SIGNED) - absoluteTurntableHeading.getAngle(Angle.AngleUnit.DEGREES, Angle.AngleSystem.SIGNED));
         telemetry.addData("Distance From Goal", distanceFromGoal);
         telemetry.addData("Relative Turntable Heading", relativeTurntableHeading.getAngle(Angle.AngleUnit.DEGREES, Angle.AngleSystem.SIGNED));
         telemetry.addData("Absolute Turntable Heading", absoluteTurntableHeading.getAngle(Angle.AngleUnit.DEGREES, Angle.AngleSystem.SIGNED));
-
+        telemetry.addData("Target Relative Heading", targetTurntableHeading.getAngle(Angle.AngleUnit.DEGREES, Angle.AngleSystem.SIGNED));
+        telemetry.addLine("");
+        telemetry.addLine("- FLYWHEEL -");
+        telemetry.addData("Flywheel Velocity (RPM)", turret.flywheelController().getVelocity());
+        telemetry.addData("Flywheel Target Velocity (RPM)", turret.flywheelController().getTargetVelocity());
+        telemetry.addData("Flywheel PIDF Coefficients", flywheelPIDFCoefficients);
+        telemetry.addLine("");
+        telemetry.addLine("- HOOD -");
     }
 
     @Override
@@ -131,18 +145,23 @@ public class DugRobot extends RobotBase {
         Pose displacedPose = targetGoal.minus(follower.getPose());
         headingTowardsGoal = new Angle(Math.atan2(displacedPose.getY(), displacedPose.getX()));
         distanceFromGoal = follower.getPose().distanceFrom(targetGoal);
-        relativeTurntableHeading = turret.getTurntableController().getAngle();
-        absoluteTurntableHeading = new Angle(turret.getTurntableController().getAngle().getAngle(Angle.AngleUnit.RADIANS, Angle.AngleSystem.SIGNED) + follower.getHeading());
+        relativeTurntableHeading = turret.turntableController().getAngle();
+        absoluteTurntableHeading = new Angle(relativeTurntableHeading.getAngle(Angle.AngleSystem.SIGNED) + follower.getHeading());
+        targetTurntableHeading = isAutoAimOn ? new Angle(headingTowardsGoal.getAngle(Angle.AngleSystem.SIGNED) - follower.getHeading()) : new Angle(0);
 
-        turret.getTurntableController().setTargetHeading(new Angle(headingTowardsGoal.getAngle(Angle.AngleSystem.SIGNED) - follower.getHeading()));
-        turret.getTurntableController().update();
+        turret.update(
+                flywheelVelocityByDistanceInterpolator.interpolate(distanceFromGoal),
+                targetTurntableHeading,
+                new Angle(hoodAngleByDistanceInterpolator.interpolate(distanceFromGoal))
+        );
 
-        //turret.getHoodServoController().setTargetAngle(new Angle(25, false));
-        turret.getFlywheelController().setTargetVelocity(3000);
 
-//        turret.getHoodServoController().setTargetAngle(new Angle(hoodAngleByDistanceInterpolator.interpolate(distanceFromGoal)));
-//
 //        launchServoController.update();
+
+        // Testing
+        if (flywheelPIDFCoefficients != turret.flywheelController().getPidfController().getCoefficients()) {
+            turret.flywheelController().getPidfController().setCoefficients(flywheelPIDFCoefficients);
+        }
 
         super.updateHardwareStates();
     }
@@ -158,6 +177,15 @@ public class DugRobot extends RobotBase {
             case INTAKE -> INTAKE_SPEED;
             case REVERSE -> -INTAKE_SPEED;
         });
+    }
+
+
+    public boolean isAutoAimOn() {
+        return isAutoAimOn;
+    }
+
+    public void setAutoAimOn(boolean autoAimOn) {
+        isAutoAimOn = autoAimOn;
     }
 
     @Override

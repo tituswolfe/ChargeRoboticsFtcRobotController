@@ -8,7 +8,7 @@ import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.PIDFCoefficients;
 
-@TeleOp(name = "JetFire Debug")
+@TeleOp(name = "Dug Debug")
 @Configurable
 @Disabled
 public class DebugTeleOp extends Teleop {
