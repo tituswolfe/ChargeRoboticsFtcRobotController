@@ -30,7 +30,11 @@ public class AngleMotorController extends MotorController {
 
     @Override
     public void update() {
+        // TODO: Add other componets to PIDF Controller
         pidfController.updateError(getConstrainedTurn(targetHeading.getAngle(Angle.AngleUnit.DEGREES, Angle.AngleSystem.SIGNED),  getAngle().getAngle(Angle.AngleUnit.DEGREES, Angle.AngleSystem.SIGNED)));
+        pidfController.updateFeedForwardInput(targetHeading.getAngle(Angle.AngleUnit.DEGREES, Angle.AngleSystem.SIGNED));
+        pidfController.updatePosition(getAngle().getAngle(Angle.AngleUnit.DEGREES, Angle.AngleSystem.SIGNED));
+
         double power =  pidfController.run();
         this.dcMotorEx.setPower(reversePower ? -power : power);
     }

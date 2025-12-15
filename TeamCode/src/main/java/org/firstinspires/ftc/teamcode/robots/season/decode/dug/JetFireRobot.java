@@ -32,8 +32,16 @@ import java.util.TreeMap;
 
 @Configurable
 public class JetFireRobot extends RobotBase {
-    public Turret turret;
-    private boolean isAutoAimOn = false;
+    private Turret turret;
+    private static boolean isAutoAimOn = false;
+
+    enum FlywheelMode {
+        AUTO,
+        SET_VELOCITY,
+        OFF
+    }
+    private static FlywheelMode flywheelMode = FlywheelMode.OFF;
+    private static double flywheelSetVelocity = 1000;
 
     public enum IntakeMode {
         INTAKE,
@@ -48,6 +56,7 @@ public class JetFireRobot extends RobotBase {
     private Angle relativeTurntableHeading;
     private Angle absoluteTurntableHeading;
     private Angle targetTurntableHeading;
+    private boolean isReadyToShoot;
 
     private LinearInterpolator flywheelVelocityByDistanceInterpolator;
     private LinearInterpolator hoodAngleByDistanceInterpolator;
@@ -59,7 +68,8 @@ public class JetFireRobot extends RobotBase {
     VelocityMotorController intakeController;
     private static final double INTAKE_SPEED = 435;
 
-    public static PIDFCoefficients flywheelPIDFCoefficients = new PIDFCoefficients(0.005, 0, 0, 0);
+    public static PIDFCoefficients flywheelPIDFCoefficients = new PIDFCoefficients(0.0027, 0, 0, 0.0002);
+    public static PIDFCoefficients turntablePIDFCoefficients = new PIDFCoefficients(0.015, 0, 0, 0);
 
     @Override
     public void initHardware(HardwareMap hardwareMap) {
@@ -74,7 +84,7 @@ public class JetFireRobot extends RobotBase {
                 new AngleMotorController(
                         hardwareMap.get(DcMotorEx.class, "turntable"), // TODO: STATIC HEADING MOVE OVER FROM AUTO
                         DcMotorSimple.Direction.FORWARD, // To match odometry heading system
-                        new PIDFCoefficients(0.015, 0, 0, 0),
+                        turntablePIDFCoefficients,
                         384.5,
                         (double) 64 / 16,
                         new Angle(130, false),
@@ -142,15 +152,24 @@ public class JetFireRobot extends RobotBase {
 
     @Override
     public void updateHardwareStates() {
+        distanceFromGoal = follower.getPose().distanceFrom(targetGoal);
+
+        // FLYWHEEL
+        double flywheelSpeed = switch (flywheelMode) {
+            case AUTO -> flywheelVelocityByDistanceInterpolator.interpolate(distanceFromGoal);
+            case SET_VELOCITY -> flywheelSetVelocity;
+            case OFF -> 0.0;
+        };
+
+        // TURNTABLE
         Pose displacedPose = targetGoal.minus(follower.getPose());
         headingTowardsGoal = new Angle(Math.atan2(displacedPose.getY(), displacedPose.getX()));
-        distanceFromGoal = follower.getPose().distanceFrom(targetGoal);
         relativeTurntableHeading = turret.turntableController().getAngle();
         absoluteTurntableHeading = new Angle(relativeTurntableHeading.getAngle(Angle.AngleSystem.SIGNED) + follower.getHeading());
         targetTurntableHeading = isAutoAimOn ? new Angle(headingTowardsGoal.getAngle(Angle.AngleSystem.SIGNED) - follower.getHeading()) : new Angle(0);
 
         turret.update(
-                flywheelVelocityByDistanceInterpolator.interpolate(distanceFromGoal),
+                flywheelSpeed,
                 targetTurntableHeading,
                 new Angle(hoodAngleByDistanceInterpolator.interpolate(distanceFromGoal))
         );
@@ -159,9 +178,8 @@ public class JetFireRobot extends RobotBase {
 //        launchServoController.update();
 
         // Testing
-        if (flywheelPIDFCoefficients != turret.flywheelController().getPidfController().getCoefficients()) {
-            turret.flywheelController().getPidfController().setCoefficients(flywheelPIDFCoefficients);
-        }
+        if (flywheelPIDFCoefficients != turret.flywheelController().getPidfController().getCoefficients()) turret.flywheelController().getPidfController().setCoefficients(flywheelPIDFCoefficients);
+        if (turntablePIDFCoefficients != turret.turntableController().getPidfController().getCoefficients()) turret.turntableController().getPidfController().setCoefficients(turntablePIDFCoefficients);
 
         super.updateHardwareStates();
     }

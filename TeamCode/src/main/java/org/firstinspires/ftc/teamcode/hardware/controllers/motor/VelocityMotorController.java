@@ -16,6 +16,8 @@ public class VelocityMotorController extends MotorController{
     @Override
     public void update() {
         pidfController.updateError(targetRotationsPerMinute - getVelocity());
+        pidfController.updateFeedForwardInput(targetRotationsPerMinute);
+        // pidfController.updatePosition();
         this.dcMotorEx.setPower(pidfController.run());
     }
 
