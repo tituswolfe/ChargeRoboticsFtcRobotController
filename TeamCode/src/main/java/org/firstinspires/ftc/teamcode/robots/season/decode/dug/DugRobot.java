@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.robots.season.decode.jetfire;
+package org.firstinspires.ftc.teamcode.robots.season.decode.dug;
 
 import static org.firstinspires.ftc.teamcode.hardware.drivetrain.pedroPathing.Constants.createFollower;
 
@@ -16,8 +16,6 @@ import org.firstinspires.ftc.teamcode.hardware.controllers.motor.VelocityMotorCo
 import org.firstinspires.ftc.teamcode.hardware.controllers.servo.RGBIndicatorLightController;
 import org.firstinspires.ftc.teamcode.hardware.controllers.servo.ServoTimerController;
 import org.firstinspires.ftc.teamcode.robots.base.RobotBase;
-import org.firstinspires.ftc.teamcode.robots.base.StaticData;
-import org.firstinspires.ftc.teamcode.robots.base.opmodes.OpModeBase;
 import org.firstinspires.ftc.teamcode.util.LinearInterpolator;
 import org.firstinspires.ftc.teamcode.util.LogicUtil;
 import org.firstinspires.ftc.teamcode.util.math.Angle;
@@ -40,6 +38,7 @@ public class DugRobot extends RobotBase {
     private VelocityMotorController bottomFlywheel;
     private LinearInterpolator flywheelSpeedByDistanceInterpolator;
     private LinearInterpolator topFlywheelRatioByDistanceInterpolator;
+
     public enum FlywheelSpeedMode {
         AUTO,
         MANUEL,
@@ -124,15 +123,6 @@ public class DugRobot extends RobotBase {
         pushServoController.setPosition(PUSH_SERVO_IN, 0, PUSH_SERVO_IN);
     }
 
-    @Override
-    public void setAllianceColor(OpModeBase.AllianceColor allianceColor) {
-        super.setAllianceColor(allianceColor);
-
-        targetGoal = new Pose(
-                -72,
-                (StaticData.allianceColor == OpModeBase.AllianceColor.RED ? 72 : -72)
-        );
-    }
 
     @Override
     protected FieldType instantiateFieldType() {
@@ -148,9 +138,6 @@ public class DugRobot extends RobotBase {
     public Limelight3A instantiateLimelight3A(HardwareMap hardwareMap) {
         return null; // hardwareMap.get(Limelight3A.class, "limelight");
     }
-
-    // Robot functions
-// TODO: Override auto flywheel speeds
 
     public FlywheelSpeedMode getFlywheelSpeedMode() {
         return flywheelSpeedMode;
@@ -211,8 +198,8 @@ public class DugRobot extends RobotBase {
 
 
         Pose displacedPose = targetGoal.minus(follower.getPose());
-        double targetHeading = Math.atan2(displacedPose.getY(), displacedPose.getX()) + new Angle(headingGoalOffsetDeg, false).getAngle(Angle.AngleUnit.RADIANS, Angle.AngleSystem.SIGNED); // Math.toRadians(-7);
-        goalHeadingError = new Angle(targetHeading - follower.getHeading()).getAngle(Angle.AngleUnit.RADIANS, Angle.AngleSystem.SIGNED);
+        double targetHeading = Math.atan2(displacedPose.getY(), displacedPose.getX()) + new Angle(headingGoalOffsetDeg, false).getAngle(Angle.AngleUnit.RADIANS, Angle.AngleSystem.SIGNED_180_WRAPPED); // Math.toRadians(-7);
+        goalHeadingError = new Angle(targetHeading - follower.getHeading()).getAngle(Angle.AngleUnit.RADIANS, Angle.AngleSystem.SIGNED_180_WRAPPED);
         headingPIDFController.updateError(goalHeadingError);
 
         super.updateHardwareStates();

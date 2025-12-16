@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.robots.season.decode.dug;
+package org.firstinspires.ftc.teamcode.robots.season.decode.jetfire;
 
 import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.telemetry.TelemetryManager;
@@ -26,8 +26,10 @@ import org.firstinspires.ftc.teamcode.hardware.controllers.subsystems.Turret;
 import org.firstinspires.ftc.teamcode.robots.base.RobotBase;
 import org.firstinspires.ftc.teamcode.robots.base.opmodes.OpModeBase;
 import org.firstinspires.ftc.teamcode.util.LinearInterpolator;
+import org.firstinspires.ftc.teamcode.util.LogicUtil;
 import org.firstinspires.ftc.teamcode.util.math.Angle;
 
+import java.util.Optional;
 import java.util.TreeMap;
 
 @Configurable
@@ -41,21 +43,26 @@ public class JetFireRobot extends RobotBase {
         OFF
     }
     private static FlywheelMode flywheelMode = FlywheelMode.OFF;
-    private static double flywheelSetVelocity = 1000;
+    private static double flywheelSetVelocity = 3000;
 
     public enum IntakeMode {
         INTAKE,
         REVERSE,
         OFF
     }
-    IntakeMode intakeMode;
+    IntakeMode intakeMode = IntakeMode.OFF;
 
-    private Pose targetGoal;
+    DcMotorEx intakeMotor;
+    private static final double INTAKE_POWER = 435;
+
+    public boolean isAutoHoodAngleOn = true;
+    public static double hoodSetAngleDeg = 30;
+
+    public static Pose targetGoal;
     private Angle headingTowardsGoal;
     private double distanceFromGoal;
     private Angle relativeTurntableHeading;
     private Angle absoluteTurntableHeading;
-    private Angle targetTurntableHeading;
     private boolean isReadyToShoot;
 
     private LinearInterpolator flywheelVelocityByDistanceInterpolator;
@@ -64,15 +71,25 @@ public class JetFireRobot extends RobotBase {
     ServoTimerController launchServoController;
     private static final double LAUNCH_SERVO_UP = 0.7;
     private static final double LAUNCH_SERVO_DOWN = 0.27;
-
-    VelocityMotorController intakeController;
-    private static final double INTAKE_SPEED = 435;
+    // TODO: TEST ANGLE CLASS PANELS
 
     public static PIDFCoefficients flywheelPIDFCoefficients = new PIDFCoefficients(0.0027, 0, 0, 0.0002);
     public static PIDFCoefficients turntablePIDFCoefficients = new PIDFCoefficients(0.015, 0, 0, 0);
 
+    public static double flywheelVelocityMargin = 60;
+    public static double turntableHeadingMarginDeg = 2;
+
+    @Override
+    public void init(HardwareMap hardwareMap, Pose startPose, OpModeBase.AllianceColor allianceColor) {
+        super.init(hardwareMap, startPose, allianceColor);
+        targetGoal = new Pose(-72, allianceColor == OpModeBase.AllianceColor.RED ? 72 : -72);
+    }
+
     @Override
     public void initHardware(HardwareMap hardwareMap) {
+        Angle turretStartHeading = Optional.ofNullable(JetFireStaticData.lastTurretHeading)
+                    .orElse(new Angle(0));
+
         turret = new Turret(
                 new VelocityMotorController(
                         hardwareMap.get(DcMotorEx.class, "flywheel"),
@@ -82,35 +99,32 @@ public class JetFireRobot extends RobotBase {
                         1
                 ),
                 new AngleMotorController(
-                        hardwareMap.get(DcMotorEx.class, "turntable"), // TODO: STATIC HEADING MOVE OVER FROM AUTO
-                        DcMotorSimple.Direction.FORWARD, // To match odometry heading system
+                        hardwareMap.get(DcMotorEx.class, "turntable"),
+                        DcMotorSimple.Direction.FORWARD,
                         turntablePIDFCoefficients,
                         384.5,
                         (double) 64 / 16,
                         new Angle(130, false),
                         new Angle(-130, false),
-                        true // reverse due to gearing
+                        turretStartHeading,
+                        true
                 ),
                 new AngleServoController(
                         hardwareMap.get(Servo.class, "hood"),
-                        new Angle(0),
+                        new Angle(300, false),
+                        (double) 48 / 40,
                         new Angle(22, false),
                         new Angle(22 + 19, false),
                         new Angle(22)
                 )
-
-
         );
 
-//
-//
-//        DcMotorEx intakeMotor = hardwareMap.get(DcMotorEx.class, "intake");
-//        //intakeMotor.setDirection(DcMotorSimple.Direction.REVERSE);
-//        intakeController = new VelocityMotorController(intakeMotor, 384.5, 1);
+        intakeMotor = hardwareMap.get(DcMotorEx.class, "intake");
+        intakeMotor.setDirection(DcMotorSimple.Direction.REVERSE);
 
         TreeMap<Double, Double> flywheelSpeedByDistanceMap = new TreeMap<>();
         // INCH, RPM
-        flywheelSpeedByDistanceMap.put(60.0, 1000.0);
+        flywheelSpeedByDistanceMap.put(60.0, 3000.0);
         flywheelVelocityByDistanceInterpolator = new LinearInterpolator(flywheelSpeedByDistanceMap);
 
         TreeMap<Double, Double> hoodAngleByDistanceMap = new TreeMap<>();
@@ -124,25 +138,19 @@ public class JetFireRobot extends RobotBase {
         super.hardwareTelemetry(telemetry);
         telemetry.addLine("");
         telemetry.addLine("- TURNTABLE -");
-        telemetry.addData("Heading Towards Goal", headingTowardsGoal.getAngle(Angle.AngleUnit.DEGREES, Angle.AngleSystem.SIGNED));
-        telemetry.addData("Turret Heading Error", headingTowardsGoal.getAngle(Angle.AngleUnit.DEGREES, Angle.AngleSystem.SIGNED) - absoluteTurntableHeading.getAngle(Angle.AngleUnit.DEGREES, Angle.AngleSystem.SIGNED));
+        telemetry.addData("Heading Towards Goal", headingTowardsGoal.getAngle(Angle.AngleUnit.DEGREES, Angle.AngleSystem.SIGNED_180_WRAPPED));
+        telemetry.addData("Turret Heading Error", headingTowardsGoal.getAngle(Angle.AngleUnit.DEGREES, Angle.AngleSystem.SIGNED_180_WRAPPED) - absoluteTurntableHeading.getAngle(Angle.AngleUnit.DEGREES, Angle.AngleSystem.SIGNED_180_WRAPPED));
         telemetry.addData("Distance From Goal", distanceFromGoal);
-        telemetry.addData("Relative Turntable Heading", relativeTurntableHeading.getAngle(Angle.AngleUnit.DEGREES, Angle.AngleSystem.SIGNED));
-        telemetry.addData("Absolute Turntable Heading", absoluteTurntableHeading.getAngle(Angle.AngleUnit.DEGREES, Angle.AngleSystem.SIGNED));
-        telemetry.addData("Target Relative Heading", targetTurntableHeading.getAngle(Angle.AngleUnit.DEGREES, Angle.AngleSystem.SIGNED));
+        telemetry.addData("Relative Turntable Heading", relativeTurntableHeading.getAngle(Angle.AngleUnit.DEGREES, Angle.AngleSystem.SIGNED_180_WRAPPED));
+        telemetry.addData("Absolute Turntable Heading", absoluteTurntableHeading.getAngle(Angle.AngleUnit.DEGREES, Angle.AngleSystem.SIGNED_180_WRAPPED));
+        telemetry.addData("Target Relative Heading", turret.turntableController().getTargetHeading().getAngle(Angle.AngleUnit.DEGREES, Angle.AngleSystem.SIGNED_180_WRAPPED));
         telemetry.addLine("");
         telemetry.addLine("- FLYWHEEL -");
         telemetry.addData("Flywheel Velocity (RPM)", turret.flywheelController().getVelocity());
         telemetry.addData("Flywheel Target Velocity (RPM)", turret.flywheelController().getTargetVelocity());
-        telemetry.addData("Flywheel PIDF Coefficients", flywheelPIDFCoefficients);
         telemetry.addLine("");
         telemetry.addLine("- HOOD -");
-    }
-
-    @Override
-    public void setAllianceColor(OpModeBase.AllianceColor allianceColor) {
-        targetGoal = new Pose(-72, allianceColor == OpModeBase.AllianceColor.RED ? 72 : -72);
-        super.setAllianceColor(allianceColor);
+        telemetry.addData("Hood Angle", turret.hoodServoController().getTargetAngle().getAngle(Angle.AngleUnit.DEGREES, Angle.AngleSystem.SIGNED));
     }
 
     @Override
@@ -152,27 +160,37 @@ public class JetFireRobot extends RobotBase {
 
     @Override
     public void updateHardwareStates() {
+        Pose displacedPose = targetGoal.minus(follower.getPose());
+        headingTowardsGoal = new Angle(Math.atan2(displacedPose.getY(), displacedPose.getX()));
         distanceFromGoal = follower.getPose().distanceFrom(targetGoal);
+        relativeTurntableHeading = turret.turntableController().getAngle();
+        absoluteTurntableHeading = new Angle(relativeTurntableHeading.getAngle(Angle.AngleSystem.SIGNED_180_WRAPPED) + follower.getHeading());
 
-        // FLYWHEEL
+
+        Angle targetTurntableHeading = isAutoAimOn ? new Angle(headingTowardsGoal.getAngle(Angle.AngleSystem.SIGNED_180_WRAPPED) - follower.getHeading()) : new Angle(0);
         double flywheelSpeed = switch (flywheelMode) {
             case AUTO -> flywheelVelocityByDistanceInterpolator.interpolate(distanceFromGoal);
             case SET_VELOCITY -> flywheelSetVelocity;
             case OFF -> 0.0;
         };
+        Angle hoodAngle = new Angle(isAutoHoodAngleOn ? hoodAngleByDistanceInterpolator.interpolate(distanceFromGoal) : hoodSetAngleDeg, false);
 
-        // TURNTABLE
-        Pose displacedPose = targetGoal.minus(follower.getPose());
-        headingTowardsGoal = new Angle(Math.atan2(displacedPose.getY(), displacedPose.getX()));
-        relativeTurntableHeading = turret.turntableController().getAngle();
-        absoluteTurntableHeading = new Angle(relativeTurntableHeading.getAngle(Angle.AngleSystem.SIGNED) + follower.getHeading());
-        targetTurntableHeading = isAutoAimOn ? new Angle(headingTowardsGoal.getAngle(Angle.AngleSystem.SIGNED) - follower.getHeading()) : new Angle(0);
 
         turret.update(
                 flywheelSpeed,
                 targetTurntableHeading,
-                new Angle(hoodAngleByDistanceInterpolator.interpolate(distanceFromGoal))
+                hoodAngle
         );
+
+        // INTAKE
+        intakeMotor.setPower(switch (intakeMode) {
+            case INTAKE -> INTAKE_POWER;
+            case REVERSE -> -INTAKE_POWER;
+            case OFF -> 0;
+        });
+
+
+        JetFireStaticData.lastTurretHeading = turret.turntableController().getAngle();
 
 
 //        launchServoController.update();
@@ -185,18 +203,13 @@ public class JetFireRobot extends RobotBase {
     }
 
     public void shoot() {
-        launchServoController.setPosition(LAUNCH_SERVO_UP, 200, LAUNCH_SERVO_DOWN);
+        // wait for reset
+        launchServoController.setPosition(LAUNCH_SERVO_UP, 200, LAUNCH_SERVO_DOWN, 200);
     }
 
     public void setIntakeMode(IntakeMode intakeMode) {
         this.intakeMode = intakeMode;
-        intakeController.setTargetVelocity(switch (intakeMode) {
-            case OFF -> 0.0;
-            case INTAKE -> INTAKE_SPEED;
-            case REVERSE -> -INTAKE_SPEED;
-        });
     }
-
 
     public boolean isAutoAimOn() {
         return isAutoAimOn;
@@ -206,12 +219,27 @@ public class JetFireRobot extends RobotBase {
         isAutoAimOn = autoAimOn;
     }
 
+    public boolean isReadyToShoot() {
+        boolean isFlywheelReady = LogicUtil.isWithinRange(
+                turret.flywheelController().getVelocity(),
+                turret.flywheelController().getTargetVelocity(),
+                flywheelVelocityMargin
+        );
+
+        boolean isTurntableReady = LogicUtil.isWithinRange(
+                turret.turntableController().getAngle().getAngle(Angle.AngleUnit.DEGREES, Angle.AngleSystem.SIGNED_180_WRAPPED),
+                turret.turntableController().getTargetHeading().getAngle(Angle.AngleUnit.DEGREES, Angle.AngleSystem.SIGNED_180_WRAPPED),
+                turntableHeadingMarginDeg
+        );
+
+        return isFlywheelReady && isTurntableReady;
+    }
+
     @Override
     protected FieldType instantiateFieldType() {
         return FieldType.SQUARE_INVERTED_ALLIANCE;
     }
 
-    // TODO: STATIC???
     @Override
     public Follower instantiateFollower(HardwareMap hardwareMap) {
         return new FollowerBuilder(new FollowerConstants()

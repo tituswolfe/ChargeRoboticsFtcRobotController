@@ -6,12 +6,26 @@ import org.firstinspires.ftc.teamcode.util.math.Angle;
 
 public class ServoController {
     protected final Servo servo;
-    public final Angle maxRotation;
+    protected final Angle totalRotation;
+    protected double totalGearRatio;
+    protected double percentagePerOutputDegree;
+    protected double percentagePerOutputRadiant;
     // TODO: Total gear ratio
 
-    public ServoController(Servo servo, Angle maxRotation) {
+    public ServoController(Servo servo, Angle totalRotation, double totalGearRatio) {
         this.servo = servo;
-        this.maxRotation = maxRotation;
+        this.totalGearRatio = totalGearRatio;
+        this.totalRotation = totalRotation;
+    }
+
+    public double getTotalGearRatio() {
+        return totalGearRatio;
+    }
+
+    public void setTotalGearRatio(double totalGearRatio) {
+        this.totalGearRatio = totalGearRatio;
+        this.percentagePerOutputDegree = 1 / (totalRotation.getAngle(Angle.AngleUnit.DEGREES, Angle.AngleSystem.UNSIGNED_WRAPPED) *  totalGearRatio);
+        this.percentagePerOutputRadiant = 1 / (totalRotation.getAngle(Angle.AngleUnit.RADIANS, Angle.AngleSystem.UNSIGNED_WRAPPED) * totalGearRatio);
     }
 
     public Servo getServo() {

@@ -8,10 +8,7 @@ import org.firstinspires.ftc.teamcode.robots.base.StaticData;
 public abstract class TeleOpBase<Robot extends RobotBase> extends OpModeBase<Robot> {
     @Override
     public void start() {
-        if (robot.getFollower() != null) {
-            robot.getFollower().startTeleopDrive();
-        }
-
+        if (robot.getFollower() != null) robot.getFollower().startTeleopDrive();
         super.start();
     }
 
@@ -22,7 +19,7 @@ public abstract class TeleOpBase<Robot extends RobotBase> extends OpModeBase<Rob
 
         if (opmodeTimer.getElapsedTimeSeconds() > 150) isEndgame = true;
 
-        if (robot.getFollower() != null && !robot.getFollower().isBusy() && !robot.getFollower().isTeleopDrive() && !robot.getFollower().isTurning()) robot.getFollower().startTeleopDrive();
+        if (robot.getFollower() != null && !robot.getFollower().isBusy() && !robot.getFollower().isTeleopDrive()) robot.getFollower().startTeleopDrive();
 
         super.loop();
     }
@@ -33,12 +30,12 @@ public abstract class TeleOpBase<Robot extends RobotBase> extends OpModeBase<Rob
     }
 
     @Override
-    protected AllianceColor instantiateAllianceColor() {
-        return null;
+    protected Pose instantiateStartPose() {
+        return StaticData.lastPose;
     }
 
     @Override
-    protected Pose instantiateStartPose() {
-        return StaticData.lastPose;
+    protected AllianceColor instantiateAllianceColor() {
+        return StaticData.allianceColor;
     }
 }

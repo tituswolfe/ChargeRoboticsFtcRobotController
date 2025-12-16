@@ -13,6 +13,8 @@ import org.firstinspires.ftc.teamcode.robots.base.GamepadMapping;
 import org.firstinspires.ftc.teamcode.robots.base.RobotBase;
 import org.firstinspires.ftc.teamcode.robots.base.StaticData;
 
+import java.util.Optional;
+
 /**
  * {@link OpModeBase} is an abstract subclass of {@link OpMode}.
  * Use {@link TeleOpBase} or {@link BaseAuto} to create your {@link OpMode}!
@@ -51,7 +53,20 @@ public abstract class OpModeBase<Robot extends RobotBase> extends OpMode {
         robot = instantiateRobot();
         gamepadMapping1 = instantiateGamepadMapping1();
         gamepadMapping2 = instantiateGamepadMapping2();
-        robot.init(hardwareMap, instantiateStartPose(), instantiateAllianceColor());
+
+//        if (allianceColor != null) {
+//            StaticData.allianceColor = allianceColor;
+//        } else if (StaticData.allianceColor == null) {
+//            StaticData.allianceColor = OpModeBase.AllianceColor.BLUE; // DEFAULT TO BLUE
+//        }
+
+        Pose startPose = Optional.ofNullable(instantiateStartPose())
+                .orElse(new Pose(0, 0));
+
+        AllianceColor allianceColor = Optional.ofNullable(instantiateAllianceColor())
+                .orElse(OpModeBase.AllianceColor.BLUE);
+
+        robot.init(hardwareMap, startPose, allianceColor);
 
         if (robot.getFollower() != null) buildPaths(robot.getFollower());
 
@@ -69,6 +84,7 @@ public abstract class OpModeBase<Robot extends RobotBase> extends OpMode {
 
     public abstract void opModeTypeSpecificInit();
     public abstract void buildPaths(Follower follower);
+
 
 
     @Override
@@ -106,7 +122,7 @@ public abstract class OpModeBase<Robot extends RobotBase> extends OpMode {
 
     protected abstract Robot instantiateRobot();
     protected abstract Pose instantiateStartPose();
+    protected abstract AllianceColor instantiateAllianceColor();
     protected abstract GamepadMapping<Robot> instantiateGamepadMapping1();
     protected abstract GamepadMapping<Robot> instantiateGamepadMapping2();
-    protected abstract AllianceColor instantiateAllianceColor();
 }

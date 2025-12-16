@@ -1,7 +1,7 @@
 package org.firstinspires.ftc.teamcode.hardware.controllers.subsystems;
 
 import org.firstinspires.ftc.teamcode.hardware.controllers.motor.VelocityMotorController;
-import org.firstinspires.ftc.teamcode.robots.season.decode.dug.JetFireRobot;
+import org.firstinspires.ftc.teamcode.robots.season.decode.jetfire.JetFireRobot;
 
 public class MotorisedIntake {
     private final VelocityMotorController velocityMotorController;

@@ -2,6 +2,8 @@ package org.firstinspires.ftc.teamcode.robots.base;
 
 import com.qualcomm.robotcore.hardware.Gamepad;
 
+import org.firstinspires.ftc.teamcode.util.math.Angle;
+
 public abstract class GamepadMapping<Robot extends RobotBase> {
     protected final Robot robot;
     boolean wasLeftTriggerPressed = false;
@@ -28,7 +30,7 @@ public abstract class GamepadMapping<Robot extends RobotBase> {
         if (robot.getFollower() == null) return;
         if (!robot.getFollower().isTeleopDrive()) return;
 
-        robot.getFollower().setTeleOpDrive(leftY * robot.speedFactor, leftX * robot.speedFactor, rightX * robot.speedFactor, robot.isRobotCentric, (robot.isRobotCentric ? 0 : robot.fieldCentricOffset));
+        robot.getFollower().setTeleOpDrive(leftY * robot.speedFactor, leftX * robot.speedFactor, rightX * robot.speedFactor, robot.isRobotCentric, (robot.isRobotCentric ? 0 : robot.fieldCentricOffset.getAngle(Angle.AngleSystem.SIGNED)));
     };
 
     public void onLeftStickPressed() {

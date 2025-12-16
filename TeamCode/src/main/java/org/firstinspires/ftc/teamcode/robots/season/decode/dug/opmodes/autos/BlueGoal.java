@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.robots.season.decode.jetfire.opmodes.autos;
+package org.firstinspires.ftc.teamcode.robots.season.decode.dug.opmodes.autos;
 
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.BezierCurve;
@@ -8,18 +8,18 @@ import com.pedropathing.paths.PathChain;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
 import org.firstinspires.ftc.teamcode.robots.base.opmodes.BaseAuto;
-import org.firstinspires.ftc.teamcode.robots.season.decode.jetfire.DugRobot;
+import org.firstinspires.ftc.teamcode.robots.season.decode.dug.DugRobot;
 
-@Autonomous(name = "Red Goal", group = "dug", preselectTeleOp = "Dug")
-public class RedGoal extends BaseAuto<DugRobot> {
-    Pose startPose = new Pose(-60, 47, Math.toRadians(124));
-    Pose shootClosePose = new Pose(-33, 18.8, Math.toRadians(120));
-    Pose startIntakeLine1Pose = new Pose(-17.6, 31, Math.toRadians(-90));
-    Pose finishIntakeLine1Pose = new Pose(-17.6, 48, Math.toRadians(-90));
+@Autonomous(name = "Blue Goal", group = "dug", preselectTeleOp = "Dug")
+public class BlueGoal extends BaseAuto<DugRobot> {
+    Pose startPose = new Pose(-60, -45, Math.toRadians(-124));
+    Pose shootClosePose = new Pose(-33, -18.8, Math.toRadians(-135));
+    Pose startIntakeLine1Pose = new Pose(-9.85, -20, Math.toRadians(90));
+    Pose finishIntakeLine1Pose = new Pose(-9.85, -48, Math.toRadians(90));
 
-    Pose startIntakeLine2Pose = new Pose(5.5, 33, Math.toRadians(-90));
-    Pose finishIntakeLine2Pose = new Pose(8, 55, Math.toRadians(-90));
-    Pose autoEndPose = new Pose(-5, 35, Math.toRadians(0));
+    Pose startIntakeLine2Pose = new Pose(12.2, -20, Math.toRadians(90));
+    Pose finishIntakeLine2Pose = new Pose(15.2, -55, Math.toRadians(90));
+    Pose autoEndPose = new Pose(-5, -35, Math.toRadians(0));
 
     PathChain shoot1;
     PathChain intakeLine1;
@@ -174,7 +174,7 @@ public class RedGoal extends BaseAuto<DugRobot> {
                 .build();
 
         shoot3 = follower.pathBuilder()
-                .addPath(new BezierCurve(finishIntakeLine2Pose, new Pose(0, 24), shootClosePose))
+                .addPath(new BezierCurve(finishIntakeLine2Pose, new Pose(0, -24), shootClosePose))
                 .setLinearHeadingInterpolation(finishIntakeLine2Pose.getHeading(), shootClosePose.getHeading())
                 .build();
 
@@ -196,6 +196,6 @@ public class RedGoal extends BaseAuto<DugRobot> {
 
     @Override
     protected AllianceColor instantiateAllianceColor() {
-        return AllianceColor.RED;
+        return AllianceColor.BLUE;
     }
 }
