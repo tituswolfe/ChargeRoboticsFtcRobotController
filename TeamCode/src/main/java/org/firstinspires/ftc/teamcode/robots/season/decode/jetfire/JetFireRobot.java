@@ -23,6 +23,7 @@ import org.firstinspires.ftc.teamcode.hardware.controllers.motor.VelocityMotorCo
 import org.firstinspires.ftc.teamcode.hardware.controllers.servo.AngleServoController;
 import org.firstinspires.ftc.teamcode.hardware.controllers.servo.ServoTimerController;
 import org.firstinspires.ftc.teamcode.hardware.controllers.subsystems.Turret;
+import org.firstinspires.ftc.teamcode.hardware.drivetrain.pedroPathing.Constants;
 import org.firstinspires.ftc.teamcode.robots.base.RobotBase;
 import org.firstinspires.ftc.teamcode.robots.base.opmodes.OpModeBase;
 import org.firstinspires.ftc.teamcode.util.LinearInterpolator;
@@ -242,38 +243,7 @@ public class JetFireRobot extends RobotBase {
 
     @Override
     public Follower instantiateFollower(HardwareMap hardwareMap) {
-        return new FollowerBuilder(new FollowerConstants()
-                .mass(19)
-                .forwardZeroPowerAcceleration(-28.2)
-                .lateralZeroPowerAcceleration(-67.5)
-                .translationalPIDFCoefficients(new PIDFCoefficients(0.1, 0, 0.01, 0))
-                .headingPIDFCoefficients(new PIDFCoefficients(
-                        1.05,
-                        0,
-                        0.01,
-                        0.01)), hardwareMap)
-                .pathConstraints(new PathConstraints(0.99, 100, 1, 1))
-                .mecanumDrivetrain(new MecanumConstants()
-                        .maxPower(1)
-                        .rightFrontMotorName("front-right")
-                        .rightRearMotorName("rear-right")
-                        .leftRearMotorName("rear-left")
-                        .leftFrontMotorName("front-left")
-                        .leftFrontMotorDirection(DcMotorSimple.Direction.REVERSE)
-                        .leftRearMotorDirection(DcMotorSimple.Direction.FORWARD)
-                        .rightFrontMotorDirection(DcMotorSimple.Direction.FORWARD)
-                        .rightRearMotorDirection(DcMotorSimple.Direction.FORWARD)
-                        .xVelocity(79.5)
-                        .yVelocity(64.5))
-                .pinpointLocalizer(new PinpointConstants()
-                        .forwardPodY(168.5)
-                        .strafePodX(-67)
-                        .distanceUnit(DistanceUnit.MM)
-                        .hardwareMapName("odometry")
-                        .encoderResolution(GoBildaPinpointDriver.GoBildaOdometryPods.goBILDA_4_BAR_POD)
-                        .forwardEncoderDirection(GoBildaPinpointDriver.EncoderDirection.FORWARD)
-                        .strafeEncoderDirection(GoBildaPinpointDriver.EncoderDirection.FORWARD))
-                .build();
+        return Constants.createJetFireFollower(hardwareMap);
     }
 
     @Override
