@@ -21,14 +21,14 @@ public class AngleServoController extends ServoController {
                 maxPositiveLimit.getAngle(Angle.AngleSystem.SIGNED),
                 Math.max(
                         minNegativeLimit.getAngle(Angle.AngleSystem.SIGNED),
-                        angle.minus(offset, Angle.AngleSystem.SIGNED).getAngle(Angle.AngleSystem.SIGNED)
+                        angle.getAngle(Angle.AngleSystem.SIGNED)
                 )
         ));
 
-        servo.setPosition(targetAngle.getAngle(Angle.AngleSystem.SIGNED) / percentagePerOutputRadiant);
+        servo.setPosition(targetAngle.minus(offset, Angle.AngleSystem.SIGNED).getAngle(Angle.AngleSystem.SIGNED) * percentagePerOutputRadiant);
     }
 
     public Angle getTargetAngle() {
-        return new Angle(servo.getPosition() * percentagePerOutputRadiant);
+        return new Angle(servo.getPosition() / percentagePerOutputRadiant);
     }
 }

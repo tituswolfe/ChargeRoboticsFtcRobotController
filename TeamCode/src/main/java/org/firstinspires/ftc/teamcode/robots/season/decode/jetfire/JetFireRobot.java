@@ -55,7 +55,7 @@ public class JetFireRobot extends RobotBase {
     DcMotorEx intakeMotor;
     private static final double INTAKE_POWER = 435;
 
-    public boolean isAutoHoodAngleOn = true;
+    public boolean isAutoHoodAngleOn = false;
     public static double hoodSetAngleDeg = 30;
 
     public static Pose targetGoal;
@@ -163,7 +163,7 @@ public class JetFireRobot extends RobotBase {
         Pose displacedPose = targetGoal.minus(follower.getPose());
         headingTowardsGoal = new Angle(Math.atan2(displacedPose.getY(), displacedPose.getX()));
         distanceFromGoal = follower.getPose().distanceFrom(targetGoal);
-        relativeTurntableHeading = turret.turntableController().getAngle();
+        relativeTurntableHeading = turret.turntableController().getHeading();
         absoluteTurntableHeading = new Angle(relativeTurntableHeading.getAngle(Angle.AngleSystem.SIGNED_180_WRAPPED) + follower.getHeading());
 
 
@@ -190,7 +190,7 @@ public class JetFireRobot extends RobotBase {
         });
 
 
-        JetFireStaticData.lastTurretHeading = turret.turntableController().getAngle();
+        JetFireStaticData.lastTurretHeading = turret.turntableController().getHeading();
 
 
 //        launchServoController.update();
@@ -227,7 +227,7 @@ public class JetFireRobot extends RobotBase {
         );
 
         boolean isTurntableReady = LogicUtil.isWithinRange(
-                turret.turntableController().getAngle().getAngle(Angle.AngleUnit.DEGREES, Angle.AngleSystem.SIGNED_180_WRAPPED),
+                turret.turntableController().getHeading().getAngle(Angle.AngleUnit.DEGREES, Angle.AngleSystem.SIGNED_180_WRAPPED),
                 turret.turntableController().getTargetHeading().getAngle(Angle.AngleUnit.DEGREES, Angle.AngleSystem.SIGNED_180_WRAPPED),
                 turntableHeadingMarginDeg
         );

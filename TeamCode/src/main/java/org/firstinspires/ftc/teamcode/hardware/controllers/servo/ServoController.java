@@ -10,12 +10,11 @@ public class ServoController {
     protected double totalGearRatio;
     protected double percentagePerOutputDegree;
     protected double percentagePerOutputRadiant;
-    // TODO: Total gear ratio
 
     public ServoController(Servo servo, Angle totalRotation, double totalGearRatio) {
         this.servo = servo;
-        this.totalGearRatio = totalGearRatio;
         this.totalRotation = totalRotation;
+        setTotalGearRatio(totalGearRatio);
     }
 
     public double getTotalGearRatio() {

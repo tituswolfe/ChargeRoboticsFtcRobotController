@@ -102,7 +102,7 @@ public abstract class OpModeBase<Robot extends RobotBase> extends OpMode {
     public void updateTelemetry(TelemetryManager telemetry) {
 
         telemetry.addLine("- OpMode info -");
-        telemetry.addData("Alliance Color", StaticData.allianceColor);
+        // telemetry.addData("Alliance Color", StaticData.allianceColor);
         telemetry.addData("Elapsed time (sec)", opmodeTimer.getElapsedTimeSeconds());
         telemetry.addData("isEndgame", isEndgame);
 

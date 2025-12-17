@@ -37,41 +37,20 @@ public class Angle {
      * @return angle with the specified {@link AngleUnit} and {@link AngleSystem}
      */
     public double getAngle(AngleUnit angleUnit, AngleSystem angleSystem) {
+        double requestedAngleInRadians = switch (angleSystem) {
+            case SIGNED -> this.angleInRadians;
+            case SIGNED_180_WRAPPED -> Math.IEEEremainder(this.angleInRadians, MathUtil.TAU);
+            case UNSIGNED_WRAPPED -> normalizeAngleUnsigned(this.angleInRadians);
+        };
 
-        double requestedAngleInRadians;
-
-
-        if (angleSystem == AngleSystem.SIGNED) {
-            requestedAngleInRadians = this.angleInRadians;
-        } else {
-            // WRAPPED
-            // Normalize to [0, TAU)
-            double normalizedAngle = this.angleInRadians % TAU;
-            if (normalizedAngle < 0) {
-                normalizedAngle += TAU;
-            }
-
-            if (angleSystem == AngleSystem.UNSIGNED_WRAPPED) {
-                // Case 2: UNSIGNED_WRAPPED [0, 2pi)
-                requestedAngleInRadians = normalizedAngle;
-            } else if (angleSystem == AngleSystem.SIGNED_180_WRAPPED) {
-                // Case 3: SIGNED_180 [-pi, pi).
-                // Shift the upper half of [0, 2pi) to the negative range.
-                requestedAngleInRadians = (normalizedAngle > Math.PI) ? normalizedAngle - TAU : normalizedAngle;
-            } else {
-                // Fallback/Error handling if another enum value were added
-                requestedAngleInRadians = normalizedAngle;
-            }
-        }
-
-        // 2. CONVERT UNIT
         return (angleUnit == AngleUnit.DEGREES) ? Math.toDegrees(requestedAngleInRadians) : requestedAngleInRadians;
+    }
 
-//        double remainder = angleInRadians % TAU;
-//        double unsignedAngle = (remainder < 0) ? remainder + TAU : remainder;
-//        double requestedAngle = (angleSystem == AngleSystem.SIGNED_180_WRAPPED && unsignedAngle > Math.PI) ? unsignedAngle - TAU : unsignedAngle;
-//
-//        return (angleUnit == AngleUnit.DEGREES) ? Math.toDegrees(requestedAngle) : requestedAngle;
+    private static double normalizeAngleUnsigned(double angleInRadians) {
+        double remainder = angleInRadians % TAU;
+        double normalized = remainder < 0 ? remainder + TAU : remainder;
+
+        return normalized;
     }
 
     /**
@@ -86,5 +65,8 @@ public class Angle {
         return new Angle(getAngle(angleSystem) - angle.getAngle(angleSystem));
     }
 
-    // TODO: Angle maths
+    public Angle plus(Angle angle, AngleSystem angleSystem) {
+        return new Angle(getAngle(angleSystem) + angle.getAngle(angleSystem));
+    }
+
 }
