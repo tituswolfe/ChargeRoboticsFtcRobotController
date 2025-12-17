@@ -27,7 +27,7 @@ public class AngleMotorController extends MotorController {
 
         assert startAngle.getAngle(Angle.AngleSystem.SIGNED_180_WRAPPED) < maxPositiveLimit.getAngle(Angle.AngleSystem.SIGNED_180_WRAPPED);
         assert startAngle.getAngle(Angle.AngleSystem.SIGNED_180_WRAPPED) > minNegativeLimit.getAngle(Angle.AngleSystem.SIGNED_180_WRAPPED);
-        this.startAngle = startAngle; // TODO: Offset
+        this.startAngle = startAngle;
 
         this.reversePower = reversePower;
 
@@ -36,7 +36,6 @@ public class AngleMotorController extends MotorController {
 
     @Override
     public void update() {
-        //pidfController.updateError(getConstrainedTurn(targetHeading.getAngle(Angle.AngleUnit.DEGREES, Angle.AngleSystem.SIGNED_180_WRAPPED),  getHeading().getAngle(Angle.AngleUnit.DEGREES, Angle.AngleSystem.SIGNED_180_WRAPPED)));
         pidfController.updateError(getConstrainedError().getAngle(Angle.AngleSystem.SIGNED));
         pidfController.updateFeedForwardInput(targetHeading.getAngle(Angle.AngleUnit.DEGREES, Angle.AngleSystem.SIGNED_180_WRAPPED));
         double power = pidfController.run();
