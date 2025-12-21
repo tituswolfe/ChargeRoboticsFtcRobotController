@@ -6,6 +6,7 @@ public class LogicUtil {
     }
 
     public static double clamp(double val, double min, double max) {
+        // smaller(35, bigger(16, 22))
         return Math.min(max, Math.max(min, val));
     }
 

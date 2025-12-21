@@ -9,7 +9,7 @@ public class ServoController {
     protected final Angle totalRotation;
     protected double totalGearRatio;
     protected double percentagePerOutputDegree;
-    protected double percentagePerOutputRadiant;
+    protected double percentagePerOutputRadian;
 
     public ServoController(Servo servo, Angle totalRotation, double totalGearRatio) {
         this.servo = servo;
@@ -23,8 +23,8 @@ public class ServoController {
 
     public void setTotalGearRatio(double totalGearRatio) {
         this.totalGearRatio = totalGearRatio;
-        this.percentagePerOutputDegree = 1 / (totalRotation.getAngle(Angle.AngleUnit.DEGREES, Angle.AngleSystem.UNSIGNED_WRAPPED) *  totalGearRatio);
-        this.percentagePerOutputRadiant = 1 / (totalRotation.getAngle(Angle.AngleUnit.RADIANS, Angle.AngleSystem.UNSIGNED_WRAPPED) * totalGearRatio);
+        this.percentagePerOutputDegree = (1.0 / totalRotation.getAngle(Angle.AngleUnit.DEGREES, Angle.AngleSystem.SIGNED)) * totalGearRatio;
+        this.percentagePerOutputRadian = (1.0 / totalRotation.getAngle(Angle.AngleUnit.RADIANS, Angle.AngleSystem.SIGNED)) * totalGearRatio;
     }
 
     public Servo getServo() {

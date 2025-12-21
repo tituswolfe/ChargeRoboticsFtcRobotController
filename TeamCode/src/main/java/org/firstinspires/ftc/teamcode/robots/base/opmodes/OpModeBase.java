@@ -11,7 +11,6 @@ import com.pedropathing.util.Timer;
 
 import org.firstinspires.ftc.teamcode.robots.base.GamepadMapping;
 import org.firstinspires.ftc.teamcode.robots.base.RobotBase;
-import org.firstinspires.ftc.teamcode.robots.base.StaticData;
 
 import java.util.Optional;
 
@@ -39,6 +38,8 @@ public abstract class OpModeBase<Robot extends RobotBase> extends OpMode {
     private final static Timer sleepTimer = new Timer();
     protected boolean isEndgame = false;
 
+    private long deltaTime = 0;
+    private Timer deltaTimer = new Timer();
     // R.I.P AlliancePosition, OpModeType, & FieldType
 
     /**
@@ -94,8 +95,10 @@ public abstract class OpModeBase<Robot extends RobotBase> extends OpMode {
 
     @Override
     public void loop() {
-        robot.updateHardwareStates();
+        deltaTime = deltaTimer.getElapsedTime();
+        deltaTimer.resetTimer();
 
+        robot.update(deltaTime);
         updateTelemetry(telemetryManager);
     }
 
@@ -105,6 +108,7 @@ public abstract class OpModeBase<Robot extends RobotBase> extends OpMode {
         // telemetry.addData("Alliance Color", StaticData.allianceColor);
         telemetry.addData("Elapsed time (sec)", opmodeTimer.getElapsedTimeSeconds());
         telemetry.addData("isEndgame", isEndgame);
+        telemetry.addData("Delta Time", deltaTime);
 
 
         robot.hardwareTelemetry(telemetry);

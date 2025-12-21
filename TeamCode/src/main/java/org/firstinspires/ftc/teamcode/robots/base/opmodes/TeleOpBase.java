@@ -7,6 +7,12 @@ import org.firstinspires.ftc.teamcode.robots.base.StaticData;
 
 public abstract class TeleOpBase<Robot extends RobotBase> extends OpModeBase<Robot> {
     @Override
+    public void init() {
+
+        super.init();
+    }
+
+    @Override
     public void start() {
         if (robot.getFollower() != null) robot.getFollower().startTeleopDrive();
         super.start();

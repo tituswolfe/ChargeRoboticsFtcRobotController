@@ -132,10 +132,10 @@ public class Constants {
                         .rightRearMotorName("rear-right")
                         .leftRearMotorName("rear-left")
                         .leftFrontMotorName("front-left")
-                        .leftFrontMotorDirection(DcMotorSimple.Direction.REVERSE)
-                        .leftRearMotorDirection(DcMotorSimple.Direction.FORWARD)
-                        .rightFrontMotorDirection(DcMotorSimple.Direction.FORWARD)
-                        .rightRearMotorDirection(DcMotorSimple.Direction.FORWARD)
+                        .leftFrontMotorDirection(DcMotorSimple.Direction.REVERSE) // p. 2 control
+                        .leftRearMotorDirection(DcMotorSimple.Direction.REVERSE) // p. 3 control
+                        .rightFrontMotorDirection(DcMotorSimple.Direction.FORWARD) // p.1 expansion
+                        .rightRearMotorDirection(DcMotorSimple.Direction.FORWARD) // p.0 expansion
                         .xVelocity(79.5)
                         .yVelocity(64.5))
                 .pinpointLocalizer(new PinpointConstants()

@@ -33,6 +33,7 @@ import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.telemetry.TelemetryManager;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
+import com.pedropathing.util.Timer;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
@@ -121,7 +122,10 @@ public abstract class RobotBase {
      */
     public abstract void startConfiguration();
 
-    public void updateHardwareStates() {
+    // public abstract void teleopStartHardware();
+
+    public void update(long deltaTime) {
+
         if (follower != null) {
             follower.update();
             StaticData.lastPose = follower.getPose();

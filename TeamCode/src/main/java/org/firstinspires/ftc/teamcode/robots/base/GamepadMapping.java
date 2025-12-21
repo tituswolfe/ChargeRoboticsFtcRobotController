@@ -103,7 +103,6 @@ public abstract class GamepadMapping<Robot extends RobotBase> {
         if (gamepad.dpadDownWasPressed()) onDpadDownPressed();
         if (gamepad.dpadLeftWasPressed()) onDpadLeftPressed();
 
-
         wasLeftTriggerPressed = isLeftTriggerPressed;
         wasRightTriggerPressed = isRightTriggerPressed;
     }

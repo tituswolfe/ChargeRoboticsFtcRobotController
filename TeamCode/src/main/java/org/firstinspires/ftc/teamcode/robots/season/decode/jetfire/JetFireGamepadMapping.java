@@ -9,7 +9,11 @@ public class JetFireGamepadMapping extends GamepadMapping<JetFireRobot> {
 
     @Override
     public void onYPressed() {
-
+        robot.setFlywheelMode(switch (robot.getFlywheelMode()) {
+            case AUTO -> null;
+            case SET_VELOCITY -> JetFireRobot.FlywheelMode.OFF;
+            case OFF -> JetFireRobot.FlywheelMode.SET_VELOCITY;
+        });
     }
 
     @Override
@@ -24,7 +28,6 @@ public class JetFireGamepadMapping extends GamepadMapping<JetFireRobot> {
 
     @Override
     public void onXPressed() {
-
     }
 
     @Override
@@ -69,7 +72,11 @@ public class JetFireGamepadMapping extends GamepadMapping<JetFireRobot> {
 
     @Override
     public void onLeftBumperPressed() {
-
+        robot.setIntakeMode(switch (robot.getIntakeMode()) {
+            case INTAKE -> JetFireRobot.IntakeMode.OFF;
+            case REVERSE -> JetFireRobot.IntakeMode.OFF;
+            case OFF -> JetFireRobot.IntakeMode.INTAKE;
+        });
     }
 
     @Override
