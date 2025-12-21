@@ -15,7 +15,7 @@ public class ResetTurret extends TeleOpBase<JetFireRobot> {
     @Override
     public void start() {
         JetFireStaticData.lastTurretHeading = new Angle(0);
-        stop();
+        stop(); // TODO: Bad practice?
         super.start();
     }
 
