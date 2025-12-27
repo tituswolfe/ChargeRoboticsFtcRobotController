@@ -2,27 +2,27 @@ package org.firstinspires.ftc.teamcode.hardware.controllers.servo;
 
 import com.qualcomm.robotcore.hardware.Servo;
 
-import org.firstinspires.ftc.teamcode.util.LogicUtil;
 import org.firstinspires.ftc.teamcode.util.math.Angle;
 
 public class AngleServoController extends ServoController {
     public final Angle offset;
-    public final Angle maxPositiveLimit;
-    public final Angle minNegativeLimit; // TODO: RENAME
+    public final Angle maxLimit;
+    public final Angle minLimit; // TODO: RENAME
 
-    public AngleServoController(Servo servo, Angle totalRotation, double totalGearRatio, Angle offset, Angle maxPositiveLimit, Angle minNegativeLimit) {
-        super(servo, totalRotation, totalGearRatio);
+
+
+    public AngleServoController(Servo servo, Servo.Direction direction, Angle totalRotation, double totalGearRatio, Angle offset, Angle maxLimit, Angle minLimit) {
+        super(servo, direction, totalRotation, totalGearRatio);
         this.offset = offset;
-        this.maxPositiveLimit = maxPositiveLimit;
-        this.minNegativeLimit = minNegativeLimit;
-        servo.setDirection(Servo.Direction.REVERSE);
+        this.maxLimit = maxLimit;
+        this.minLimit = minLimit;
     }
 
     public void setTargetAngle(Angle angle) {
         Angle targetAngle = new Angle(LogicUtil.clamp(
                 angle.getAngle(Angle.AngleSystem.SIGNED),
-                minNegativeLimit.getAngle(Angle.AngleSystem.SIGNED),
-                maxPositiveLimit.getAngle(Angle.AngleSystem.SIGNED)
+                minLimit.getAngle(Angle.AngleSystem.SIGNED),
+                maxLimit.getAngle(Angle.AngleSystem.SIGNED)
         ));
 
         servo.setPosition(targetAngle.minus(offset, Angle.AngleSystem.SIGNED).getAngle(Angle.AngleSystem.SIGNED) * percentagePerOutputRadian);

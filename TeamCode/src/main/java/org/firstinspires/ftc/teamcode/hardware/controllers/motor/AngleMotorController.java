@@ -5,10 +5,12 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
-import org.firstinspires.ftc.teamcode.util.LogicUtil;
 import org.firstinspires.ftc.teamcode.util.math.Angle;
 import org.firstinspires.ftc.teamcode.util.math.MathUtil;
 
+/**
+ * Allows you to control a motor by output angle (after gear ratio, and ticks
+ */
 public class AngleMotorController extends MotorController {
     private final Angle maxPositiveLimit;
     private final Angle minNegativeLimit;
@@ -17,9 +19,16 @@ public class AngleMotorController extends MotorController {
 
     private Angle targetHeading = new Angle(0);
 
-
-    public AngleMotorController(DcMotorEx dcMotorEx, DcMotorSimple.Direction direction, PIDFCoefficients pidfCoefficients, double ticksPerRevolution, double totalGearRatio, Angle maxPositiveLimit, Angle minNegativeLimit, Angle startAngle, boolean reversePower) {
-        super(dcMotorEx, direction, pidfCoefficients, ticksPerRevolution, totalGearRatio);
+    /**
+     * @param dcMotorEx
+     * @param direction
+     * @param pidfCoefficients
+     * @param ticksPerRevolution encoder ticks per revolution (check motor for info)
+     * @param totalGearRatio     amount of motor rotations per 1 output rotations -> totalGearRatio (input) : 1 (output)
+     * @param maxPower
+     */
+    public AngleMotorController(DcMotorEx dcMotorEx, DcMotorSimple.Direction direction, PIDFCoefficients pidfCoefficients, double ticksPerRevolution, double totalGearRatio, double maxPower, Angle maxPositiveLimit, Angle minNegativeLimit, Angle startAngle, boolean reversePower) {
+        super(dcMotorEx, direction, pidfCoefficients, ticksPerRevolution, totalGearRatio, maxPower);
 
         assert maxPositiveLimit.getAngle(Angle.AngleSystem.SIGNED_180_WRAPPED) > minNegativeLimit.getAngle(Angle.AngleSystem.SIGNED_180_WRAPPED);
         this.maxPositiveLimit = maxPositiveLimit;
@@ -38,6 +47,7 @@ public class AngleMotorController extends MotorController {
     public void update() {
         pidfController.updateError(getConstrainedError().getAngle(Angle.AngleUnit.DEGREES, Angle.AngleSystem.SIGNED));
         pidfController.updateFeedForwardInput(targetHeading.getAngle(Angle.AngleUnit.DEGREES, Angle.AngleSystem.SIGNED_180_WRAPPED));
+
         double power = pidfController.run();
         this.dcMotorEx.setPower(reversePower ? -power : power);
     }
@@ -72,7 +82,7 @@ public class AngleMotorController extends MotorController {
         double minLimit = minNegativeLimit.getAngle(Angle.AngleSystem.SIGNED_180_WRAPPED);
 
         // 2. Clamp the target to ensure it's within the hardstops
-        Angle clampedTargetHeading = new Angle(LogicUtil.clamp(
+        Angle clampedTargetHeading = new Angle(MathUtil.clamp(
                 targetHeading.getAngle(Angle.AngleSystem.SIGNED_180_WRAPPED),
                 minLimit,
                 maxLimit

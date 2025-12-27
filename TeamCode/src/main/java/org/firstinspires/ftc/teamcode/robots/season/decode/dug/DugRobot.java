@@ -17,12 +17,11 @@ import org.firstinspires.ftc.teamcode.hardware.controllers.servo.RGBIndicatorLig
 import org.firstinspires.ftc.teamcode.hardware.controllers.servo.ServoTimerController;
 import org.firstinspires.ftc.teamcode.robots.base.RobotBase;
 import org.firstinspires.ftc.teamcode.util.LinearInterpolator;
-import org.firstinspires.ftc.teamcode.util.LogicUtil;
 import org.firstinspires.ftc.teamcode.util.math.Angle;
 
 import java.util.TreeMap;
 
-@Configurable
+@Deprecated
 public class DugRobot extends RobotBase {
     public static final int BLUE_GOAL_AP_ID = 20;
     public static final int RED_GOAL_AP_ID = 24;

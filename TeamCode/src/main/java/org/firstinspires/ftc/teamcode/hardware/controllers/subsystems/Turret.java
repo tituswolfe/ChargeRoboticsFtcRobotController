@@ -12,6 +12,7 @@ public record Turret(VelocityMotorController flywheelController,
     public void update(double targetVelRPM, Angle targetTurntableHeading, Angle targetHoodAngle) {
         flywheelController.setTargetVelocity(targetVelRPM);
         turntableController.setTargetHeading(targetTurntableHeading);
+        // turntableController.getPidfController().updateFeedForwardInput();
         hoodServoController.setTargetAngle(targetHoodAngle);
 
         flywheelController.update();

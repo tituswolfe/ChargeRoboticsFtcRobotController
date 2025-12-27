@@ -2,8 +2,8 @@ package org.firstinspires.ftc.teamcode.robots.season.decode.jetfire;
 
 import org.firstinspires.ftc.teamcode.robots.base.GamepadMapping;
 
-public class JetFireGamepadMapping extends GamepadMapping<JetFireRobot> {
-    public JetFireGamepadMapping(JetFireRobot dugRobot) {
+public class JetfireGamepadMapping extends GamepadMapping<JetfireRobot> {
+    public JetfireGamepadMapping(JetfireRobot dugRobot) {
         super(dugRobot);
     }
 
@@ -11,8 +11,8 @@ public class JetFireGamepadMapping extends GamepadMapping<JetFireRobot> {
     public void onYPressed() {
         robot.setFlywheelMode(switch (robot.getFlywheelMode()) {
             case AUTO -> null;
-            case SET_VELOCITY -> JetFireRobot.FlywheelMode.OFF;
-            case OFF -> JetFireRobot.FlywheelMode.SET_VELOCITY;
+            case SET_VELOCITY -> JetfireRobot.FlywheelMode.OFF;
+            case OFF -> JetfireRobot.FlywheelMode.SET_VELOCITY;
         });
     }
 
@@ -73,9 +73,9 @@ public class JetFireGamepadMapping extends GamepadMapping<JetFireRobot> {
     @Override
     public void onLeftBumperPressed() {
         robot.setIntakeMode(switch (robot.getIntakeMode()) {
-            case INTAKE -> JetFireRobot.IntakeMode.OFF;
-            case REVERSE -> JetFireRobot.IntakeMode.OFF;
-            case OFF -> JetFireRobot.IntakeMode.INTAKE;
+            case INTAKE -> JetfireRobot.IntakeMode.OFF;
+            case REVERSE -> JetfireRobot.IntakeMode.OFF;
+            case OFF -> JetfireRobot.IntakeMode.INTAKE;
         });
     }
 

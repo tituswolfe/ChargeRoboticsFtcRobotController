@@ -12,7 +12,6 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
-import org.firstinspires.ftc.teamcode.robots.season.decode.jetfire.JetFireRobot;
 
 public class Constants {
 //    public static FollowerConstants followerConstants = new FollowerConstants()

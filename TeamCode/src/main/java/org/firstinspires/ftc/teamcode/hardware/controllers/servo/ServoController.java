@@ -11,8 +11,9 @@ public class ServoController {
     protected double percentagePerOutputDegree;
     protected double percentagePerOutputRadian;
 
-    public ServoController(Servo servo, Angle totalRotation, double totalGearRatio) {
+    public ServoController(Servo servo, Servo.Direction direction, Angle totalRotation, double totalGearRatio) {
         this.servo = servo;
+        this.servo.setDirection(direction);
         this.totalRotation = totalRotation;
         setTotalGearRatio(totalGearRatio);
     }

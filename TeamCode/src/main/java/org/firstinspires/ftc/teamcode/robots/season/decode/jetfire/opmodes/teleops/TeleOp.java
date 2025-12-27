@@ -4,28 +4,28 @@ import com.pedropathing.follower.Follower;
 
 import org.firstinspires.ftc.teamcode.robots.base.GamepadMapping;
 import org.firstinspires.ftc.teamcode.robots.base.opmodes.TeleOpBase;
-import org.firstinspires.ftc.teamcode.robots.season.decode.jetfire.JetFireGamepadMapping;
-import org.firstinspires.ftc.teamcode.robots.season.decode.jetfire.JetFireRobot;
+import org.firstinspires.ftc.teamcode.robots.season.decode.jetfire.JetfireGamepadMapping;
+import org.firstinspires.ftc.teamcode.robots.season.decode.jetfire.JetfireRobot;
 
 @com.qualcomm.robotcore.eventloop.opmode.TeleOp(name = "JetFire", group = "jetfire")
-public class TeleOp extends TeleOpBase<JetFireRobot> {
+public class TeleOp extends TeleOpBase<JetfireRobot> {
     @Override
     public void buildPaths(Follower follower) {
 
     }
 
     @Override
-    protected JetFireRobot instantiateRobot() {
-        return new JetFireRobot();
+    protected JetfireRobot instantiateRobot() {
+        return new JetfireRobot();
     }
 
     @Override
-    protected GamepadMapping<JetFireRobot> instantiateGamepadMapping1() {
-        return new JetFireGamepadMapping(robot);
+    protected GamepadMapping<JetfireRobot> instantiateGamepadMapping1() {
+        return new JetfireGamepadMapping(robot);
     }
 
     @Override
-    protected GamepadMapping<JetFireRobot> instantiateGamepadMapping2() {
+    protected GamepadMapping<JetfireRobot> instantiateGamepadMapping2() {
         return null;
     }
 }
