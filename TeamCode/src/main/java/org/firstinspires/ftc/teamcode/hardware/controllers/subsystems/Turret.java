@@ -1,12 +1,12 @@
 package org.firstinspires.ftc.teamcode.hardware.controllers.subsystems;
 
-import org.firstinspires.ftc.teamcode.hardware.controllers.motor.AngleMotorController;
+import org.firstinspires.ftc.teamcode.hardware.controllers.motor.TurntableMotorController;
 import org.firstinspires.ftc.teamcode.hardware.controllers.motor.VelocityMotorController;
 import org.firstinspires.ftc.teamcode.hardware.controllers.servo.AngleServoController;
 import org.firstinspires.ftc.teamcode.util.math.Angle;
 
 public record Turret(VelocityMotorController flywheelController,
-                     AngleMotorController turntableController,
+                     TurntableMotorController turntableController,
                      AngleServoController hoodServoController) {
 
     public void update(double targetVelRPM, Angle targetTurntableHeading, Angle targetHoodAngle) {

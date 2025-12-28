@@ -11,7 +11,7 @@ import org.firstinspires.ftc.teamcode.util.math.MathUtil;
 /**
  * Allows you to control a motor by output angle (after gear ratio, and ticks
  */
-public class AngleMotorController extends MotorController {
+public class TurntableMotorController extends MotorController {
     private final Angle maxPositiveLimit;
     private final Angle minNegativeLimit;
     private final Angle startAngle;
@@ -27,7 +27,7 @@ public class AngleMotorController extends MotorController {
      * @param totalGearRatio     amount of motor rotations per 1 output rotations -> totalGearRatio (input) : 1 (output)
      * @param maxPower
      */
-    public AngleMotorController(DcMotorEx dcMotorEx, DcMotorSimple.Direction direction, PIDFCoefficients pidfCoefficients, double ticksPerRevolution, double totalGearRatio, double maxPower, Angle maxPositiveLimit, Angle minNegativeLimit, Angle startAngle, boolean reversePower) {
+    public TurntableMotorController(DcMotorEx dcMotorEx, DcMotorSimple.Direction direction, PIDFCoefficients pidfCoefficients, double ticksPerRevolution, double totalGearRatio, double maxPower, Angle maxPositiveLimit, Angle minNegativeLimit, Angle startAngle, boolean reversePower) {
         super(dcMotorEx, direction, pidfCoefficients, ticksPerRevolution, totalGearRatio, maxPower);
 
         assert maxPositiveLimit.getAngle(Angle.AngleSystem.SIGNED_180_WRAPPED) > minNegativeLimit.getAngle(Angle.AngleSystem.SIGNED_180_WRAPPED);

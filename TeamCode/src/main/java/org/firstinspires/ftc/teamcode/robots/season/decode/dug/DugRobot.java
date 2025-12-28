@@ -173,7 +173,7 @@ public class DugRobot extends RobotBase {
     }
 
     @Override
-    public void update(long deltaTime) {
+    public void update(long deltaTimeMs) {
         // TODO: MORE INDICATOR LIGHTS WAHAHAHAHA!
 
         flywheelSpeed = switch (flywheelSpeedMode) {
@@ -201,7 +201,7 @@ public class DugRobot extends RobotBase {
         goalHeadingError = new Angle(targetHeading - follower.getHeading()).getAngle(Angle.AngleUnit.RADIANS, Angle.AngleSystem.SIGNED_180_WRAPPED);
         headingPIDFController.updateError(goalHeadingError);
 
-        super.update(deltaTime);
+        super.update(deltaTimeMs);
     }
 
     public boolean areFlywheelsReady() {

@@ -38,7 +38,7 @@ public abstract class OpModeBase<Robot extends RobotBase> extends OpMode {
     private final static Timer sleepTimer = new Timer();
     protected boolean isEndgame = false;
 
-    private long deltaTime = 0;
+    private long deltaTimeMs = 0;
     private Timer deltaTimer = new Timer();
     // R.I.P AlliancePosition, OpModeType, & FieldType
 
@@ -95,30 +95,43 @@ public abstract class OpModeBase<Robot extends RobotBase> extends OpMode {
 
     @Override
     public void loop() {
-        deltaTime = deltaTimer.getElapsedTime();
+        deltaTimeMs = deltaTimer.getElapsedTime();
         deltaTimer.resetTimer();
-
-        robot.update(deltaTime);
-        updateTelemetry(telemetryManager);
-    }
-
-    public void updateTelemetry(TelemetryManager telemetry) {
 
         telemetry.addLine("- OpMode info -");
         // telemetry.addData("Alliance Color", StaticData.allianceColor);
         telemetry.addData("Elapsed time (sec)", opmodeTimer.getElapsedTimeSeconds());
         telemetry.addData("isEndgame", isEndgame);
-        telemetry.addData("Delta Time", deltaTime);
+        telemetry.addData("Delta Time (MS)", deltaTimeMs);
 
-
-        robot.hardwareTelemetry(telemetry);
+        robot.update(deltaTimeMs, telemetryManager);
 
         telemetry.addLine("");
         telemetry.addLine("- Charger Robotics -");
         telemetry.addLine("- DON'T TOUCH THAT RYAN! -");
 
         telemetryManager.update(this.telemetry);
+
+        // updateTelemetry(telemetryManager);
     }
+
+//    public void updateTelemetry(TelemetryManager telemetry) {
+//
+//        telemetry.addLine("- OpMode info -");
+//        // telemetry.addData("Alliance Color", StaticData.allianceColor);
+//        telemetry.addData("Elapsed time (sec)", opmodeTimer.getElapsedTimeSeconds());
+//        telemetry.addData("isEndgame", isEndgame);
+//        telemetry.addData("Delta Time (MS)", deltaTimeMs);
+//
+//
+//        robot.hardwareTelemetry(telemetry);
+//
+//        telemetry.addLine("");
+//        telemetry.addLine("- Charger Robotics -");
+//        telemetry.addLine("- DON'T TOUCH THAT RYAN! -");
+//
+//        telemetryManager.update(this.telemetry);
+//    }
 
     public boolean isEndgame() {
         return isEndgame;

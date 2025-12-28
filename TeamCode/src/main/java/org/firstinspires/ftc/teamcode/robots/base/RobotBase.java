@@ -95,18 +95,18 @@ public abstract class RobotBase {
         };
     }
 
-    public void hardwareTelemetry(TelemetryManager telemetry) {
-        if (follower != null) {
-            telemetry.addLine("- DRIVETRAIN -");
-            telemetry.addData("x", follower.getPose().getX());
-            telemetry.addData("y", follower.getPose().getY());
-            telemetry.addData("heading", Math.toDegrees(follower.getPose().getHeading()));
-            telemetry.addData("isRobotCentric", isRobotCentric);
-            telemetry.addData("Field Centric Offset (Deg)", fieldCentricOffset.getAngle(Angle.AngleUnit.DEGREES, Angle.AngleSystem.SIGNED_180_WRAPPED));
-            telemetry.addData("isSlowMode", isSlowMode);
-            telemetry.addLine("");
-        }
-    }
+//    public void hardwareTelemetry(TelemetryManager telemetry) {
+//        if (follower != null) {
+//            telemetry.addLine("- DRIVETRAIN -");
+//            telemetry.addData("x", follower.getPose().getX());
+//            telemetry.addData("y", follower.getPose().getY());
+//            telemetry.addData("heading", Math.toDegrees(follower.getPose().getHeading()));
+//            telemetry.addData("isRobotCentric", isRobotCentric);
+//            telemetry.addData("Field Centric Offset (Deg)", fieldCentricOffset.getAngle(Angle.AngleUnit.DEGREES, Angle.AngleSystem.SIGNED_180_WRAPPED));
+//            telemetry.addData("isSlowMode", isSlowMode);
+//            telemetry.addLine("");
+//        }
+//    }
 
     /**
      * Initiate robot season specific hardware here.
@@ -124,10 +124,23 @@ public abstract class RobotBase {
 
     // public abstract void teleopStartHardware();
 
-    public void update(long deltaTime) {
+    /**
+     * Update hardware states and telemetry. Do not {@link TelemetryManager#update()} in this method. Robot uses auto caching. do not get sensor data twice.
+     */
+    public void update(long deltaTimeMs, TelemetryManager telemetry) {
 
         if (follower != null) {
             follower.update();
+
+            telemetry.addLine("- DRIVETRAIN -");
+            telemetry.addData("x", follower.getPose().getX());
+            telemetry.addData("y", follower.getPose().getY());
+            telemetry.addData("heading", Math.toDegrees(follower.getPose().getHeading()));
+            telemetry.addData("isRobotCentric", isRobotCentric);
+            telemetry.addData("Field Centric Offset (Deg)", fieldCentricOffset.getAngle(Angle.AngleUnit.DEGREES, Angle.AngleSystem.SIGNED_180_WRAPPED));
+            telemetry.addData("isSlowMode", isSlowMode);
+            telemetry.addLine("");
+
             StaticData.lastPose = follower.getPose();
         }
     }
