@@ -100,18 +100,18 @@ public class DugRobot extends RobotBase {
 
         // Flywheels
 
-        topFlywheel = new VelocityMotorController(hardwareMap.get(DcMotorEx.class, "top-flywheel"), DcMotorSimple.Direction.FORWARD, new com.pedropathing.control.PIDFCoefficients(300, 15, 20, 0), 28, 1);
-        bottomFlywheel = new VelocityMotorController(hardwareMap.get(DcMotorEx.class, "bottom-flywheel"), DcMotorSimple.Direction.REVERSE, new com.pedropathing.control.PIDFCoefficients(300, 15, 20, 0), 28, 1);
-
-        // Intake
-        DcMotorEx intakeMotor = hardwareMap.get(DcMotorEx.class, "intake");
-        intakeMotor.setDirection(DcMotorSimple.Direction.REVERSE);
-
-        intake = new VelocityMotorController(intakeMotor, DcMotorSimple.Direction.REVERSE, new com.pedropathing.control.PIDFCoefficients(300, 15, 20, 0),  384.5, 1); // DOESN'T NEED PID
+//        topFlywheel = new VelocityMotorController(hardwareMap.get(DcMotorEx.class, "top-flywheel"), DcMotorSimple.Direction.FORWARD, new com.pedropathing.control.PIDFCoefficients(300, 15, 20, 0), 28, 1);
+//        bottomFlywheel = new VelocityMotorController(hardwareMap.get(DcMotorEx.class, "bottom-flywheel"), DcMotorSimple.Direction.REVERSE, new com.pedropathing.control.PIDFCoefficients(300, 15, 20, 0), 28, 1);
+//
+//        // Intake
+//        DcMotorEx intakeMotor = hardwareMap.get(DcMotorEx.class, "intake");
+//        intakeMotor.setDirection(DcMotorSimple.Direction.REVERSE);
+//
+//        intake = new VelocityMotorController(intakeMotor, DcMotorSimple.Direction.REVERSE, new com.pedropathing.control.PIDFCoefficients(300, 15, 20, 0),  384.5, 1); // DOESN'T NEED PID
 
         // Servos
-        launchServoController = new ServoTimerController(hardwareMap.get(Servo.class, "launch"));
-        pushServoController = new ServoTimerController(hardwareMap.get(Servo.class, "flicker")); // TODO: Rename push servo
+//        launchServoController = new ServoTimerController(hardwareMap.get(Servo.class, "launch"));
+//        pushServoController = new ServoTimerController(hardwareMap.get(Servo.class, "flicker")); // TODO: Rename push servo
 
         // Other
         rgbIndicatorLightController = new RGBIndicatorLightController(hardwareMap.get(Servo.class, "indicator"));
@@ -172,42 +172,42 @@ public class DugRobot extends RobotBase {
         pushServoController.setPosition(PUSH_SERVO_OUT, 200, PUSH_SERVO_IN);
     }
 
-    @Override
-    public void update(long deltaTimeMs) {
-        // TODO: MORE INDICATOR LIGHTS WAHAHAHAHA!
-
-        flywheelSpeed = switch (flywheelSpeedMode) {
-            case AUTO -> flywheelSpeedByDistanceInterpolator.interpolate(follower.getPose().distanceFrom(targetGoal));
-            case MANUEL -> flywheelSpeed;
-            case OFF -> 0.0;
-        };
-
-
-        topFlywheelRatio = 0.5; //topFlywheelRatioByDistanceInterpolator.interpolate(follower.getPose().distanceFrom(targetGoal));
-
-        if (bottomFlywheel.getVelocity() != flywheelSpeed) {
-            bottomFlywheel.setTargetVelocity(flywheelSpeed);
-            topFlywheel.setTargetVelocity(flywheelSpeed * topFlywheelRatio);
-        }
-
-        launchServoController.update();
-        pushServoController.update();
-
-        rgbIndicatorLightController.setColor(areFlywheelsReady() ? flywheelSpeedMode == FlywheelSpeedMode.AUTO ? RGBIndicatorLightController.Color.GREEN : RGBIndicatorLightController.Color.INDIGO : RGBIndicatorLightController.Color.RED);
-
-
-        Pose displacedPose = targetGoal.minus(follower.getPose());
-        double targetHeading = Math.atan2(displacedPose.getY(), displacedPose.getX()) + new Angle(headingGoalOffsetDeg, false).getAngle(Angle.AngleUnit.RADIANS, Angle.AngleSystem.SIGNED_180_WRAPPED); // Math.toRadians(-7);
-        goalHeadingError = new Angle(targetHeading - follower.getHeading()).getAngle(Angle.AngleUnit.RADIANS, Angle.AngleSystem.SIGNED_180_WRAPPED);
-        headingPIDFController.updateError(goalHeadingError);
-
-        super.update(deltaTimeMs);
-    }
-
-    public boolean areFlywheelsReady() {
-        if (flywheelSpeedMode == FlywheelSpeedMode.OFF) return false;
-        return LogicUtil.isWithinRange(topFlywheel.getVelocity(), flywheelSpeed * topFlywheelRatio,60) && LogicUtil.isWithinRange(bottomFlywheel.getVelocity(), flywheelSpeed, 60);
-    }
+//    @Override
+//    public void update(long deltaTimeMs) {
+//        // TODO: MORE INDICATOR LIGHTS WAHAHAHAHA!
+//
+//        flywheelSpeed = switch (flywheelSpeedMode) {
+//            case AUTO -> flywheelSpeedByDistanceInterpolator.interpolate(follower.getPose().distanceFrom(targetGoal));
+//            case MANUEL -> flywheelSpeed;
+//            case OFF -> 0.0;
+//        };
+//
+//
+//        topFlywheelRatio = 0.5; //topFlywheelRatioByDistanceInterpolator.interpolate(follower.getPose().distanceFrom(targetGoal));
+//
+//        if (bottomFlywheel.getVelocity() != flywheelSpeed) {
+//            bottomFlywheel.setTargetVelocity(flywheelSpeed);
+//            topFlywheel.setTargetVelocity(flywheelSpeed * topFlywheelRatio);
+//        }
+//
+//        launchServoController.update();
+//        pushServoController.update();
+//
+//        rgbIndicatorLightController.setColor(areFlywheelsReady() ? flywheelSpeedMode == FlywheelSpeedMode.AUTO ? RGBIndicatorLightController.Color.GREEN : RGBIndicatorLightController.Color.INDIGO : RGBIndicatorLightController.Color.RED);
+//
+//
+//        Pose displacedPose = targetGoal.minus(follower.getPose());
+//        double targetHeading = Math.atan2(displacedPose.getY(), displacedPose.getX()) + new Angle(headingGoalOffsetDeg, false).getAngle(Angle.AngleUnit.RADIANS, Angle.AngleSystem.SIGNED_180_WRAPPED); // Math.toRadians(-7);
+//        goalHeadingError = new Angle(targetHeading - follower.getHeading()).getAngle(Angle.AngleUnit.RADIANS, Angle.AngleSystem.SIGNED_180_WRAPPED);
+//        headingPIDFController.updateError(goalHeadingError);
+//
+//        super.update(deltaTimeMs);
+//    }
+//
+//    public boolean areFlywheelsReady() {
+//        if (flywheelSpeedMode == FlywheelSpeedMode.OFF) return false;
+//        return LogicUtil.isWithinRange(topFlywheel.getVelocity(), flywheelSpeed * topFlywheelRatio,60) && LogicUtil.isWithinRange(bottomFlywheel.getVelocity(), flywheelSpeed, 60);
+//    }
 
     // getters
 

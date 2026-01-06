@@ -33,7 +33,7 @@ public class RGBIndicatorLightController {
 
         indicatorLight.setPosition(switch (color) {
             case OFF -> 0;
-            case RED -> 0.277;
+            case RED -> 0.28; // RED position increased due to PWM variation, turning it OFF
             case ORANGE -> 0.333;
             case YELLOW -> 0.388;
             case SAGE -> 0.444;

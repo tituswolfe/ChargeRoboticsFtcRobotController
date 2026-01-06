@@ -9,7 +9,8 @@ import org.firstinspires.ftc.teamcode.util.math.MathUtil;
 
 public class VelocityMotorController extends MotorController{
     private double targetRotationsPerMinute = 0;
-    private boolean isEngaged = false;
+    private boolean isEngaged = true;
+    private double velocity = 0; // TODO: Cached?
 
     public VelocityMotorController(DcMotorEx dcMotorEx, DcMotorSimple.Direction direction, PIDFCoefficients pidfCoefficients, double ticksPerRevolution, double totalGearRatio, double maxPower) {
         super(dcMotorEx, direction, pidfCoefficients, ticksPerRevolution, totalGearRatio, maxPower);
@@ -18,7 +19,8 @@ public class VelocityMotorController extends MotorController{
 
     @Override
     public void update() {
-        pidfController.updateError(targetRotationsPerMinute - getVelocity());
+        velocity = (dcMotorEx.getVelocity() * 60) / ticksPerRevolution;
+        pidfController.updateError(targetRotationsPerMinute - velocity);
         pidfController.updateFeedForwardInput(targetRotationsPerMinute);
 
         this.dcMotorEx.setPower(isEngaged ? MathUtil.clamp(pidfController.run(), -maxPower, maxPower) : 0);
@@ -42,7 +44,7 @@ public class VelocityMotorController extends MotorController{
      * @return velocity in rotations per minute
      */
     public double getVelocity() {
-        return (dcMotorEx.getVelocity() * 60) / ticksPerRevolution;
+        return velocity;
     }
 
     public boolean isEngaged() {

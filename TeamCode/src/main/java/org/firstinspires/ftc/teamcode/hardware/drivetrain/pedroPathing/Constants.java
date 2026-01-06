@@ -47,7 +47,7 @@ public class Constants {
 //    public static PathConstraints pathConstraints = new PathConstraints(0.99, 100, 1, 1);
 
     public static Follower createFollower(HardwareMap hardwareMap) {
-        return createJetFireFollower(hardwareMap);
+        return createJetfireFollower(hardwareMap);
 //        return new FollowerBuilder(new FollowerConstants()
 //                .mass(7)
 //                .forwardZeroPowerAcceleration(-32)
@@ -113,9 +113,9 @@ public class Constants {
                 .build();
     }
 
-    public static Follower createJetFireFollower(HardwareMap hardwareMap) {
+    public static Follower createJetfireFollower(HardwareMap hardwareMap) {
         return new FollowerBuilder(new FollowerConstants()
-                .mass(19)
+                .mass(13.6)
                 .forwardZeroPowerAcceleration(-28.2)
                 .lateralZeroPowerAcceleration(-67.5)
                 .translationalPIDFCoefficients(new PIDFCoefficients(0.1, 0, 0.01, 0))

@@ -48,15 +48,13 @@ public class JetfireRobot extends RobotBase {
         OFF
     }
     private FlywheelMode flywheelMode = FlywheelMode.OFF;
-    public static double flywheelSetVelocity = 3000;
     public static PIDFCoefficients flywheelPIDFCoefficients = new PIDFCoefficients(0.0027, 0, 0, 0.0002);
 
     // TURNTABLE
-    public static PIDFCoefficients turntablePIDFCoefficients = new PIDFCoefficients(0.015 / 2, 0, 0, 0);
+    public static PIDFCoefficients turntablePIDFCoefficients = new PIDFCoefficients(0.045, 0, 0.0012, 0);
 
     // HOOD
     public static boolean isAutoHoodAngleOn = false;
-    public static double hoodSetAngleDeg = 22;
 
     // INTAKE
     public enum IntakeMode {
@@ -68,46 +66,46 @@ public class JetfireRobot extends RobotBase {
     DcMotorEx intakeMotor;
     private static final double INTAKE_POWER = 0.6;
 
-    private static Pose resetPose; // HUMAN PLAYER ZONE
-
-    // TODO: Better way? rather than 3 different interpolators?
     private LinearInterpolator flywheelVelocityByDistanceInterpolator;
     private LinearInterpolator hoodAngleByDistanceInterpolator;
     private LinearInterpolator timeOfFlightByDistanceInterpolator;
+    private LinearInterpolator turntableOffsetByDistanceInterpolator;
+
+    public static long LAUNCH_SERVO_DELAY_MS = 300;
 
     // TRANSFER SERVO
     ServoTimerController transferServoController;
-    public static double TRANSFER_SERVO_UP = 0.7;
-    public static double TRANSFER_SERVO_DOWN = 0.27;
-
-    private static final long LAUNCH_SERVO_DELAY_MS = 300;
-    // TODO: TEST ANGLE CLASS PANELS (WOULD HAVE TO BE PUBLIC FOUND OUT)
-// TODO: PEDRO PATHING RIGHT COORDINATES?
+    public static double TRANSFER_SERVO_UP = 0.45;
+    public static double TRANSFER_SERVO_DOWN = 0.67;
+    public static int TRANSFER_SERVO_TIME_MS = 200;
 
     // GATE SERVO
-    Servo gateServo;
-    public static double GATE_SERVO_OPEN = 0.1;
-    public static double GATE_SERVO_CLOSED = 0.0;
-    // TODO: Naming convent for static public vs final?
+    ServoTimerController gateServoController;
+    public static double GATE_SERVO_OPEN = 0.55;
+    public static double GATE_SERVO_CLOSED = 0.8;
+    public static int GATE_SERVO_TIME_MS = 500;
 
     // ARTIFACT CHAMBER DETECTION
-    DistanceSensor distanceSensor;
-    public static double ARTIFACT_DETECTION_THRESHOLD_MM = 0;
+    DistanceSensor chamberDistanceSensor;
+    public static double ARTIFACT_DETECTION_THRESHOLD_MM = 90;
 
     Timer laucnhCooldownTimer = new Timer();
-    public static double LAUNCH_COOLDOWN_MS = 100 + LAUNCH_SERVO_DELAY_MS; // TODO?
+    public static double LAUNCH_COOLDOWN_MS = 150;
 
+    // LIGHTS
     RGBIndicatorLightController indicatorLightController;
 
     // MARGINS
-    public static double flywheelVelocityMargin = 60;
-    public static double turntableHeadingMarginDeg = 2;
+    public static double FLYWHEEL_VELOCITY_MARGIN_RPM = 60;
+    public static double TURNTABLE_HEADING_MARGIN_DEG = 2;
 
+    // TUNING
+    public static boolean TUNING = false;
+    public static double FLYWHEEL_TARGET_VELOCITY = 0;
+    public static double HOOD_ANGLE = 22;
 
-    // PUBLIC STATIC VARIABLES
+    // RUNTIME
     public static Pose targetGoal;
-    public static boolean testing = false;
-
     private boolean isReadyToShoot = false;
 
 
@@ -115,7 +113,7 @@ public class JetfireRobot extends RobotBase {
     public void init(HardwareMap hardwareMap, Pose startPose, OpModeBase.AllianceColor allianceColor) {
         super.init(hardwareMap, startPose, allianceColor);
         targetGoal = new Pose(-72, allianceColor == OpModeBase.AllianceColor.RED ? 72 : -72);
-        // targetAim
+        // TODO: Move target for aiming, or LUT turntable heading offsets
     }
 
     @Override
@@ -141,13 +139,13 @@ public class JetfireRobot extends RobotBase {
                 hardwareMap.get(DcMotorEx.class, "turntable"),
                 DcMotorSimple.Direction.FORWARD,
                 turntablePIDFCoefficients,
-                HardwareInfo.GOBILDA_5203_YELLOW_JACKET_MOTOR_435_RPM.ENCODER_RESOLUTION_PPR, //384.5,
+                384.5, //384.5,
                 64.0 / 16.0,
                 0.7,
                 new Angle(130, false),
                 new Angle(-130, false),
                 turretStartHeading,
-                true
+                false
         );
 
         AngleServoController hoodController = new AngleServoController(
@@ -170,6 +168,16 @@ public class JetfireRobot extends RobotBase {
         intakeMotor.setDirection(DcMotorSimple.Direction.REVERSE);
 
         indicatorLightController = new RGBIndicatorLightController(hardwareMap.get(Servo.class, "indicator"));
+        indicatorLightController.setColor(RGBIndicatorLightController.Color.RED);
+
+        chamberDistanceSensor = hardwareMap.get(DistanceSensor.class, "chamber");
+
+        Servo gateServo = hardwareMap.get(Servo.class, "gate");
+        gateServoController = new ServoTimerController(gateServo, GATE_SERVO_CLOSED);
+
+        Servo transferServo = hardwareMap.get(Servo.class, "transfer");
+        transferServoController = new ServoTimerController(transferServo, TRANSFER_SERVO_DOWN);
+
 
         TreeMap<Double, Double> flywheelSpeedByDistanceMap = new TreeMap<>();
         // INCH, RPM
@@ -180,6 +188,10 @@ public class JetfireRobot extends RobotBase {
         // INCH, DEGREES
         hoodAngleByDistanceMap.put(60.0, 18.5);
         hoodAngleByDistanceInterpolator = new LinearInterpolator(hoodAngleByDistanceMap);
+
+        TreeMap<Double, Double> timeOfFlightByDistanceMap = new TreeMap<>();
+        timeOfFlightByDistanceMap.put(0.0, 0.0);
+        timeOfFlightByDistanceInterpolator = new LinearInterpolator(timeOfFlightByDistanceMap);
     }
 
     @Override
@@ -191,34 +203,7 @@ public class JetfireRobot extends RobotBase {
     public void update(long deltaTimeMs, TelemetryManager telemetry) {
         super.update(deltaTimeMs, telemetry);
 
-        Pose displacedPose = targetGoal.minus(follower.getPose());
-        // TODO: AIM GOAL POINT?
-        Angle goalHeading = new Angle(Math.atan2(displacedPose.getY(), displacedPose.getX()));
-        double distanceFromGoal = follower.getPose().distanceFrom(targetGoal);
-        Angle relativeTurntableHeading = turret.turntableController().getHeading();
-        Angle absoluteTurntableHeading = new Angle(relativeTurntableHeading.getAngle(Angle.AngleSystem.SIGNED_180_WRAPPED) + follower.getHeading());
-
-
-        boolean isFlywheelReady = MathUtil.isWithinRange(
-                turret.flywheelController().getVelocity(),
-                turret.flywheelController().getTargetVelocity(),
-                flywheelVelocityMargin
-        ) && !flywheelMode.equals(FlywheelMode.OFF);
-
-        boolean isTurntableReady = MathUtil.isWithinRange(
-                turret.turntableController().getHeading().getAngle(Angle.AngleUnit.DEGREES, Angle.AngleSystem.SIGNED_180_WRAPPED),
-                turret.turntableController().getTargetHeading().getAngle(Angle.AngleUnit.DEGREES, Angle.AngleSystem.SIGNED_180_WRAPPED),
-                turntableHeadingMarginDeg
-        );
-
-        boolean isArtifactLoaded = distanceSensor.getDistance(DistanceUnit.MM) < ARTIFACT_DETECTION_THRESHOLD_MM;
-
-        boolean isCooldownOver = laucnhCooldownTimer.getElapsedTime() > LAUNCH_COOLDOWN_MS;
-
-        isReadyToShoot = isFlywheelReady && isTurntableReady && isArtifactLoaded && isCooldownOver;
-
-
-        long launchDelay = deltaTimeMs + LAUNCH_SERVO_DELAY_MS;
+        // GET DATA
 
         Pose currentPose = follower.getPose();
         Vector velocity = follower.getVelocity();
@@ -226,10 +211,34 @@ public class JetfireRobot extends RobotBase {
         Vector acceleration = follower.getAcceleration();
         double angularAcceleration = 0;
 
-        // TODO: Boolean for testing futures
+        Pose displacedPose = targetGoal.minus(currentPose);
+        double distanceFromGoal = currentPose.distanceFrom(targetGoal);
+        Angle goalHeading = new Angle(Math.atan2(displacedPose.getY(), displacedPose.getX()));
 
-        // TODO ACTIVE SHOOTING MECHANISM CHECKS
-        // TODO KNOW WHEN YOU SHOOT TELEOP AND AUTO, DON"T JUST HOLD THE GATE OPEN
+        Angle relativeTurntableHeading = turret.turntableController().getHeading();
+        Angle absoluteTurntableHeading = new Angle(relativeTurntableHeading.getAngle(Angle.AngleSystem.SIGNED_180_WRAPPED) + follower.getHeading());
+
+        // PROCESS DATA
+        boolean isFlywheelReady = MathUtil.isWithinRange(
+                turret.flywheelController().getVelocity(),
+                turret.flywheelController().getTargetVelocity(),
+                FLYWHEEL_VELOCITY_MARGIN_RPM
+        ); // && !flywheelMode.equals(FlywheelMode.OFF);
+
+        boolean isTurntableReady = MathUtil.isWithinRange(
+                relativeTurntableHeading.getAngle(Angle.AngleUnit.DEGREES, Angle.AngleSystem.SIGNED_180_WRAPPED),
+                turret.turntableController().getTargetHeading().getAngle(Angle.AngleUnit.DEGREES, Angle.AngleSystem.SIGNED_180_WRAPPED),
+                TURNTABLE_HEADING_MARGIN_DEG
+        );
+
+        boolean isArtifactLoaded = chamberDistanceSensor.getDistance(DistanceUnit.MM) < ARTIFACT_DETECTION_THRESHOLD_MM;
+        boolean isCooldownOver = laucnhCooldownTimer.getElapsedTime() > LAUNCH_COOLDOWN_MS;
+
+        isReadyToShoot = isFlywheelReady && isTurntableReady && isArtifactLoaded && isCooldownOver;
+
+        long launchDelay = deltaTimeMs + LAUNCH_SERVO_DELAY_MS;
+        // TODO: bool for testing
+
         // Lead Computing
         Pose futurePose = PhysicsUtil.predictFuturePose(
                 currentPose,
@@ -240,9 +249,8 @@ public class JetfireRobot extends RobotBase {
                 (launchDelay / 1000.0)
         );
 
-
-        double distanceToGoal = futurePose.distanceFrom(targetGoal);
-        double timeOfFlightMs = timeOfFlightByDistanceInterpolator.interpolate(distanceToGoal);
+        double distanceFromGoalAtFuturePose = futurePose.distanceFrom(targetGoal);
+        double timeOfFlightMs = timeOfFlightByDistanceInterpolator.interpolate(distanceFromGoalAtFuturePose);
 
         Pose virtualGoal = PhysicsUtil.predictFuturePose(
                 targetGoal,
@@ -256,18 +264,14 @@ public class JetfireRobot extends RobotBase {
         double virtualDistanceFromGoal = futurePose.distanceFrom(virtualGoal);
         Angle virtualGoalHeading = new Angle(Math.atan2(displacedPose.getY(), displacedPose.getX()));
 
-
-        // TODO: Deceleration coefficent due to air resitance on the virutal goal?
-        // TODO: LUT for offset as you get farther away?
-        // TODO: Feedforward on turntable
-
+        // UPDATE HARDWARE
         double flywheelSpeed = switch (flywheelMode) {
             case AUTO -> flywheelVelocityByDistanceInterpolator.interpolate(virtualDistanceFromGoal);
-            case SET_VELOCITY -> flywheelSetVelocity;
+            case SET_VELOCITY -> FLYWHEEL_TARGET_VELOCITY;
             case OFF -> 0.0;
         };
         Angle targetTurntableHeading = isAutoAimOn ? new Angle(virtualGoalHeading.getAngle(Angle.AngleSystem.SIGNED_180_WRAPPED) - follower.getHeading()) : new Angle(0);
-        Angle hoodAngle = new Angle(isAutoHoodAngleOn ? hoodAngleByDistanceInterpolator.interpolate(virtualDistanceFromGoal) : hoodSetAngleDeg, false);
+        Angle hoodAngle = new Angle(isAutoHoodAngleOn ? hoodAngleByDistanceInterpolator.interpolate(virtualDistanceFromGoal) : HOOD_ANGLE, false);
 
         turret.update(
                 flywheelSpeed,
@@ -285,27 +289,28 @@ public class JetfireRobot extends RobotBase {
 
         JetfireStaticData.lastTurretHeading = turret.turntableController().getHeading();
 
-        indicatorLightController.setColor(isReadyToShoot() ? RGBIndicatorLightController.Color.GREEN : RGBIndicatorLightController.Color.RED);
+        indicatorLightController.setColor(isReadyToShoot ? RGBIndicatorLightController.Color.GREEN : RGBIndicatorLightController.Color.RED);
 
         transferServoController.update();
+        gateServoController.update();
 
-        if (testing) {
+        if (TUNING) {
             if (!turret.flywheelController().getPidfController().getCoefficients().equals(flywheelPIDFCoefficients)) turret.flywheelController().getPidfController().setCoefficients(flywheelPIDFCoefficients);
             if (!turret.turntableController().getPidfController().getCoefficients().equals(turntablePIDFCoefficients)) turret.turntableController().getPidfController().setCoefficients(turntablePIDFCoefficients);
-
         }
 
+        // TODO: Tuning
 
         telemetry.addLine("");
-        telemetry.addLine("- VARIABLES -");
+        telemetry.addLine("- TRIGGERS -");
+        telemetry.addData("isReadyToShoot", isReadyToShoot);
+        telemetry.addData("isArtifactLoaded", isArtifactLoaded);
+        telemetry.addLine("");
         telemetry.addData("GOAL DISTANCE", distanceFromGoal);
         telemetry.addData("GOAL HEADING", goalHeading.getAngle(Angle.AngleUnit.DEGREES, Angle.AngleSystem.SIGNED_180_WRAPPED));
         telemetry.addLine("");
         telemetry.addLine("- TURNTABLE -");
         telemetry.addData("ABSOLUTE TURNTABLE ERROR", goalHeading.getAngle(Angle.AngleUnit.DEGREES, Angle.AngleSystem.SIGNED_180_WRAPPED) - absoluteTurntableHeading.getAngle(Angle.AngleUnit.DEGREES, Angle.AngleSystem.SIGNED_180_WRAPPED));
-        telemetry.addData("RELATIVE TURNTABLE HEADING", relativeTurntableHeading.getAngle(Angle.AngleUnit.DEGREES, Angle.AngleSystem.SIGNED_180_WRAPPED));
-        telemetry.addData("ABSOLUTE TURNTABLE HEADING", absoluteTurntableHeading.getAngle(Angle.AngleUnit.DEGREES, Angle.AngleSystem.SIGNED_180_WRAPPED));
-        telemetry.addData("RELATIVE GOAL TURNTABLE HEADING", turret.turntableController().getTargetHeading().getAngle(Angle.AngleUnit.DEGREES, Angle.AngleSystem.SIGNED_180_WRAPPED));
         telemetry.addLine("");
         telemetry.addLine("- FLYWHEEL -");
         telemetry.addData("FLYWHEEL VELOCITY RPM", turret.flywheelController().getVelocity());
@@ -313,15 +318,18 @@ public class JetfireRobot extends RobotBase {
         telemetry.addLine("");
         telemetry.addLine("- HOOD -");
         telemetry.addData("HOOD ANGLE", turret.hoodServoController().getTargetAngle().getAngle(Angle.AngleUnit.DEGREES, Angle.AngleSystem.SIGNED));
+        telemetry.addLine("");
+        telemetry.addLine("- LEAD COMPUTING -");
+        telemetry.addData("Future Pose X", futurePose.getX());
+        telemetry.addData("Future Pose Y", futurePose.getY());
     }
 
     public void shoot() {
-        transferServoController.setPosition(TRANSFER_SERVO_UP, 100, TRANSFER_SERVO_DOWN);
+        gateServoController.setPosition(GATE_SERVO_OPEN, GATE_SERVO_TIME_MS, GATE_SERVO_CLOSED);
+        transferServoController.setPosition(TRANSFER_SERVO_UP, TRANSFER_SERVO_TIME_MS, TRANSFER_SERVO_DOWN);
+
         laucnhCooldownTimer.resetTimer();
     }
-
-    // TODO: GATE SERVO
-    // TODO OPEN ON SHOOT, OR OPEN ENTIRLY WHILE TRANSFERING ?
 
     public void setIntakeMode(IntakeMode intakeMode) {
         this.intakeMode = intakeMode;
@@ -359,7 +367,7 @@ public class JetfireRobot extends RobotBase {
 
     @Override
     public Follower instantiateFollower(HardwareMap hardwareMap) {
-        return Constants.createJetFireFollower(hardwareMap);
+        return Constants.createJetfireFollower(hardwareMap);
     }
 
     @Override

@@ -47,7 +47,7 @@ public class JetfireGamepadMapping extends GamepadMapping<JetfireRobot> {
 
     @Override
     public void rightTrigger(float val) {
-        // if (val > 0.1) robot.shoot();
+         if (val > 0.1 && robot.isReadyToShoot()) robot.shoot();
     }
 
     @Override

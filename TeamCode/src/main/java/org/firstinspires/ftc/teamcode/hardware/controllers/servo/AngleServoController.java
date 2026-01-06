@@ -3,6 +3,7 @@ package org.firstinspires.ftc.teamcode.hardware.controllers.servo;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.util.math.Angle;
+import org.firstinspires.ftc.teamcode.util.math.MathUtil;
 
 public class AngleServoController extends ServoController {
     public final Angle offset;
@@ -19,7 +20,7 @@ public class AngleServoController extends ServoController {
     }
 
     public void setTargetAngle(Angle angle) {
-        Angle targetAngle = new Angle(LogicUtil.clamp(
+        Angle targetAngle = new Angle(MathUtil.clamp(
                 angle.getAngle(Angle.AngleSystem.SIGNED),
                 minLimit.getAngle(Angle.AngleSystem.SIGNED),
                 maxLimit.getAngle(Angle.AngleSystem.SIGNED)

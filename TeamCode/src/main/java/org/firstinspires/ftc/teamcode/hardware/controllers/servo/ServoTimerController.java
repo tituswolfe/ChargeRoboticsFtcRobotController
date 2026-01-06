@@ -11,8 +11,10 @@ public class ServoTimerController {
     private int transitTimeMills;
     private double resetPosition;
 
-    public ServoTimerController(Servo servo) {
+    public ServoTimerController(Servo servo, double initPos) {
         this.servo = servo;
+        this.servo.setPosition(initPos);
+        resetPosition = initPos;
     }
 
     public void setPosition(double position, int millsToWait, double resetPosition) {

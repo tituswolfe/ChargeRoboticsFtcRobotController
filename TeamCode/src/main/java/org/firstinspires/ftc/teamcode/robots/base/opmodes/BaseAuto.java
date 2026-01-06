@@ -25,11 +25,11 @@ public abstract class BaseAuto<Robot extends RobotBase> extends OpModeBase<Robot
         robot.startConfiguration();
     }
 
-    @Override
-    public void updateTelemetry(TelemetryManager telemetry) {
-        telemetry.addData("Path State", pathState);
-        super.updateTelemetry(telemetry);
-    }
+//    @Override
+//    public void updateTelemetry(TelemetryManager telemetry) {
+//        telemetry.addData("Path State", pathState);
+//        super.updateTelemetry(telemetry);
+//    }
 
     @Override
     public void init() {
