@@ -67,7 +67,7 @@ public abstract class GamepadMapping<Robot extends RobotBase> {
     public abstract void onDpadLeftPressed();
 
     public void processGamepad(Gamepad gamepad) {
-        boolean isLeftTriggerPressed = gamepad.right_trigger > 0.1;
+        boolean isLeftTriggerPressed = gamepad.left_trigger > 0.1;
         boolean isRightTriggerPressed = gamepad.right_trigger > 0.1;
 
         // Buttons

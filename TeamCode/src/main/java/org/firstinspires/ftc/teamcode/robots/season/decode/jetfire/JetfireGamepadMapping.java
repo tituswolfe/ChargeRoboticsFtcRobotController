@@ -10,9 +10,8 @@ public class JetfireGamepadMapping extends GamepadMapping<JetfireRobot> {
     @Override
     public void onYPressed() {
         robot.setFlywheelMode(switch (robot.getFlywheelMode()) {
-            case AUTO -> null;
-            case SET_VELOCITY -> JetfireRobot.FlywheelMode.OFF;
-            case OFF -> JetfireRobot.FlywheelMode.SET_VELOCITY;
+            case AUTO -> JetfireRobot.FlywheelMode.OFF;
+            case OFF -> JetfireRobot.FlywheelMode.AUTO;
         });
     }
 
@@ -52,7 +51,7 @@ public class JetfireGamepadMapping extends GamepadMapping<JetfireRobot> {
 
     @Override
     public void onLeftTriggerPressed() {
-
+        robot.setReverseIntake(true);
     }
 
     @Override
@@ -62,7 +61,7 @@ public class JetfireGamepadMapping extends GamepadMapping<JetfireRobot> {
 
     @Override
     public void onLeftTriggerReleased() {
-
+        robot.setReverseIntake(false);
     }
 
     @Override
@@ -73,15 +72,14 @@ public class JetfireGamepadMapping extends GamepadMapping<JetfireRobot> {
     @Override
     public void onLeftBumperPressed() {
         robot.setIntakeMode(switch (robot.getIntakeMode()) {
-            case INTAKE -> JetfireRobot.IntakeMode.OFF;
-            case REVERSE -> JetfireRobot.IntakeMode.OFF;
-            case OFF -> JetfireRobot.IntakeMode.INTAKE;
+            case ON -> JetfireRobot.IntakeMode.OFF;
+            case OFF -> JetfireRobot.IntakeMode.ON;
         });
     }
 
     @Override
     public void onRightBumperPressed() {
-        robot.setAutoAimOn(!robot.isAutoAimOn());
+        robot.setAutoAimTurntable(!robot.isAutoAimTurntable());
     }
 
     @Override

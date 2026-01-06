@@ -38,13 +38,11 @@ import java.util.TreeMap;
 @Configurable
 public class JetfireRobot extends RobotBase {
     private Turret turret;
-
-    private boolean isAutoAimOn = false;
+    private boolean autoAimTurntable = false;
 
     // FLYWHEELS
     public enum FlywheelMode {
         AUTO,
-        SET_VELOCITY,
         OFF
     }
     private FlywheelMode flywheelMode = FlywheelMode.OFF;
@@ -53,25 +51,21 @@ public class JetfireRobot extends RobotBase {
     // TURNTABLE
     public static PIDFCoefficients turntablePIDFCoefficients = new PIDFCoefficients(0.045, 0, 0.0012, 0);
 
-    // HOOD
-    public static boolean isAutoHoodAngleOn = false;
-
     // INTAKE
+    DcMotorEx intakeMotor;
+    public static double INTAKE_POWER = 0.8;
     public enum IntakeMode {
-        INTAKE,
-        REVERSE,
+        ON,
         OFF
     }
     IntakeMode intakeMode = IntakeMode.OFF;
-    DcMotorEx intakeMotor;
-    private static final double INTAKE_POWER = 0.6;
+    private boolean reverseIntake = false;
 
+    // LUTs
     private LinearInterpolator flywheelVelocityByDistanceInterpolator;
     private LinearInterpolator hoodAngleByDistanceInterpolator;
     private LinearInterpolator timeOfFlightByDistanceInterpolator;
     private LinearInterpolator turntableOffsetByDistanceInterpolator;
-
-    public static long LAUNCH_SERVO_DELAY_MS = 300;
 
     // TRANSFER SERVO
     ServoTimerController transferServoController;
@@ -90,7 +84,7 @@ public class JetfireRobot extends RobotBase {
     public static double ARTIFACT_DETECTION_THRESHOLD_MM = 90;
 
     Timer laucnhCooldownTimer = new Timer();
-    public static double LAUNCH_COOLDOWN_MS = 150;
+    public static int LAUNCH_COOLDOWN_MS = 150;
 
     // LIGHTS
     RGBIndicatorLightController indicatorLightController;
@@ -99,15 +93,17 @@ public class JetfireRobot extends RobotBase {
     public static double FLYWHEEL_VELOCITY_MARGIN_RPM = 60;
     public static double TURNTABLE_HEADING_MARGIN_DEG = 2;
 
+    public static long LAUNCH_DELAY_MS = 300;
+
     // TUNING
     public static boolean TUNING = false;
     public static double FLYWHEEL_TARGET_VELOCITY = 0;
-    public static double HOOD_ANGLE = 22;
+    public static double HOOD_ANGLE = 16;
+    public static double TURNTABLE_OFFSET_DEG;
 
     // RUNTIME
     public static Pose targetGoal;
     private boolean isReadyToShoot = false;
-
 
     @Override
     public void init(HardwareMap hardwareMap, Pose startPose, OpModeBase.AllianceColor allianceColor) {
@@ -130,7 +126,7 @@ public class JetfireRobot extends RobotBase {
                 hardwareMap.get(DcMotorEx.class, "flywheel"),
                 DcMotorSimple.Direction.REVERSE,
                 flywheelPIDFCoefficients,
-                HardwareInfo.GOBILDA_5203_YELLOW_JACKET_MOTOR_6000_RPM.ENCODER_RESOLUTION_PPR,
+                28, //HardwareInfo.GOBILDA_5203_YELLOW_JACKET_MOTOR_6000_RPM.ENCODER_RESOLUTION_PPR,
                 1,
                 1
         );
@@ -139,7 +135,7 @@ public class JetfireRobot extends RobotBase {
                 hardwareMap.get(DcMotorEx.class, "turntable"),
                 DcMotorSimple.Direction.FORWARD,
                 turntablePIDFCoefficients,
-                384.5, //384.5,
+                HardwareInfo.GOBILDA_5203_YELLOW_JACKET_MOTOR_435_RPM.ENCODER_RESOLUTION_PPR,
                 64.0 / 16.0,
                 0.7,
                 new Angle(130, false),
@@ -192,6 +188,10 @@ public class JetfireRobot extends RobotBase {
         TreeMap<Double, Double> timeOfFlightByDistanceMap = new TreeMap<>();
         timeOfFlightByDistanceMap.put(0.0, 0.0);
         timeOfFlightByDistanceInterpolator = new LinearInterpolator(timeOfFlightByDistanceMap);
+
+        TreeMap<Double, Double> turntableOffsetByDistanceMap = new TreeMap<>();
+        turntableOffsetByDistanceMap.put(0.0, 0.0);
+        turntableOffsetByDistanceInterpolator = new LinearInterpolator(turntableOffsetByDistanceMap);
     }
 
     @Override
@@ -216,6 +216,7 @@ public class JetfireRobot extends RobotBase {
         Angle goalHeading = new Angle(Math.atan2(displacedPose.getY(), displacedPose.getX()));
 
         Angle relativeTurntableHeading = turret.turntableController().getHeading();
+        JetfireStaticData.lastTurretHeading = relativeTurntableHeading;
         Angle absoluteTurntableHeading = new Angle(relativeTurntableHeading.getAngle(Angle.AngleSystem.SIGNED_180_WRAPPED) + follower.getHeading());
 
         // PROCESS DATA
@@ -236,7 +237,7 @@ public class JetfireRobot extends RobotBase {
 
         isReadyToShoot = isFlywheelReady && isTurntableReady && isArtifactLoaded && isCooldownOver;
 
-        long launchDelay = deltaTimeMs + LAUNCH_SERVO_DELAY_MS;
+        long launchDelay = deltaTimeMs + LAUNCH_DELAY_MS;
         // TODO: bool for testing
 
         // Lead Computing
@@ -267,39 +268,40 @@ public class JetfireRobot extends RobotBase {
         // UPDATE HARDWARE
         double flywheelSpeed = switch (flywheelMode) {
             case AUTO -> flywheelVelocityByDistanceInterpolator.interpolate(virtualDistanceFromGoal);
-            case SET_VELOCITY -> FLYWHEEL_TARGET_VELOCITY;
             case OFF -> 0.0;
         };
-        Angle targetTurntableHeading = isAutoAimOn ? new Angle(virtualGoalHeading.getAngle(Angle.AngleSystem.SIGNED_180_WRAPPED) - follower.getHeading()) : new Angle(0);
-        Angle hoodAngle = new Angle(isAutoHoodAngleOn ? hoodAngleByDistanceInterpolator.interpolate(virtualDistanceFromGoal) : HOOD_ANGLE, false);
 
-        turret.update(
-                flywheelSpeed,
-                targetTurntableHeading,
-                hoodAngle
-        );
+        Angle turntableOffset = new Angle(TUNING ? TURNTABLE_OFFSET_DEG : turntableOffsetByDistanceInterpolator.interpolate(virtualDistanceFromGoal), false);
+        Angle targetTurntableHeading = autoAimTurntable ? new Angle(virtualGoalHeading.getAngle(Angle.AngleSystem.SIGNED_180_WRAPPED) - follower.getHeading()).plus(turntableOffset, Angle.AngleSystem.SIGNED) : new Angle(0);
 
-        // INTAKE
+        Angle hoodAngle = new Angle(hoodAngleByDistanceInterpolator.interpolate(virtualDistanceFromGoal), false);
+
+        if (!TUNING) {
+            turret.update(
+                    flywheelSpeed,
+                    targetTurntableHeading,
+                    hoodAngle
+            );
+        } else {
+            if (!turret.flywheelController().getPidfController().getCoefficients().equals(flywheelPIDFCoefficients)) turret.flywheelController().getPidfController().setCoefficients(flywheelPIDFCoefficients);
+            if (!turret.turntableController().getPidfController().getCoefficients().equals(turntablePIDFCoefficients)) turret.turntableController().getPidfController().setCoefficients(turntablePIDFCoefficients);
+
+            turret.update(
+                    FLYWHEEL_TARGET_VELOCITY,
+                    targetTurntableHeading,
+                    new Angle(HOOD_ANGLE, false)
+            );
+        }
+
         intakeMotor.setPower(switch (intakeMode) {
-            case INTAKE -> INTAKE_POWER;
-            case REVERSE -> -INTAKE_POWER;
+            case ON -> reverseIntake ? -INTAKE_POWER : INTAKE_POWER;
             case OFF -> 0;
         });
-
-
-        JetfireStaticData.lastTurretHeading = turret.turntableController().getHeading();
 
         indicatorLightController.setColor(isReadyToShoot ? RGBIndicatorLightController.Color.GREEN : RGBIndicatorLightController.Color.RED);
 
         transferServoController.update();
         gateServoController.update();
-
-        if (TUNING) {
-            if (!turret.flywheelController().getPidfController().getCoefficients().equals(flywheelPIDFCoefficients)) turret.flywheelController().getPidfController().setCoefficients(flywheelPIDFCoefficients);
-            if (!turret.turntableController().getPidfController().getCoefficients().equals(turntablePIDFCoefficients)) turret.turntableController().getPidfController().setCoefficients(turntablePIDFCoefficients);
-        }
-
-        // TODO: Tuning
 
         telemetry.addLine("");
         telemetry.addLine("- TRIGGERS -");
@@ -339,12 +341,20 @@ public class JetfireRobot extends RobotBase {
         return intakeMode;
     }
 
-    public boolean isAutoAimOn() {
-        return isAutoAimOn;
+    public boolean isReverseIntake() {
+        return reverseIntake;
     }
 
-    public void setAutoAimOn(boolean autoAimOn) {
-        isAutoAimOn = autoAimOn;
+    public void setReverseIntake(boolean reverseIntake) {
+        this.reverseIntake = reverseIntake;
+    }
+
+    public boolean isAutoAimTurntable() {
+        return autoAimTurntable;
+    }
+
+    public void setAutoAimTurntable(boolean autoAimTurntable) {
+        this.autoAimTurntable = autoAimTurntable;
     }
 
     public FlywheelMode getFlywheelMode() {
