@@ -37,7 +37,11 @@ import java.util.TreeMap;
 
 @Configurable
 public class JetfireRobot extends RobotBase {
+
+    // TURRET
     private Turret turret;
+
+    // TURNTABLE
     private boolean autoAimTurntable = false;
 
     // FLYWHEELS
@@ -83,6 +87,7 @@ public class JetfireRobot extends RobotBase {
     DistanceSensor chamberDistanceSensor;
     public static double ARTIFACT_DETECTION_THRESHOLD_MM = 90;
 
+    // COOLDOWN
     Timer laucnhCooldownTimer = new Timer();
     public static int LAUNCH_COOLDOWN_MS = 150;
 
@@ -109,7 +114,6 @@ public class JetfireRobot extends RobotBase {
     public void init(HardwareMap hardwareMap, Pose startPose, OpModeBase.AllianceColor allianceColor) {
         super.init(hardwareMap, startPose, allianceColor);
         targetGoal = new Pose(-72, allianceColor == OpModeBase.AllianceColor.RED ? 72 : -72);
-        // TODO: Move target for aiming, or LUT turntable heading offsets
     }
 
     @Override
@@ -126,7 +130,7 @@ public class JetfireRobot extends RobotBase {
                 hardwareMap.get(DcMotorEx.class, "flywheel"),
                 DcMotorSimple.Direction.REVERSE,
                 flywheelPIDFCoefficients,
-                28, //HardwareInfo.GOBILDA_5203_YELLOW_JACKET_MOTOR_6000_RPM.ENCODER_RESOLUTION_PPR,
+                HardwareInfo.GOBILDA_5203_YELLOW_JACKET_MOTOR_6000_RPM.ENCODER_RESOLUTION_PPR,
                 1,
                 1
         );
@@ -186,10 +190,12 @@ public class JetfireRobot extends RobotBase {
         hoodAngleByDistanceInterpolator = new LinearInterpolator(hoodAngleByDistanceMap);
 
         TreeMap<Double, Double> timeOfFlightByDistanceMap = new TreeMap<>();
+        // INCH, MILLS
         timeOfFlightByDistanceMap.put(0.0, 0.0);
         timeOfFlightByDistanceInterpolator = new LinearInterpolator(timeOfFlightByDistanceMap);
 
         TreeMap<Double, Double> turntableOffsetByDistanceMap = new TreeMap<>();
+        // INCH, DEG
         turntableOffsetByDistanceMap.put(0.0, 0.0);
         turntableOffsetByDistanceInterpolator = new LinearInterpolator(turntableOffsetByDistanceMap);
     }
@@ -204,7 +210,6 @@ public class JetfireRobot extends RobotBase {
         super.update(deltaTimeMs, telemetry);
 
         // GET DATA
-
         Pose currentPose = follower.getPose();
         Vector velocity = follower.getVelocity();
         double angularVelocity = follower.getAngularVelocity();
@@ -238,7 +243,6 @@ public class JetfireRobot extends RobotBase {
         isReadyToShoot = isFlywheelReady && isTurntableReady && isArtifactLoaded && isCooldownOver;
 
         long launchDelay = deltaTimeMs + LAUNCH_DELAY_MS;
-        // TODO: bool for testing
 
         // Lead Computing
         Pose futurePose = PhysicsUtil.predictFuturePose(
