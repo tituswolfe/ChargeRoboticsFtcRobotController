@@ -116,8 +116,8 @@ public class Constants {
     public static Follower createJetfireFollower(HardwareMap hardwareMap) {
         return new FollowerBuilder(new FollowerConstants()
                 .mass(13.6)
-                .forwardZeroPowerAcceleration(-28.2)
-                .lateralZeroPowerAcceleration(-67.5)
+                .forwardZeroPowerAcceleration(-35.92)
+                .lateralZeroPowerAcceleration(-64.54)
                 .translationalPIDFCoefficients(new PIDFCoefficients(0.1, 0, 0.01, 0))
                 .headingPIDFCoefficients(new PIDFCoefficients(
                         1.05,
@@ -135,8 +135,8 @@ public class Constants {
                         .leftRearMotorDirection(DcMotorSimple.Direction.REVERSE) // p. 3 control
                         .rightFrontMotorDirection(DcMotorSimple.Direction.FORWARD) // p.1 expansion
                         .rightRearMotorDirection(DcMotorSimple.Direction.FORWARD) // p.0 expansion
-                        .xVelocity(79.5)
-                        .yVelocity(64.5))
+                        .xVelocity(64.67)
+                        .yVelocity(51.9))
                 .pinpointLocalizer(new PinpointConstants()
                         .forwardPodY(168.5)
                         .strafePodX(-67)

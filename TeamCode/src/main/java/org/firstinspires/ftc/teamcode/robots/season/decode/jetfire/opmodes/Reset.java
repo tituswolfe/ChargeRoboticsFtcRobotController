@@ -17,7 +17,7 @@ public class Reset extends OpModeBase<JetfireRobot> {
     public void start() {
         super.start();
 
-        JetfireStaticData.lastTurretHeading = new Angle(0);
+        JetfireStaticData.lastTurretHeading = null;
         robot.getFollower().setPose(new Pose(0, 0, 0));
 
         requestOpModeStop();

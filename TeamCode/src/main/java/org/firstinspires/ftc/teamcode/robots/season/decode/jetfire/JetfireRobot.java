@@ -24,6 +24,7 @@ import org.firstinspires.ftc.teamcode.hardware.controllers.servo.ServoTimerContr
 import org.firstinspires.ftc.teamcode.hardware.controllers.subsystems.Turret;
 import org.firstinspires.ftc.teamcode.hardware.drivetrain.pedroPathing.Constants;
 import org.firstinspires.ftc.teamcode.robots.base.RobotBase;
+import org.firstinspires.ftc.teamcode.robots.base.StaticData;
 import org.firstinspires.ftc.teamcode.robots.base.opmodes.OpModeBase;
 import org.firstinspires.ftc.teamcode.util.LinearInterpolator;
 import org.firstinspires.ftc.teamcode.util.info.HardwareInfo;
@@ -37,7 +38,6 @@ import java.util.TreeMap;
 
 @Configurable
 public class JetfireRobot extends RobotBase {
-
     // TURRET
     private Turret turret;
 
@@ -57,7 +57,8 @@ public class JetfireRobot extends RobotBase {
 
     // INTAKE
     DcMotorEx intakeMotor;
-    public static double INTAKE_POWER = 0.8;
+    public static double INTAKE_POWER = 1;
+    public static double REVERSE_INTAKE_POWER = -0.7;
     public enum IntakeMode {
         ON,
         OFF
@@ -73,15 +74,15 @@ public class JetfireRobot extends RobotBase {
 
     // TRANSFER SERVO
     ServoTimerController transferServoController;
-    public static double TRANSFER_SERVO_UP = 0.45;
+    public static double TRANSFER_SERVO_UP = 0.4;
     public static double TRANSFER_SERVO_DOWN = 0.67;
     public static int TRANSFER_SERVO_TIME_MS = 200;
 
     // GATE SERVO
     ServoTimerController gateServoController;
-    public static double GATE_SERVO_OPEN = 0.55;
+    public static double GATE_SERVO_OPEN = 0.6;
     public static double GATE_SERVO_CLOSED = 0.8;
-    public static int GATE_SERVO_TIME_MS = 500;
+    public static int GATE_SERVO_TIME_MS = 200;
 
     // ARTIFACT CHAMBER DETECTION
     DistanceSensor chamberDistanceSensor;
@@ -109,6 +110,7 @@ public class JetfireRobot extends RobotBase {
     // RUNTIME
     public static Pose targetGoal;
     private boolean isReadyToShoot = false;
+    private double driverTurntableOffset = 0;
 
     @Override
     public void init(HardwareMap hardwareMap, Pose startPose, OpModeBase.AllianceColor allianceColor) {
@@ -178,26 +180,47 @@ public class JetfireRobot extends RobotBase {
         Servo transferServo = hardwareMap.get(Servo.class, "transfer");
         transferServoController = new ServoTimerController(transferServo, TRANSFER_SERVO_DOWN);
 
-
         TreeMap<Double, Double> flywheelSpeedByDistanceMap = new TreeMap<>();
         // INCH, RPM
-        flywheelSpeedByDistanceMap.put(60.0, 3000.0);
+        flywheelSpeedByDistanceMap.put(40.0, 2000.0);
+        flywheelSpeedByDistanceMap.put(66.0, 2250.0);
+        flywheelSpeedByDistanceMap.put(81.0, 2350.0);
+        flywheelSpeedByDistanceMap.put(105.0, 2500.0);
+        flywheelSpeedByDistanceMap.put(120.0, 2600.0);
+        flywheelSpeedByDistanceMap.put(130.0, 3000.0);
         flywheelVelocityByDistanceInterpolator = new LinearInterpolator(flywheelSpeedByDistanceMap);
 
         TreeMap<Double, Double> hoodAngleByDistanceMap = new TreeMap<>();
         // INCH, DEGREES
-        hoodAngleByDistanceMap.put(60.0, 18.5);
+        hoodAngleByDistanceMap.put(40.0, 18.0);
+        hoodAngleByDistanceMap.put(66.0, 25.0);
+        hoodAngleByDistanceMap.put(81.0, 32.0);
+        hoodAngleByDistanceMap.put(105.0, 35.0);
+        hoodAngleByDistanceMap.put(120.0, 35.0);
+        hoodAngleByDistanceMap.put(130.0, 35.0);
         hoodAngleByDistanceInterpolator = new LinearInterpolator(hoodAngleByDistanceMap);
 
         TreeMap<Double, Double> timeOfFlightByDistanceMap = new TreeMap<>();
         // INCH, MILLS
-        timeOfFlightByDistanceMap.put(0.0, 0.0);
+        timeOfFlightByDistanceMap.put(40.0, 1000.0);
+        timeOfFlightByDistanceMap.put(66.0, 1000.0);
+        timeOfFlightByDistanceMap.put(81.0, 1500.0);
+        timeOfFlightByDistanceMap.put(105.0, 2100.0);
+        timeOfFlightByDistanceMap.put(120.0, 2700.0);
+        timeOfFlightByDistanceMap.put(130.0, 3000.0);
         timeOfFlightByDistanceInterpolator = new LinearInterpolator(timeOfFlightByDistanceMap);
 
         TreeMap<Double, Double> turntableOffsetByDistanceMap = new TreeMap<>();
         // INCH, DEG
-        turntableOffsetByDistanceMap.put(0.0, 0.0);
+        turntableOffsetByDistanceMap.put(40.0, 0.0);
+        turntableOffsetByDistanceMap.put(66.0, 0.0);
+        turntableOffsetByDistanceMap.put(81.0, 0.0);
+        turntableOffsetByDistanceMap.put(105.0, 0.0);
+        turntableOffsetByDistanceMap.put(120.0, 0.0);
+        turntableOffsetByDistanceMap.put(130.0, -5.0);
         turntableOffsetByDistanceInterpolator = new LinearInterpolator(turntableOffsetByDistanceMap);
+
+        // TODO: Half line point
     }
 
     @Override
@@ -275,7 +298,10 @@ public class JetfireRobot extends RobotBase {
             case OFF -> 0.0;
         };
 
-        Angle turntableOffset = new Angle(TUNING ? TURNTABLE_OFFSET_DEG : turntableOffsetByDistanceInterpolator.interpolate(virtualDistanceFromGoal), false);
+        Angle turntableOffset = new Angle(TUNING ? TURNTABLE_OFFSET_DEG :
+                StaticData.allianceColor == OpModeBase.AllianceColor.BLUE ? -turntableOffsetByDistanceInterpolator.interpolate(virtualDistanceFromGoal) : turntableOffsetByDistanceInterpolator.interpolate(virtualDistanceFromGoal),
+                false
+        ).plus(new Angle(driverTurntableOffset, false), Angle.AngleSystem.SIGNED);
         Angle targetTurntableHeading = autoAimTurntable ? new Angle(virtualGoalHeading.getAngle(Angle.AngleSystem.SIGNED_180_WRAPPED) - follower.getHeading()).plus(turntableOffset, Angle.AngleSystem.SIGNED) : new Angle(0);
 
         Angle hoodAngle = new Angle(hoodAngleByDistanceInterpolator.interpolate(virtualDistanceFromGoal), false);
@@ -297,10 +323,10 @@ public class JetfireRobot extends RobotBase {
             );
         }
 
-        intakeMotor.setPower(switch (intakeMode) {
-            case ON -> reverseIntake ? -INTAKE_POWER : INTAKE_POWER;
+        intakeMotor.setPower(isCooldownOver ? switch (intakeMode) {
+            case ON -> reverseIntake ? REVERSE_INTAKE_POWER : INTAKE_POWER;
             case OFF -> 0;
-        });
+        } : 0);
 
         indicatorLightController.setColor(isReadyToShoot ? RGBIndicatorLightController.Color.GREEN : RGBIndicatorLightController.Color.RED);
 
@@ -371,7 +397,14 @@ public class JetfireRobot extends RobotBase {
 
     public boolean isReadyToShoot() {
         return isReadyToShoot;
+    }
 
+    public double getDriverTurntableOffset() {
+        return driverTurntableOffset;
+    }
+
+    public void setDriverTurntableOffset(double driverTurntableOffset) {
+        this.driverTurntableOffset = driverTurntableOffset;
     }
 
     @Override
