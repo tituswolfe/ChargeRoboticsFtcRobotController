@@ -27,6 +27,7 @@ public class JetfireGamepadMapping extends GamepadMapping<JetfireRobot> {
 
     @Override
     public void onXPressed() {
+
     }
 
     @Override
@@ -46,7 +47,7 @@ public class JetfireGamepadMapping extends GamepadMapping<JetfireRobot> {
 
     @Override
     public void rightTrigger(float val) {
-         if (val > 0.1 && robot.isReadyToShoot()) robot.shoot();
+         if (val > 0.05 && robot.isReadyToShoot()) robot.shoot();
     }
 
     @Override

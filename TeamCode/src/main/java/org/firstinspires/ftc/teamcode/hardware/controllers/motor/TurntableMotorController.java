@@ -8,9 +8,6 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import org.firstinspires.ftc.teamcode.util.math.Angle;
 import org.firstinspires.ftc.teamcode.util.math.MathUtil;
 
-/**
- * Allows you to control a motor by output angle (after gear ratio, and ticks
- */
 public class TurntableMotorController extends MotorController {
     private final Angle maxPositiveLimit;
     private final Angle minNegativeLimit;
@@ -19,14 +16,6 @@ public class TurntableMotorController extends MotorController {
 
     private Angle targetHeading = new Angle(0);
 
-    /**
-     * @param dcMotorEx
-     * @param direction
-     * @param pidfCoefficients
-     * @param ticksPerRevolution encoder ticks per revolution (check motor for info)
-     * @param totalGearRatio     amount of motor rotations per 1 output rotations -> totalGearRatio (input) : 1 (output)
-     * @param maxPower
-     */
     public TurntableMotorController(DcMotorEx dcMotorEx, DcMotorSimple.Direction direction, PIDFCoefficients pidfCoefficients, double ticksPerRevolution, double totalGearRatio, double maxPower, Angle maxPositiveLimit, Angle minNegativeLimit, Angle startAngle, boolean reversePower) {
         super(dcMotorEx, direction, pidfCoefficients, ticksPerRevolution, totalGearRatio, maxPower);
 

@@ -250,7 +250,8 @@ public class JetfireRobot extends RobotBase {
                 TURNTABLE_HEADING_MARGIN_DEG
         );
 
-        boolean isArtifactLoaded = chamberDistanceSensor.getDistance(DistanceUnit.MM) < ARTIFACT_DETECTION_THRESHOLD_MM;
+        double chamberDistanceMM = chamberDistanceSensor.getDistance(DistanceUnit.MM);
+        boolean isArtifactLoaded = chamberDistanceMM < ARTIFACT_DETECTION_THRESHOLD_MM;
         boolean isCooldownOver = laucnhCooldownTimer.getElapsedTime() > LAUNCH_COOLDOWN_MS;
 
         isReadyToShoot = isFlywheelReady && isTurntableReady && isArtifactLoaded && isCooldownOver;
@@ -357,6 +358,10 @@ public class JetfireRobot extends RobotBase {
         telemetry.addLine("- LEAD COMPUTING -");
         telemetry.addData("Future Pose X", futurePose.getX());
         telemetry.addData("Future Pose Y", futurePose.getY());
+        telemetry.addData("Time of Flight Estimate", timeOfFlightMs);
+        telemetry.addLine("");
+        telemetry.addLine("- DISTANCE SENSOR -");
+        telemetry.addData("Chamber Distance", chamberDistanceMM);
     }
 
     public void shoot() {
