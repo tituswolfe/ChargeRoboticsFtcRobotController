@@ -22,9 +22,7 @@ public class JetfireGamepadMapping extends GamepadMapping<JetfireRobot> {
 
     @Override
     public void onAPressed() {
-        robot.setFlywheelMode(JetfireRobot.FlywheelMode.AUTO);
-        robot.setIntakeMode(JetfireRobot.IntakeMode.ON);
-        robot.setAutoAimTurntable(true);
+        robot.startTurret();
     }
 
     @Override
@@ -91,7 +89,7 @@ public class JetfireGamepadMapping extends GamepadMapping<JetfireRobot> {
 
     @Override
     public void onDpadRightPressed() {
-        robot.setDriverTurntableOffset(robot.getDriverTurntableOffset() + 1);
+        robot.setDriverTurntableOffset(robot.getDriverTurntableOffset() - 1);
     }
 
     @Override
@@ -101,7 +99,6 @@ public class JetfireGamepadMapping extends GamepadMapping<JetfireRobot> {
 
     @Override
     public void onDpadLeftPressed() {
-        robot.setDriverTurntableOffset(robot.getDriverTurntableOffset() - 1);
-
+        robot.setDriverTurntableOffset(robot.getDriverTurntableOffset() + 1);
     }
 }

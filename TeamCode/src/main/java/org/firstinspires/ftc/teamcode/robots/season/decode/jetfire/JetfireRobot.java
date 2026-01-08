@@ -70,23 +70,25 @@ public class JetfireRobot extends RobotBase {
     private LinearInterpolator flywheelVelocityByDistanceInterpolator;
     private LinearInterpolator hoodAngleByDistanceInterpolator;
     private LinearInterpolator timeOfFlightByDistanceInterpolator;
-    private LinearInterpolator turntableOffsetByDistanceInterpolator;
+
+    public static double CLOSE_ZONE_TURNTABLE_OFFSET_DEG = 0;
+    public static double FAR_ZONE_TURNTABLE_OFFSET_DEG = 7; // neg left, pos right
 
     // TRANSFER SERVO
     ServoTimerController transferServoController;
     public static double TRANSFER_SERVO_UP = 0.4;
     public static double TRANSFER_SERVO_DOWN = 0.67;
-    public static int TRANSFER_SERVO_TIME_MS = 200;
+    public static int TRANSFER_SERVO_TIME_MS = 150; // TODO: Decrease
 
     // GATE SERVO
     ServoTimerController gateServoController;
     public static double GATE_SERVO_OPEN = 0.6;
     public static double GATE_SERVO_CLOSED = 0.8;
-    public static int GATE_SERVO_TIME_MS = 200;
+    public static int GATE_SERVO_TIME_MS = 150;
 
     // ARTIFACT CHAMBER DETECTION
     DistanceSensor chamberDistanceSensor;
-    public static double ARTIFACT_DETECTION_THRESHOLD_MM = 90;
+    public static double ARTIFACT_DETECTION_THRESHOLD_MM = 100;
 
     // COOLDOWN
     Timer laucnhCooldownTimer = new Timer();
@@ -99,7 +101,7 @@ public class JetfireRobot extends RobotBase {
     public static double FLYWHEEL_VELOCITY_MARGIN_RPM = 60;
     public static double TURNTABLE_HEADING_MARGIN_DEG = 2;
 
-    public static long LAUNCH_DELAY_MS = 300;
+    public static long LAUNCH_DELAY_MS = 150;
 
     // TUNING
     public static boolean TUNING = false;
@@ -147,7 +149,8 @@ public class JetfireRobot extends RobotBase {
                 new Angle(130, false),
                 new Angle(-130, false),
                 turretStartHeading,
-                false
+                false,
+                10
         );
 
         AngleServoController hoodController = new AngleServoController(
@@ -155,9 +158,9 @@ public class JetfireRobot extends RobotBase {
                 Servo.Direction.REVERSE,
                 new Angle(300, false),
                 (48.0 / 40.0) * (116.0 / 12.0),
-                new Angle(16, false),
-                new Angle(36, false),
-                new Angle(16, false)
+                new Angle(22, false),
+                new Angle(42, false),
+                new Angle(22, false)
         );
 
         turret = new Turret(
@@ -192,12 +195,12 @@ public class JetfireRobot extends RobotBase {
 
         TreeMap<Double, Double> hoodAngleByDistanceMap = new TreeMap<>();
         // INCH, DEGREES
-        hoodAngleByDistanceMap.put(40.0, 18.0);
-        hoodAngleByDistanceMap.put(66.0, 25.0);
-        hoodAngleByDistanceMap.put(81.0, 32.0);
-        hoodAngleByDistanceMap.put(105.0, 35.0);
-        hoodAngleByDistanceMap.put(120.0, 35.0);
-        hoodAngleByDistanceMap.put(130.0, 35.0);
+        hoodAngleByDistanceMap.put(40.0, 24.0);
+        hoodAngleByDistanceMap.put(66.0, 31.0);
+        hoodAngleByDistanceMap.put(81.0, 38.0);
+        hoodAngleByDistanceMap.put(105.0, 41.0);
+        hoodAngleByDistanceMap.put(120.0, 41.0);
+        hoodAngleByDistanceMap.put(130.0, 41.0);
         hoodAngleByDistanceInterpolator = new LinearInterpolator(hoodAngleByDistanceMap);
 
         TreeMap<Double, Double> timeOfFlightByDistanceMap = new TreeMap<>();
@@ -209,18 +212,6 @@ public class JetfireRobot extends RobotBase {
         timeOfFlightByDistanceMap.put(120.0, 2700.0);
         timeOfFlightByDistanceMap.put(130.0, 3000.0);
         timeOfFlightByDistanceInterpolator = new LinearInterpolator(timeOfFlightByDistanceMap);
-
-        TreeMap<Double, Double> turntableOffsetByDistanceMap = new TreeMap<>();
-        // INCH, DEG
-        turntableOffsetByDistanceMap.put(40.0, 0.0);
-        turntableOffsetByDistanceMap.put(66.0, 0.0);
-        turntableOffsetByDistanceMap.put(81.0, 0.0);
-        turntableOffsetByDistanceMap.put(105.0, 0.0);
-        turntableOffsetByDistanceMap.put(120.0, 0.0);
-        turntableOffsetByDistanceMap.put(130.0, -5.0);
-        turntableOffsetByDistanceInterpolator = new LinearInterpolator(turntableOffsetByDistanceMap);
-
-        // TODO: Half line point
     }
 
     @Override
@@ -252,7 +243,7 @@ public class JetfireRobot extends RobotBase {
                 turret.flywheelController().getVelocity(),
                 turret.flywheelController().getTargetVelocity(),
                 FLYWHEEL_VELOCITY_MARGIN_RPM
-        ); // && !flywheelMode.equals(FlywheelMode.OFF);
+        ) && !flywheelMode.equals(FlywheelMode.OFF);
 
         boolean isTurntableReady = MathUtil.isWithinRange(
                 relativeTurntableHeading.getAngle(Angle.AngleUnit.DEGREES, Angle.AngleSystem.SIGNED_180_WRAPPED),
@@ -298,11 +289,25 @@ public class JetfireRobot extends RobotBase {
             case OFF -> 0.0;
         };
 
-        Angle turntableOffset = new Angle(TUNING ? TURNTABLE_OFFSET_DEG :
-                StaticData.allianceColor == OpModeBase.AllianceColor.BLUE ? -turntableOffsetByDistanceInterpolator.interpolate(virtualDistanceFromGoal) : turntableOffsetByDistanceInterpolator.interpolate(virtualDistanceFromGoal),
+        double interpolatedOffsetDeg = currentPose.getX() < 24 ? CLOSE_ZONE_TURNTABLE_OFFSET_DEG : FAR_ZONE_TURNTABLE_OFFSET_DEG;
+
+                // turntableOffsetByDistanceInterpolator.interpolate(virtualDistanceFromGoal) * ((StaticData.allianceColor == OpModeBase.AllianceColor.BLUE) ? 1 : -1);
+
+        // reverse for other side
+        Angle interpolatedOffset = new Angle(
+                interpolatedOffsetDeg * ((StaticData.allianceColor == OpModeBase.AllianceColor.BLUE) ? 1 : -1),
                 false
-        ).plus(new Angle(driverTurntableOffset, false), Angle.AngleSystem.SIGNED);
-        Angle targetTurntableHeading = autoAimTurntable ? new Angle(virtualGoalHeading.getAngle(Angle.AngleSystem.SIGNED_180_WRAPPED) - follower.getHeading()).plus(turntableOffset, Angle.AngleSystem.SIGNED) : new Angle(0);
+        );
+
+        Angle driverOffset = new Angle(driverTurntableOffset, false);
+        Angle turntableOffset = interpolatedOffset.plus(driverOffset, Angle.AngleSystem.SIGNED);
+
+//        Angle targetTurntableHeading = autoAimTurntable ?
+//                new Angle(virtualGoalHeading.getAngle(Angle.AngleSystem.SIGNED_180_WRAPPED) - follower.getHeading()).plus(turntableOffset, Angle.AngleSystem.SIGNED) : new Angle(0);
+
+        Angle targetTurntableHeading = (autoAimTurntable ? virtualGoalHeading.minus(new Angle(currentPose.getHeading()), Angle.AngleSystem.SIGNED)
+                : new Angle(0)
+        ).plus(turntableOffset, Angle.AngleSystem.SIGNED);
 
         Angle hoodAngle = new Angle(hoodAngleByDistanceInterpolator.interpolate(virtualDistanceFromGoal), false);
 
@@ -318,7 +323,7 @@ public class JetfireRobot extends RobotBase {
 
             turret.update(
                     FLYWHEEL_TARGET_VELOCITY,
-                    targetTurntableHeading,
+                    new Angle(TURNTABLE_OFFSET_DEG, false),
                     new Angle(HOOD_ANGLE, false)
             );
         }
@@ -334,15 +339,21 @@ public class JetfireRobot extends RobotBase {
         gateServoController.update();
 
         telemetry.addLine("");
+        telemetry.addLine("- NEED TO KNOW -");
+        telemetry.addData("Driver Turntable Offset", driverTurntableOffset);
+        telemetry.addData("Interpolated Turntable Offset", interpolatedOffsetDeg);
+        telemetry.addLine("");
         telemetry.addLine("- TRIGGERS -");
         telemetry.addData("isReadyToShoot", isReadyToShoot);
         telemetry.addData("isArtifactLoaded", isArtifactLoaded);
         telemetry.addLine("");
-        telemetry.addData("GOAL DISTANCE", distanceFromGoal);
-        telemetry.addData("GOAL HEADING", goalHeading.getAngle(Angle.AngleUnit.DEGREES, Angle.AngleSystem.SIGNED_180_WRAPPED));
+        telemetry.addData("Goal Distance", distanceFromGoal);
+        telemetry.addData("Goal Heading", goalHeading.getAngle(Angle.AngleUnit.DEGREES, Angle.AngleSystem.SIGNED_180_WRAPPED));
         telemetry.addLine("");
         telemetry.addLine("- TURNTABLE -");
-        telemetry.addData("ABSOLUTE TURNTABLE ERROR", goalHeading.getAngle(Angle.AngleUnit.DEGREES, Angle.AngleSystem.SIGNED_180_WRAPPED) - absoluteTurntableHeading.getAngle(Angle.AngleUnit.DEGREES, Angle.AngleSystem.SIGNED_180_WRAPPED));
+        telemetry.addData("Relative Heading", relativeTurntableHeading.getAngle(Angle.AngleUnit.DEGREES, Angle.AngleSystem.SIGNED));
+        telemetry.addData("Absolute Heading", absoluteTurntableHeading.getAngle(Angle.AngleUnit.DEGREES, Angle.AngleSystem.SIGNED));
+        telemetry.addData("Absolute Error", goalHeading.getAngle(Angle.AngleUnit.DEGREES, Angle.AngleSystem.SIGNED_180_WRAPPED) - absoluteTurntableHeading.getAngle(Angle.AngleUnit.DEGREES, Angle.AngleSystem.SIGNED_180_WRAPPED));
         telemetry.addLine("");
         telemetry.addLine("- FLYWHEEL -");
         telemetry.addData("FLYWHEEL VELOCITY RPM", turret.flywheelController().getVelocity());
@@ -361,6 +372,12 @@ public class JetfireRobot extends RobotBase {
         transferServoController.setPosition(TRANSFER_SERVO_UP, TRANSFER_SERVO_TIME_MS, TRANSFER_SERVO_DOWN);
 
         laucnhCooldownTimer.resetTimer();
+    }
+
+    public void startTurret() {
+        setFlywheelMode(JetfireRobot.FlywheelMode.AUTO);
+        setIntakeMode(JetfireRobot.IntakeMode.ON);
+        setAutoAimTurntable(true);
     }
 
     public void setIntakeMode(IntakeMode intakeMode) {

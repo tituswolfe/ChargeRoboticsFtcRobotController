@@ -5,6 +5,7 @@ import com.pedropathing.geometry.Pose;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.robots.base.GamepadMapping;
+import org.firstinspires.ftc.teamcode.robots.base.StaticData;
 import org.firstinspires.ftc.teamcode.robots.base.opmodes.OpModeBase;
 import org.firstinspires.ftc.teamcode.robots.season.decode.jetfire.JetfireRobot;
 import org.firstinspires.ftc.teamcode.robots.season.decode.jetfire.JetfireStaticData;
@@ -19,6 +20,7 @@ public class Reset extends OpModeBase<JetfireRobot> {
 
         JetfireStaticData.lastTurretHeading = null;
         robot.getFollower().setPose(new Pose(0, 0, 0));
+        StaticData.lastPose = new Pose();
 
         requestOpModeStop();
     }
