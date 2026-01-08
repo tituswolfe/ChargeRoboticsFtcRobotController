@@ -340,6 +340,7 @@ public class JetfireRobot extends RobotBase {
 
         transferServoController.update();
         gateServoController.update();
+        shootThreeArtifacts.update();
 
         telemetry.addLine("");
         telemetry.addLine("- OFFSETS -");
