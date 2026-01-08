@@ -149,8 +149,7 @@ public class JetfireRobot extends RobotBase {
                 new Angle(130, false),
                 new Angle(-130, false),
                 turretStartHeading,
-                false,
-                10
+                false
         );
 
         AngleServoController hoodController = new AngleServoController(
@@ -290,10 +289,6 @@ public class JetfireRobot extends RobotBase {
         };
 
         double interpolatedOffsetDeg = currentPose.getX() < 24 ? CLOSE_ZONE_TURNTABLE_OFFSET_DEG : FAR_ZONE_TURNTABLE_OFFSET_DEG;
-
-                // turntableOffsetByDistanceInterpolator.interpolate(virtualDistanceFromGoal) * ((StaticData.allianceColor == OpModeBase.AllianceColor.BLUE) ? 1 : -1);
-
-        // reverse for other side
         Angle interpolatedOffset = new Angle(
                 interpolatedOffsetDeg * ((StaticData.allianceColor == OpModeBase.AllianceColor.BLUE) ? 1 : -1),
                 false
@@ -301,9 +296,6 @@ public class JetfireRobot extends RobotBase {
 
         Angle driverOffset = new Angle(driverTurntableOffset, false);
         Angle turntableOffset = interpolatedOffset.plus(driverOffset, Angle.AngleSystem.SIGNED);
-
-//        Angle targetTurntableHeading = autoAimTurntable ?
-//                new Angle(virtualGoalHeading.getAngle(Angle.AngleSystem.SIGNED_180_WRAPPED) - follower.getHeading()).plus(turntableOffset, Angle.AngleSystem.SIGNED) : new Angle(0);
 
         Angle targetTurntableHeading = (autoAimTurntable ? virtualGoalHeading.minus(new Angle(currentPose.getHeading()), Angle.AngleSystem.SIGNED)
                 : new Angle(0)
