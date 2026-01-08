@@ -54,6 +54,8 @@ public class JetfireRobot extends RobotBase {
 
     // TURNTABLE
     public static PIDFCoefficients turntablePIDFCoefficients = new PIDFCoefficients(0.045, 0, 0.0012, 0);
+    public static double CLOSE_ZONE_TURNTABLE_OFFSET_DEG = 0;
+    public static double FAR_ZONE_TURNTABLE_OFFSET_DEG = 7; // neg left, pos right
 
     // INTAKE
     DcMotorEx intakeMotor;
@@ -70,9 +72,6 @@ public class JetfireRobot extends RobotBase {
     private LinearInterpolator flywheelVelocityByDistanceInterpolator;
     private LinearInterpolator hoodAngleByDistanceInterpolator;
     private LinearInterpolator timeOfFlightByDistanceInterpolator;
-
-    public static double CLOSE_ZONE_TURNTABLE_OFFSET_DEG = 0;
-    public static double FAR_ZONE_TURNTABLE_OFFSET_DEG = 7; // neg left, pos right
 
     // TRANSFER SERVO
     ServoTimerController transferServoController;
@@ -94,14 +93,14 @@ public class JetfireRobot extends RobotBase {
     Timer laucnhCooldownTimer = new Timer();
     public static int LAUNCH_COOLDOWN_MS = 150;
 
-    // LIGHTS
-    RGBIndicatorLightController indicatorLightController;
-
-    // MARGINS
+    // MARGINS & DELAYS
     public static double FLYWHEEL_VELOCITY_MARGIN_RPM = 60;
     public static double TURNTABLE_HEADING_MARGIN_DEG = 2;
 
     public static long LAUNCH_DELAY_MS = 150;
+
+    // LIGHTS
+    RGBIndicatorLightController indicatorLightController;
 
     // TUNING
     public static boolean TUNING = false;
@@ -205,11 +204,11 @@ public class JetfireRobot extends RobotBase {
         TreeMap<Double, Double> timeOfFlightByDistanceMap = new TreeMap<>();
         // INCH, MILLS
         timeOfFlightByDistanceMap.put(40.0, 1000.0);
-        timeOfFlightByDistanceMap.put(66.0, 1000.0);
-        timeOfFlightByDistanceMap.put(81.0, 1500.0);
-        timeOfFlightByDistanceMap.put(105.0, 2100.0);
+        timeOfFlightByDistanceMap.put(66.0, 1500.0);
+        timeOfFlightByDistanceMap.put(81.0, 2000.0);
+        timeOfFlightByDistanceMap.put(105.0, 2400.0);
         timeOfFlightByDistanceMap.put(120.0, 2700.0);
-        timeOfFlightByDistanceMap.put(130.0, 3000.0);
+        timeOfFlightByDistanceMap.put(130.0, 3300.0);
         timeOfFlightByDistanceInterpolator = new LinearInterpolator(timeOfFlightByDistanceMap);
     }
 
@@ -332,7 +331,7 @@ public class JetfireRobot extends RobotBase {
         gateServoController.update();
 
         telemetry.addLine("");
-        telemetry.addLine("- NEED TO KNOW -");
+        telemetry.addLine("- OFFSETS -");
         telemetry.addData("Driver Turntable Offset", driverTurntableOffset);
         telemetry.addData("Interpolated Turntable Offset", interpolatedOffsetDeg);
         telemetry.addLine("");
