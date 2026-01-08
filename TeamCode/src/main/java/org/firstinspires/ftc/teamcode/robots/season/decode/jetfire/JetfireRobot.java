@@ -16,6 +16,7 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
+import org.firstinspires.ftc.teamcode.hardware.controllers.StateMachine;
 import org.firstinspires.ftc.teamcode.hardware.controllers.motor.TurntableMotorController;
 import org.firstinspires.ftc.teamcode.hardware.controllers.motor.VelocityMotorController;
 import org.firstinspires.ftc.teamcode.hardware.controllers.servo.AngleServoController;
@@ -112,6 +113,9 @@ public class JetfireRobot extends RobotBase {
     public static Pose targetGoal;
     private boolean isReadyToShoot = false;
     private double driverTurntableOffset = 0;
+
+    private StateMachine shootThreeArtifacts = new StateMachine();
+
 
     @Override
     public void init(HardwareMap hardwareMap, Pose startPose, OpModeBase.AllianceColor allianceColor) {
@@ -210,6 +214,13 @@ public class JetfireRobot extends RobotBase {
         timeOfFlightByDistanceMap.put(120.0, 2700.0);
         timeOfFlightByDistanceMap.put(130.0, 3300.0);
         timeOfFlightByDistanceInterpolator = new LinearInterpolator(timeOfFlightByDistanceMap);
+
+        for (int i = 0; i <= 2; i++) {
+            shootThreeArtifacts.addStep(
+                    () -> isReadyToShoot,
+                    this::shoot
+            );
+        }
     }
 
     @Override
@@ -418,6 +429,10 @@ public class JetfireRobot extends RobotBase {
 
     public void setDriverTurntableOffset(double driverTurntableOffset) {
         this.driverTurntableOffset = driverTurntableOffset;
+    }
+
+    public StateMachine getShootThreeArtifacts() {
+        return shootThreeArtifacts;
     }
 
     @Override

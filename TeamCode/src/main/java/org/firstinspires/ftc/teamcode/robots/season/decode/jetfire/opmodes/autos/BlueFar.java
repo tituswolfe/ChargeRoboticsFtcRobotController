@@ -11,19 +11,27 @@ import org.firstinspires.ftc.teamcode.robots.season.decode.jetfire.JetfireRobot;
 public class BlueFar extends BaseAuto<JetfireRobot> {
     Pose startPose = new Pose();
     Pose shootPose = new Pose();
+    Pose offTheLine = new Pose();
 
     PathChain shootPath;
 
     @Override
     public void autonomousPathUpdate(int pathState) {
         switch (pathState) {
-            case 1:
+            case 0:
                 robot.startTurret();
                 robot.getFollower().followPath(shootPath, true);
                 setPathState(-1, true);
                 break;
+            case 1:
+                if (!robot.getFollower().isBusy()) {
+                    robot.getShootThreeArtifacts().start();
+                }
+                break;
             case -1:
-                robot.setAutoAimTurntable(false);
+                if (robot.getShootThreeArtifacts().isFinished()) {
+                    robot.setAutoAimTurntable(false);
+                }
                 break;
         }
     }

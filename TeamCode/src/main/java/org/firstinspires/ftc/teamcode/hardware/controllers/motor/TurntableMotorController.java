@@ -54,9 +54,6 @@ public class TurntableMotorController extends MotorController {
                 maxPositiveLimit.getAngle(Angle.AngleSystem.SIGNED_180_WRAPPED)
         );
 
-        // 2. Simple linear error (no wrapping)
-        // Because both current and target are clamped/wrapped to the same -180 to 180 range,
-        // the difference will not exceed 360 degrees.
         double linearError = clampedTarget - currentPos;
 
         return new Angle(linearError);
