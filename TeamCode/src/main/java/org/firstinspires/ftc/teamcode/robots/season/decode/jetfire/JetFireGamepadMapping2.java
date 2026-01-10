@@ -1,21 +1,21 @@
 package org.firstinspires.ftc.teamcode.robots.season.decode.jetfire;
 
-import com.pedropathing.control.KalmanFilter;
 import com.pedropathing.geometry.Pose;
 
 import org.firstinspires.ftc.teamcode.robots.base.GamepadMapping;
 
-public class JetfireGamepadMapping extends GamepadMapping<JetfireRobot> {
-    public JetfireGamepadMapping(JetfireRobot dugRobot) {
-        super(dugRobot);
+public class JetFireGamepadMapping2 extends GamepadMapping<JetfireRobot> {
+    public JetFireGamepadMapping2(JetfireRobot jetfireRobot) {
+        super(jetfireRobot);
     }
 
     @Override
     public void onYPressed() {
-        robot.setFlywheelMode(switch (robot.getFlywheelMode()) {
-            case AUTO -> JetfireRobot.FlywheelMode.OFF;
-            case OFF -> JetfireRobot.FlywheelMode.AUTO;
-        });
+        Pose limelightPose = robot.getLimelightHandler().getPose();
+        Pose currentPose = robot.getFollower().getPose(); // TODO: Fix
+        if (limelightPose != null) {
+            robot.getFollower().setPose(new Pose(limelightPose.getX(), limelightPose.getY(), currentPose.getHeading()));
+        }
     }
 
     @Override
@@ -25,14 +25,12 @@ public class JetfireGamepadMapping extends GamepadMapping<JetfireRobot> {
 
     @Override
     public void onAPressed() {
-        robot.startTurret();
+
     }
 
     @Override
     public void onXPressed() {
-//        if (JetfireRobot.TUNING) {
-//            robot.setChamberKalmanFilter(new KalmanFilter(JetfireRobot.chamberFilterParameters));
-//        }
+
     }
 
     @Override
@@ -52,12 +50,12 @@ public class JetfireGamepadMapping extends GamepadMapping<JetfireRobot> {
 
     @Override
     public void rightTrigger(float val) {
-         if (val > 0.05 && robot.isReadyToShoot()) robot.fire();
+
     }
 
     @Override
     public void onLeftTriggerPressed() {
-        robot.setReverseIntake(true);
+
     }
 
     @Override
@@ -67,7 +65,7 @@ public class JetfireGamepadMapping extends GamepadMapping<JetfireRobot> {
 
     @Override
     public void onLeftTriggerReleased() {
-        robot.setReverseIntake(false);
+
     }
 
     @Override
@@ -77,15 +75,12 @@ public class JetfireGamepadMapping extends GamepadMapping<JetfireRobot> {
 
     @Override
     public void onLeftBumperPressed() {
-        robot.setIntakeMode(switch (robot.getIntakeMode()) {
-            case ON -> JetfireRobot.IntakeMode.OFF;
-            case OFF -> JetfireRobot.IntakeMode.ON;
-        });
+
     }
 
     @Override
     public void onRightBumperPressed() {
-        robot.setAutoAimTurntable(!robot.isAutoAimTurntable());
+
     }
 
     @Override
@@ -95,7 +90,11 @@ public class JetfireGamepadMapping extends GamepadMapping<JetfireRobot> {
 
     @Override
     public void onDpadRightPressed() {
-        //robot.setDriverTurntableOffset(robot.getDriverTurntableOffset() - 1);
+        if (robot.isInFarZone()) {
+            JetfireRobot.FAR_ZONE_TURNTABLE_OFFSET_DEG--;
+        } else {
+            JetfireRobot.CLOSE_ZONE_TURNTABLE_OFFSET_DEG--;
+        }
     }
 
     @Override
@@ -105,6 +104,20 @@ public class JetfireGamepadMapping extends GamepadMapping<JetfireRobot> {
 
     @Override
     public void onDpadLeftPressed() {
-        //robot.setDriverTurntableOffset(robot.getDriverTurntableOffset() + 1);
+        if (robot.isInFarZone()) {
+            JetfireRobot.FAR_ZONE_TURNTABLE_OFFSET_DEG++;
+        } else {
+            JetfireRobot.CLOSE_ZONE_TURNTABLE_OFFSET_DEG++;
+        }
+    }
+
+    @Override
+    public void joysticks(float leftX, float leftY, float rightX, float rightY) {
+        // super.joysticks(leftX, leftY, rightX, rightY);
+    }
+
+    @Override
+    public void onRightStickPressed() {
+        //super.onRightStickPressed();
     }
 }

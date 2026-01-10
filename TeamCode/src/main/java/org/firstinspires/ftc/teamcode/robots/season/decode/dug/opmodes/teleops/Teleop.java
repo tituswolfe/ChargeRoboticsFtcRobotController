@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.robots.season.decode.dug.opmodes.teleops;
 
 import com.bylazar.telemetry.TelemetryManager;
 import com.pedropathing.follower.Follower;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.robots.base.GamepadMapping;
@@ -11,6 +12,7 @@ import org.firstinspires.ftc.teamcode.robots.season.decode.dug.DugGamepadMapping
 
 
 @TeleOp(name = "Dug", group = "dug")
+@Disabled
 public class Teleop extends TeleOpBase<DugRobot> {
     @Override
     public void buildPaths(Follower follower) {

@@ -25,6 +25,7 @@ package org.firstinspires.ftc.teamcode.hardware.controllers.lights;
 
 import static org.firstinspires.ftc.teamcode.hardware.controllers.lights.Prism.GoBildaPrismDriver.LayerHeight;
 
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
@@ -59,7 +60,7 @@ import java.util.concurrent.TimeUnit;
  */
 
 @TeleOp(name="Prism Animations Example", group="Linear OpMode")
-//@Disabled
+@Disabled
 
 public class GoBildaPrismExample extends LinearOpMode {
 
@@ -75,7 +76,6 @@ public class GoBildaPrismExample extends LinearOpMode {
          * to the names assigned during the robot configuration step on the driver's station.
          */
         prism = hardwareMap.get(GoBildaPrismDriver.class,"prism");
-
         /*
          * Here you can customize the specifics of different animations. Each animation has it's
          * own set of parameters that you can customize to create something unique! Each animation

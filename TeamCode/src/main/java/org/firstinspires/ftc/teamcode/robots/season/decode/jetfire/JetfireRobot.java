@@ -1,7 +1,10 @@
 package org.firstinspires.ftc.teamcode.robots.season.decode.jetfire;
 
+import com.ThermalEquilibrium.homeostasis.Filters.Estimators.KalmanEstimator;
 import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.telemetry.TelemetryManager;
+import com.pedropathing.control.KalmanFilter;
+import com.pedropathing.control.KalmanFilterParameters;
 import com.pedropathing.control.PIDFCoefficients;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
@@ -17,6 +20,9 @@ import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.hardware.controllers.StateMachine;
+import org.firstinspires.ftc.teamcode.hardware.controllers.lights.Prism.Color;
+import org.firstinspires.ftc.teamcode.hardware.controllers.lights.Prism.GoBildaPrismDriver;
+import org.firstinspires.ftc.teamcode.hardware.controllers.lights.Prism.PrismAnimations;
 import org.firstinspires.ftc.teamcode.hardware.controllers.motor.TurntableMotorController;
 import org.firstinspires.ftc.teamcode.hardware.controllers.motor.VelocityMotorController;
 import org.firstinspires.ftc.teamcode.hardware.controllers.servo.AngleServoController;
@@ -24,6 +30,7 @@ import org.firstinspires.ftc.teamcode.hardware.controllers.servo.RGBIndicatorLig
 import org.firstinspires.ftc.teamcode.hardware.controllers.servo.ServoTimerController;
 import org.firstinspires.ftc.teamcode.hardware.controllers.subsystems.Turret;
 import org.firstinspires.ftc.teamcode.hardware.drivetrain.pedroPathing.Constants;
+import org.firstinspires.ftc.teamcode.hardware.vision.LimelightHandler;
 import org.firstinspires.ftc.teamcode.robots.base.RobotBase;
 import org.firstinspires.ftc.teamcode.robots.base.StaticData;
 import org.firstinspires.ftc.teamcode.robots.base.opmodes.OpModeBase;
@@ -54,14 +61,14 @@ public class JetfireRobot extends RobotBase {
     public static PIDFCoefficients flywheelPIDFCoefficients = new PIDFCoefficients(0.0027, 0, 0, 0.0002);
 
     // TURNTABLE
-    public static PIDFCoefficients turntablePIDFCoefficients = new PIDFCoefficients(0.045, 0, 0.0012, 0);
-    public static double CLOSE_ZONE_TURNTABLE_OFFSET_DEG = 0;
-    public static double FAR_ZONE_TURNTABLE_OFFSET_DEG = 7; // neg left, pos right
+    public static PIDFCoefficients turntablePIDFCoefficients = new PIDFCoefficients(0.051, 0, 0.0012, 0);
+    public static double CLOSE_ZONE_TURNTABLE_OFFSET_DEG = -3;
+    public static double FAR_ZONE_TURNTABLE_OFFSET_DEG = -7; // neg left, pos right
 
     // INTAKE
     DcMotorEx intakeMotor;
     public static double INTAKE_POWER = 1;
-    public static double REVERSE_INTAKE_POWER = -0.7;
+    public static double REVERSE_INTAKE_POWER = -0.5;
     public enum IntakeMode {
         ON,
         OFF
@@ -78,24 +85,26 @@ public class JetfireRobot extends RobotBase {
     ServoTimerController transferServoController;
     public static double TRANSFER_SERVO_UP = 0.4;
     public static double TRANSFER_SERVO_DOWN = 0.67;
-    public static int TRANSFER_SERVO_TIME_MS = 150; // TODO: Decrease
+    public static int TRANSFER_SERVO_TIME_MS = 70; // TODO: Decrease
 
     // GATE SERVO
     ServoTimerController gateServoController;
     public static double GATE_SERVO_OPEN = 0.6;
     public static double GATE_SERVO_CLOSED = 0.8;
-    public static int GATE_SERVO_TIME_MS = 150;
+    public static int GATE_SERVO_TIME_MS = 130;
 
     // ARTIFACT CHAMBER DETECTION
     DistanceSensor chamberDistanceSensor;
+    public static KalmanFilterParameters chamberFilterParameters = new KalmanFilterParameters(0.1, 0.1);
+    private KalmanFilter chamberKalmanFilter = new KalmanFilter(chamberFilterParameters);
     public static double ARTIFACT_DETECTION_THRESHOLD_MM = 100;
 
     // COOLDOWN
     Timer laucnhCooldownTimer = new Timer();
-    public static int LAUNCH_COOLDOWN_MS = 150;
+    public static int LAUNCH_COOLDOWN_MS = 166;
 
     // MARGINS & DELAYS
-    public static double FLYWHEEL_VELOCITY_MARGIN_RPM = 60;
+    public static double FLYWHEEL_VELOCITY_MARGIN_RPM = 100;
     public static double TURNTABLE_HEADING_MARGIN_DEG = 2;
 
     public static long LAUNCH_DELAY_MS = 150;
@@ -112,10 +121,15 @@ public class JetfireRobot extends RobotBase {
     // RUNTIME
     public static Pose targetGoal;
     private boolean isReadyToShoot = false;
-    private double driverTurntableOffset = 0;
+    //private double driverTurntableOffset = 0;
+    private boolean isInFarZone = false;
 
-    private StateMachine shootThreeArtifacts = new StateMachine();
+    private final StateMachine autoFire = new StateMachine();
 
+    // LimeLight
+    private LimelightHandler limelightHandler;
+
+    GoBildaPrismDriver prism;
 
     @Override
     public void init(HardwareMap hardwareMap, Pose startPose, OpModeBase.AllianceColor allianceColor) {
@@ -148,7 +162,7 @@ public class JetfireRobot extends RobotBase {
                 turntablePIDFCoefficients,
                 HardwareInfo.GOBILDA_5203_YELLOW_JACKET_MOTOR_435_RPM.ENCODER_RESOLUTION_PPR,
                 64.0 / 16.0,
-                0.7,
+                0.75,
                 new Angle(130, false),
                 new Angle(-130, false),
                 turretStartHeading,
@@ -185,6 +199,10 @@ public class JetfireRobot extends RobotBase {
         Servo transferServo = hardwareMap.get(Servo.class, "transfer");
         transferServoController = new ServoTimerController(transferServo, TRANSFER_SERVO_DOWN);
 
+        Limelight3A limelight3A = hardwareMap.get(Limelight3A.class, "limelight");
+        limelightHandler = new LimelightHandler(limelight3A);
+        limelightHandler.init(0);
+
         TreeMap<Double, Double> flywheelSpeedByDistanceMap = new TreeMap<>();
         // INCH, RPM
         flywheelSpeedByDistanceMap.put(40.0, 2000.0);
@@ -216,11 +234,18 @@ public class JetfireRobot extends RobotBase {
         timeOfFlightByDistanceInterpolator = new LinearInterpolator(timeOfFlightByDistanceMap);
 
         for (int i = 0; i <= 2; i++) {
-            shootThreeArtifacts.addStep(
+            autoFire.addStep(
                     () -> isReadyToShoot,
-                    this::shoot
+                    this::fire
             );
         }
+
+        PrismAnimations.Solid solid = new PrismAnimations.Solid(Color.RED);
+        solid.setBrightness(50);
+        solid.setStartIndex(0);
+        solid.setStopIndex(23);
+        prism = hardwareMap.get(GoBildaPrismDriver.class,"prism");
+        prism.insertAndUpdateAnimation(GoBildaPrismDriver.LayerHeight.LAYER_0, solid);
     }
 
     @Override
@@ -261,7 +286,10 @@ public class JetfireRobot extends RobotBase {
         );
 
         double chamberDistanceMM = chamberDistanceSensor.getDistance(DistanceUnit.MM);
+        //chamberKalmanFilter.update(chamberDistanceMM, 0);
+        //double filteredChamberDistanceMM = chamberKalmanFilter.getState();
         boolean isArtifactLoaded = chamberDistanceMM < ARTIFACT_DETECTION_THRESHOLD_MM;
+
         boolean isCooldownOver = laucnhCooldownTimer.getElapsedTime() > LAUNCH_COOLDOWN_MS;
 
         isReadyToShoot = isFlywheelReady && isTurntableReady && isArtifactLoaded && isCooldownOver;
@@ -299,18 +327,19 @@ public class JetfireRobot extends RobotBase {
             case OFF -> 0.0;
         };
 
-        double interpolatedOffsetDeg = currentPose.getX() < 24 ? CLOSE_ZONE_TURNTABLE_OFFSET_DEG : FAR_ZONE_TURNTABLE_OFFSET_DEG;
+        isInFarZone = currentPose.getX() > 24;
+        double interpolatedOffsetDeg = isInFarZone ? CLOSE_ZONE_TURNTABLE_OFFSET_DEG : FAR_ZONE_TURNTABLE_OFFSET_DEG;
         Angle interpolatedOffset = new Angle(
                 interpolatedOffsetDeg * ((StaticData.allianceColor == OpModeBase.AllianceColor.BLUE) ? 1 : -1),
                 false
         );
 
-        Angle driverOffset = new Angle(driverTurntableOffset, false);
-        Angle turntableOffset = interpolatedOffset.plus(driverOffset, Angle.AngleSystem.SIGNED);
+        //Angle driverOffset = new Angle(driverTurntableOffset, false);
+        //Angle turntableOffset = interpolatedOffset//.plus(driverOffset, Angle.AngleSystem.SIGNED);
 
         Angle targetTurntableHeading = (autoAimTurntable ? virtualGoalHeading.minus(new Angle(currentPose.getHeading()), Angle.AngleSystem.SIGNED)
                 : new Angle(0)
-        ).plus(turntableOffset, Angle.AngleSystem.SIGNED);
+        ).plus(interpolatedOffset, Angle.AngleSystem.SIGNED);
 
         Angle hoodAngle = new Angle(hoodAngleByDistanceInterpolator.interpolate(virtualDistanceFromGoal), false);
 
@@ -338,18 +367,26 @@ public class JetfireRobot extends RobotBase {
 
         indicatorLightController.setColor(isReadyToShoot ? RGBIndicatorLightController.Color.GREEN : RGBIndicatorLightController.Color.RED);
 
+        limelightHandler.update(Math.toDegrees(currentPose.getHeading()));
         transferServoController.update();
         gateServoController.update();
-        shootThreeArtifacts.update();
+        autoFire.update();
 
         telemetry.addLine("");
+        telemetry.addLine("- LIMELIGHT -");
+        telemetry.addData("Pose", limelightHandler.getPose() == null ? "N/A (MY EYES!, MY EYES!)" : limelightHandler.getPose().toString());
         telemetry.addLine("- OFFSETS -");
-        telemetry.addData("Driver Turntable Offset", driverTurntableOffset);
+        //telemetry.addData("Driver Turntable Offset", driverTurntableOffset);
         telemetry.addData("Interpolated Turntable Offset", interpolatedOffsetDeg);
+        telemetry.addData("Close Turntable Offset", CLOSE_ZONE_TURNTABLE_OFFSET_DEG);
+        telemetry.addData("Far Turntable Offset", FAR_ZONE_TURNTABLE_OFFSET_DEG);
         telemetry.addLine("");
-        telemetry.addLine("- TRIGGERS -");
+        telemetry.addLine("- FIRE CONDITIONS -");
         telemetry.addData("isReadyToShoot", isReadyToShoot);
         telemetry.addData("isArtifactLoaded", isArtifactLoaded);
+        telemetry.addData("isTurntableReady", isTurntableReady);
+        telemetry.addData("isFlywheelReady", isFlywheelReady);
+        telemetry.addData("isCooldownOver", isCooldownOver);
         telemetry.addLine("");
         telemetry.addData("Goal Distance", distanceFromGoal);
         telemetry.addData("Goal Heading", goalHeading.getAngle(Angle.AngleUnit.DEGREES, Angle.AngleSystem.SIGNED_180_WRAPPED));
@@ -373,9 +410,10 @@ public class JetfireRobot extends RobotBase {
         telemetry.addLine("");
         telemetry.addLine("- DISTANCE SENSOR -");
         telemetry.addData("Chamber Distance", chamberDistanceMM);
+        //telemetry.addData("Filtered Chamber Distance", filteredChamberDistanceMM);
     }
 
-    public void shoot() {
+    public void fire() {
         gateServoController.setPosition(GATE_SERVO_OPEN, GATE_SERVO_TIME_MS, GATE_SERVO_CLOSED);
         transferServoController.setPosition(TRANSFER_SERVO_UP, TRANSFER_SERVO_TIME_MS, TRANSFER_SERVO_DOWN);
 
@@ -424,16 +462,32 @@ public class JetfireRobot extends RobotBase {
         return isReadyToShoot;
     }
 
-    public double getDriverTurntableOffset() {
-        return driverTurntableOffset;
+//    public double getDriverTurntableOffset() {
+//        return driverTurntableOffset;
+//    }
+
+//    public void setDriverTurntableOffset(double driverTurntableOffset) {
+//        this.driverTurntableOffset = driverTurntableOffset;
+//    }
+
+    public LimelightHandler getLimelightHandler() {
+        return limelightHandler;
     }
 
-    public void setDriverTurntableOffset(double driverTurntableOffset) {
-        this.driverTurntableOffset = driverTurntableOffset;
+    public StateMachine getAutoFire() {
+        return autoFire;
     }
 
-    public StateMachine getShootThreeArtifacts() {
-        return shootThreeArtifacts;
+    public KalmanFilter getChamberKalmanFilter() {
+        return chamberKalmanFilter;
+    }
+
+    public void setChamberKalmanFilter(KalmanFilter chamberKalmanFilter) {
+        this.chamberKalmanFilter = chamberKalmanFilter;
+    }
+
+    public boolean isInFarZone() {
+        return isInFarZone;
     }
 
     @Override
@@ -444,10 +498,5 @@ public class JetfireRobot extends RobotBase {
     @Override
     public Follower instantiateFollower(HardwareMap hardwareMap) {
         return Constants.createJetfireFollower(hardwareMap);
-    }
-
-    @Override
-    public Limelight3A instantiateLimelight3A(HardwareMap hardwareMap) {
-        return null;
     }
 }

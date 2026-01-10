@@ -133,10 +133,7 @@ public class DugRobot extends RobotBase {
         return createFollower(hardwareMap);
     }
 
-    @Override
-    public Limelight3A instantiateLimelight3A(HardwareMap hardwareMap) {
-        return null; // hardwareMap.get(Limelight3A.class, "limelight");
-    }
+
 
     public FlywheelSpeedMode getFlywheelSpeedMode() {
         return flywheelSpeedMode;

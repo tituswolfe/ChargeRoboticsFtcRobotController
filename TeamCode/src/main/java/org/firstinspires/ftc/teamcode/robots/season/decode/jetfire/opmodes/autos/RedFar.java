@@ -10,9 +10,9 @@ import org.firstinspires.ftc.teamcode.robots.base.opmodes.BaseAuto;
 import org.firstinspires.ftc.teamcode.robots.season.decode.jetfire.JetfireRobot;
 
 @Autonomous(preselectTeleOp = "Jetfire")
-public class BlueFar extends BaseAuto<JetfireRobot> {
-    Pose startPose = new Pose(62.7, -12.7, Math.toRadians(180));
-    Pose endPose = new Pose(35.5, -21.8, Math.toRadians(-90));
+public class RedFar extends BaseAuto<JetfireRobot> {
+    Pose startPose = new Pose(62.7, 12.7, Math.toRadians(180));
+    Pose endPose = new Pose(35.5, 21.8, Math.toRadians(90));
 
     PathChain endPath;
 
@@ -81,6 +81,6 @@ public class BlueFar extends BaseAuto<JetfireRobot> {
 
     @Override
     protected AllianceColor instantiateAllianceColor() {
-        return AllianceColor.BLUE;
+        return AllianceColor.RED;
     }
 }

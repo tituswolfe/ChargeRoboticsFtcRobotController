@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.hardware.controllers;
 
+import com.pedropathing.util.Timer;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BooleanSupplier;
@@ -18,9 +20,11 @@ public class StateMachine {
     private final List<Step> steps = new ArrayList<>();
     private int currentIndex = -1;
     private boolean running = false;
+    // private Timer actionTimer = new Timer();
 
-    public void addStep(BooleanSupplier condition, Runnable action) {
+    public StateMachine addStep(BooleanSupplier condition, Runnable action) {
         steps.add(new Step(condition, action));
+        return this;
     }
 
     public void start() {

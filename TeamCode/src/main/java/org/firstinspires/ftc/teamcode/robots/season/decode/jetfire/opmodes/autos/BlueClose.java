@@ -10,11 +10,13 @@ import org.firstinspires.ftc.teamcode.robots.base.opmodes.BaseAuto;
 import org.firstinspires.ftc.teamcode.robots.season.decode.jetfire.JetfireRobot;
 
 @Autonomous(preselectTeleOp = "Jetfire")
-public class BlueFar extends BaseAuto<JetfireRobot> {
-    Pose startPose = new Pose(62.7, -12.7, Math.toRadians(180));
-    Pose endPose = new Pose(35.5, -21.8, Math.toRadians(-90));
+public class BlueClose extends BaseAuto<JetfireRobot> {
+    Pose startPose = new Pose(-57.24, -43.5, Math.toRadians(-127.5));
+    Pose shootPose = new Pose(-14.5, -18, Math.toRadians(-90));
+    Pose intakeLine1 = new Pose(-14.5, -50.5, Math.toRadians(-90));
 
-    PathChain endPath;
+    PathChain shootPath;
+    PathChain intakePath;
 
     int returnPathState = 0;
 
@@ -22,12 +24,14 @@ public class BlueFar extends BaseAuto<JetfireRobot> {
     public void autonomousPathUpdate(int pathState) {
         switch (pathState) {
             case 0:
+                robot.getFollower().followPath(shootPath);
+                //robot.getAutoFire().start();
                 returnPathState = 1;
                 setPathState(1, true);
                 break;
             case 1:
                 if (!robot.getFollower().isBusy() && actionTimer.getElapsedTimeSeconds() > 5) {
-                    robot.getFollower().followPath(endPath);
+                    robot.getFollower().followPath(intakePath);
                     setPathState(2, true);
                 }
                 break;
@@ -63,10 +67,16 @@ public class BlueFar extends BaseAuto<JetfireRobot> {
 
     @Override
     public void buildPaths(Follower follower) {
-        endPath = follower.pathBuilder()
-                .addPath(new BezierLine(startPose, endPose))
-                .setLinearHeadingInterpolation(startPose.getHeading(), endPose.getHeading())
+        shootPath = follower.pathBuilder()
+                .addPath(new BezierLine(startPose, shootPose))
+                .setLinearHeadingInterpolation(startPose.getHeading(), shootPose.getHeading())
                 .build();
+
+        intakePath = follower.pathBuilder()
+                .addPath(new BezierLine(shootPose, intakeLine1))
+                .setLinearHeadingInterpolation(shootPose.getHeading(), intakeLine1.getHeading())
+                .build();
+
     }
 
     @Override

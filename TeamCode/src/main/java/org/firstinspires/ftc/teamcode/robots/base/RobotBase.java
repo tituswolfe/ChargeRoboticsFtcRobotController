@@ -68,7 +68,6 @@ public abstract class RobotBase {
     public Angle fieldCentricOffset;
     public static double slowSpeedFactor = 0.3;
 
-    private Limelight3A limelight3A;
 
 
     /**
@@ -78,7 +77,6 @@ public abstract class RobotBase {
     public void init(HardwareMap hardwareMap, Pose startPose, OpModeBase.AllianceColor allianceColor) {
         fieldType = instantiateFieldType();
         follower = instantiateFollower(hardwareMap);
-        limelight3A = instantiateLimelight3A(hardwareMap);
         initHardware(hardwareMap);
         setFieldCentricOffset(allianceColor);
 
@@ -133,9 +131,7 @@ public abstract class RobotBase {
             follower.update();
 
             telemetry.addLine("- DRIVETRAIN -");
-            telemetry.addData("x", follower.getPose().getX());
-            telemetry.addData("y", follower.getPose().getY());
-            telemetry.addData("heading", Math.toDegrees(follower.getPose().getHeading()));
+            telemetry.addData("x", follower.getPose().toString());
             telemetry.addData("isRobotCentric", isRobotCentric);
             telemetry.addData("Field Centric Offset (Deg)", fieldCentricOffset.getAngle(Angle.AngleUnit.DEGREES, Angle.AngleSystem.SIGNED_180_WRAPPED));
             telemetry.addData("isSlowMode", isSlowMode);
@@ -156,22 +152,11 @@ public abstract class RobotBase {
      */
     public abstract Follower instantiateFollower(HardwareMap hardwareMap);
 
-    /**
-     * @param hardwareMap hardwareMap
-     * @return {@link Limelight3A}
-     */
-    public abstract Limelight3A instantiateLimelight3A(HardwareMap hardwareMap);
-
-
     public FieldType getFieldType() {
         return fieldType;
     }
 
     public Follower getFollower() {
         return follower;
-    }
-
-    public Limelight3A getLimelight3A() {
-        return limelight3A;
     }
 }
