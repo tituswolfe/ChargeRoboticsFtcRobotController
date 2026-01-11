@@ -12,7 +12,8 @@ public class JetFireGamepadMapping2 extends GamepadMapping<JetfireRobot> {
     @Override
     public void onYPressed() {
         Pose limelightPose = robot.getLimelightHandler().getPose();
-        Pose currentPose = robot.getFollower().getPose(); // TODO: Fix
+        Pose currentPose = robot.getFollower().getPose();
+
         if (limelightPose != null) {
             robot.getFollower().setPose(new Pose(limelightPose.getX(), limelightPose.getY(), currentPose.getHeading()));
         }
@@ -30,7 +31,7 @@ public class JetFireGamepadMapping2 extends GamepadMapping<JetfireRobot> {
 
     @Override
     public void onXPressed() {
-
+        robot.getFollower().setHeading(0);
     }
 
     @Override

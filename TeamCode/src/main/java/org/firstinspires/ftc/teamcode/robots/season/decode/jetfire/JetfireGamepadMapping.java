@@ -1,8 +1,5 @@
 package org.firstinspires.ftc.teamcode.robots.season.decode.jetfire;
 
-import com.pedropathing.control.KalmanFilter;
-import com.pedropathing.geometry.Pose;
-
 import org.firstinspires.ftc.teamcode.robots.base.GamepadMapping;
 
 public class JetfireGamepadMapping extends GamepadMapping<JetfireRobot> {
@@ -25,7 +22,7 @@ public class JetfireGamepadMapping extends GamepadMapping<JetfireRobot> {
 
     @Override
     public void onAPressed() {
-        robot.startTurret();
+        robot.startAllSubsystems();
     }
 
     @Override
@@ -95,7 +92,7 @@ public class JetfireGamepadMapping extends GamepadMapping<JetfireRobot> {
 
     @Override
     public void onDpadRightPressed() {
-        //robot.setDriverTurntableOffset(robot.getDriverTurntableOffset() - 1);
+
     }
 
     @Override
@@ -105,6 +102,6 @@ public class JetfireGamepadMapping extends GamepadMapping<JetfireRobot> {
 
     @Override
     public void onDpadLeftPressed() {
-        //robot.setDriverTurntableOffset(robot.getDriverTurntableOffset() + 1);
+
     }
 }

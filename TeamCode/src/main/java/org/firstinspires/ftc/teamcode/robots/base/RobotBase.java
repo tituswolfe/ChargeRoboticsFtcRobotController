@@ -126,17 +126,16 @@ public abstract class RobotBase {
      * Update hardware states and telemetry. Do not {@link TelemetryManager#update()} in this method. Robot uses auto caching. do not get sensor data twice.
      */
     public void update(long deltaTimeMs, TelemetryManager telemetry) {
-
         if (follower != null) {
             follower.update();
 
             telemetry.addLine("- DRIVETRAIN -");
-            telemetry.addData("x", follower.getPose().toString());
+            telemetry.addData("Pose", follower.getPose().toString());
             telemetry.addData("isRobotCentric", isRobotCentric);
             telemetry.addData("Field Centric Offset (Deg)", fieldCentricOffset.getAngle(Angle.AngleUnit.DEGREES, Angle.AngleSystem.SIGNED_180_WRAPPED));
             telemetry.addData("isSlowMode", isSlowMode);
-            telemetry.addLine("");
             telemetry.addData("Velocity Magnitude", follower.getVelocity().getMagnitude());
+            telemetry.addLine("");
 
             StaticData.lastPose = follower.getPose();
         }

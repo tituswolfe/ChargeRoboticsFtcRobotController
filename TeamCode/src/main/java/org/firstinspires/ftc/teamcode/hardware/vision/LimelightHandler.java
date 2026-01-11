@@ -5,11 +5,14 @@ import com.pedropathing.geometry.Pose;
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 
 public class LimelightHandler {
     private final Limelight3A limelight;
     private LLResult lastResult;
+    private static final double HEADING_OFFSET_DEG = 90;
 
     public LimelightHandler(Limelight3A limelight) {
         this.limelight = limelight;
@@ -17,11 +20,11 @@ public class LimelightHandler {
 
     public void init(int pipeline) {
         limelight.pipelineSwitch(pipeline);
-        limelight.start();
+        // limelight.start();
     }
 
     public void update(double robotYawDegrees) {
-        limelight.updateRobotOrientation(robotYawDegrees);
+        limelight.updateRobotOrientation(robotYawDegrees + HEADING_OFFSET_DEG);
         lastResult = limelight.getLatestResult();
     }
 
@@ -30,9 +33,13 @@ public class LimelightHandler {
             return null;
         }
 
-        Pose3D pose3D = lastResult.getBotpose(); // TODO: MT2
+        Pose3D pose3D = lastResult.getBotpose_MT2();
 
-        return new Pose(pose3D.getPosition().x * -39.37, pose3D.getPosition().y * -39.37, getPose().getHeading());
+        return new Pose(
+                DistanceUnit.INCH.fromMeters(pose3D.getPosition().y),
+                -DistanceUnit.INCH.fromMeters(pose3D.getPosition().x),
+                pose3D.getOrientation().getYaw(AngleUnit.RADIANS)
+        );
     }
 
     public Limelight3A getLimelight() {

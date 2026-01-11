@@ -10,7 +10,7 @@ import org.firstinspires.ftc.teamcode.util.math.MathUtil;
 public class VelocityMotorController extends MotorController{
     private double targetRotationsPerMinute = 0;
     private boolean isEngaged = true;
-    private double velocity = 0; // TODO: Cached?
+    private double velocity = 0;
 
     public VelocityMotorController(DcMotorEx dcMotorEx, DcMotorSimple.Direction direction, PIDFCoefficients pidfCoefficients, double ticksPerRevolution, double totalGearRatio, double maxPower) {
         super(dcMotorEx, direction, pidfCoefficients, ticksPerRevolution, totalGearRatio, maxPower);

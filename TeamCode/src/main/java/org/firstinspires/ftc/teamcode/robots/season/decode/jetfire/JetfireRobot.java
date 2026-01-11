@@ -1,6 +1,5 @@
 package org.firstinspires.ftc.teamcode.robots.season.decode.jetfire;
 
-import com.ThermalEquilibrium.homeostasis.Filters.Estimators.KalmanEstimator;
 import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.telemetry.TelemetryManager;
 import com.pedropathing.control.KalmanFilter;
@@ -63,7 +62,8 @@ public class JetfireRobot extends RobotBase {
     // TURNTABLE
     public static PIDFCoefficients turntablePIDFCoefficients = new PIDFCoefficients(0.051, 0, 0.0012, 0);
     public static double CLOSE_ZONE_TURNTABLE_OFFSET_DEG = -3;
-    public static double FAR_ZONE_TURNTABLE_OFFSET_DEG = -7; // neg left, pos right
+    public static double FAR_ZONE_TURNTABLE_OFFSET_DEG = -7; // neg is right, pos is left, blue alliance
+    // TODO: Check left and right neg and pos
 
     // INTAKE
     DcMotorEx intakeMotor;
@@ -111,12 +111,13 @@ public class JetfireRobot extends RobotBase {
 
     // LIGHTS
     RGBIndicatorLightController indicatorLightController;
+    GoBildaPrismDriver prism;
 
     // TUNING
     public static boolean TUNING = false;
     public static double FLYWHEEL_TARGET_VELOCITY = 0;
     public static double HOOD_ANGLE = 16;
-    public static double TURNTABLE_OFFSET_DEG;
+    public static double TURNTABLE_OFFSET_DEG = 0;
 
     // RUNTIME
     public static Pose targetGoal;
@@ -129,7 +130,6 @@ public class JetfireRobot extends RobotBase {
     // LimeLight
     private LimelightHandler limelightHandler;
 
-    GoBildaPrismDriver prism;
 
     @Override
     public void init(HardwareMap hardwareMap, Pose startPose, OpModeBase.AllianceColor allianceColor) {
@@ -257,7 +257,6 @@ public class JetfireRobot extends RobotBase {
     public void update(long deltaTimeMs, TelemetryManager telemetry) {
         super.update(deltaTimeMs, telemetry);
 
-        // GET DATA
         Pose currentPose = follower.getPose();
         Vector velocity = follower.getVelocity();
         double angularVelocity = follower.getAngularVelocity();
@@ -266,13 +265,15 @@ public class JetfireRobot extends RobotBase {
 
         Pose displacedPose = targetGoal.minus(currentPose);
         double distanceFromGoal = currentPose.distanceFrom(targetGoal);
+
         Angle goalHeading = new Angle(Math.atan2(displacedPose.getY(), displacedPose.getX()));
 
         Angle relativeTurntableHeading = turret.turntableController().getHeading();
-        JetfireStaticData.lastTurretHeading = relativeTurntableHeading;
         Angle absoluteTurntableHeading = new Angle(relativeTurntableHeading.getAngle(Angle.AngleSystem.SIGNED_180_WRAPPED) + follower.getHeading());
 
-        // PROCESS DATA
+        JetfireStaticData.lastTurretHeading = relativeTurntableHeading;
+        isInFarZone = currentPose.getX() > 24;
+
         boolean isFlywheelReady = MathUtil.isWithinRange(
                 turret.flywheelController().getVelocity(),
                 turret.flywheelController().getTargetVelocity(),
@@ -327,8 +328,7 @@ public class JetfireRobot extends RobotBase {
             case OFF -> 0.0;
         };
 
-        isInFarZone = currentPose.getX() > 24;
-        double interpolatedOffsetDeg = isInFarZone ? CLOSE_ZONE_TURNTABLE_OFFSET_DEG : FAR_ZONE_TURNTABLE_OFFSET_DEG;
+        double interpolatedOffsetDeg = isInFarZone ? FAR_ZONE_TURNTABLE_OFFSET_DEG : CLOSE_ZONE_TURNTABLE_OFFSET_DEG;
         Angle interpolatedOffset = new Angle(
                 interpolatedOffsetDeg * ((StaticData.allianceColor == OpModeBase.AllianceColor.BLUE) ? 1 : -1),
                 false
@@ -370,14 +370,13 @@ public class JetfireRobot extends RobotBase {
         limelightHandler.update(Math.toDegrees(currentPose.getHeading()));
         transferServoController.update();
         gateServoController.update();
-        autoFire.update();
+        // autoFire.update();
 
-        telemetry.addLine("");
         telemetry.addLine("- LIMELIGHT -");
-        telemetry.addData("Pose", limelightHandler.getPose() == null ? "N/A (MY EYES!, MY EYES!)" : limelightHandler.getPose().toString());
+        telemetry.addData("Pose", limelightHandler.getPose() == null ? "N/A :eyes:" : limelightHandler.getPose().toString());
+        telemetry.addLine("");
         telemetry.addLine("- OFFSETS -");
-        //telemetry.addData("Driver Turntable Offset", driverTurntableOffset);
-        telemetry.addData("Interpolated Turntable Offset", interpolatedOffsetDeg);
+        telemetry.addData("isInFarZone", isInFarZone);
         telemetry.addData("Close Turntable Offset", CLOSE_ZONE_TURNTABLE_OFFSET_DEG);
         telemetry.addData("Far Turntable Offset", FAR_ZONE_TURNTABLE_OFFSET_DEG);
         telemetry.addLine("");
@@ -388,12 +387,10 @@ public class JetfireRobot extends RobotBase {
         telemetry.addData("isFlywheelReady", isFlywheelReady);
         telemetry.addData("isCooldownOver", isCooldownOver);
         telemetry.addLine("");
-        telemetry.addData("Goal Distance", distanceFromGoal);
-        telemetry.addData("Goal Heading", goalHeading.getAngle(Angle.AngleUnit.DEGREES, Angle.AngleSystem.SIGNED_180_WRAPPED));
-        telemetry.addLine("");
         telemetry.addLine("- TURNTABLE -");
         telemetry.addData("Relative Heading", relativeTurntableHeading.getAngle(Angle.AngleUnit.DEGREES, Angle.AngleSystem.SIGNED));
         telemetry.addData("Absolute Heading", absoluteTurntableHeading.getAngle(Angle.AngleUnit.DEGREES, Angle.AngleSystem.SIGNED));
+        telemetry.addData("Absolute Target Goal Heading", goalHeading.getAngle(Angle.AngleUnit.DEGREES, Angle.AngleSystem.SIGNED_180_WRAPPED));
         telemetry.addData("Absolute Error", goalHeading.getAngle(Angle.AngleUnit.DEGREES, Angle.AngleSystem.SIGNED_180_WRAPPED) - absoluteTurntableHeading.getAngle(Angle.AngleUnit.DEGREES, Angle.AngleSystem.SIGNED_180_WRAPPED));
         telemetry.addLine("");
         telemetry.addLine("- FLYWHEEL -");
@@ -403,10 +400,11 @@ public class JetfireRobot extends RobotBase {
         telemetry.addLine("- HOOD -");
         telemetry.addData("HOOD ANGLE", turret.hoodServoController().getTargetAngle().getAngle(Angle.AngleUnit.DEGREES, Angle.AngleSystem.SIGNED));
         telemetry.addLine("");
-        telemetry.addLine("- LEAD COMPUTING -");
+        telemetry.addLine("- LEAD COMPUTING & LUTs -");
         telemetry.addData("Future Pose X", futurePose.getX());
         telemetry.addData("Future Pose Y", futurePose.getY());
         telemetry.addData("Time of Flight Estimate", timeOfFlightMs);
+        telemetry.addData("Goal Distance", distanceFromGoal);
         telemetry.addLine("");
         telemetry.addLine("- DISTANCE SENSOR -");
         telemetry.addData("Chamber Distance", chamberDistanceMM);
@@ -420,7 +418,7 @@ public class JetfireRobot extends RobotBase {
         laucnhCooldownTimer.resetTimer();
     }
 
-    public void startTurret() {
+    public void startAllSubsystems() {
         setFlywheelMode(JetfireRobot.FlywheelMode.AUTO);
         setIntakeMode(JetfireRobot.IntakeMode.ON);
         setAutoAimTurntable(true);
@@ -461,14 +459,6 @@ public class JetfireRobot extends RobotBase {
     public boolean isReadyToShoot() {
         return isReadyToShoot;
     }
-
-//    public double getDriverTurntableOffset() {
-//        return driverTurntableOffset;
-//    }
-
-//    public void setDriverTurntableOffset(double driverTurntableOffset) {
-//        this.driverTurntableOffset = driverTurntableOffset;
-//    }
 
     public LimelightHandler getLimelightHandler() {
         return limelightHandler;
