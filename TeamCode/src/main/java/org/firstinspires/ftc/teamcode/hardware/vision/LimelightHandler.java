@@ -35,10 +35,14 @@ public class LimelightHandler {
 
         Pose3D pose3D = lastResult.getBotpose_MT2();
 
+        double xInches = DistanceUnit.INCH.fromMeters(pose3D.getPosition().y);
+        double yInches = -DistanceUnit.INCH.fromMeters(pose3D.getPosition().x);
+        double heading = pose3D.getOrientation().getYaw(AngleUnit.RADIANS) - Math.toRadians(HEADING_OFFSET_DEG);
+
         return new Pose(
-                DistanceUnit.INCH.fromMeters(pose3D.getPosition().y),
-                -DistanceUnit.INCH.fromMeters(pose3D.getPosition().x),
-                pose3D.getOrientation().getYaw(AngleUnit.RADIANS)
+                xInches,
+                yInches,
+                heading
         );
     }
 
