@@ -1,7 +1,8 @@
 package org.firstinspires.ftc.teamcode.robots.base.opmodes;
 
-
-
+import com.bylazar.field.PanelsField;
+import com.bylazar.gamepad.PanelsGamepad;
+import com.bylazar.lights.PanelsLights;
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.bylazar.telemetry.TelemetryManager;
 import com.pedropathing.follower.Follower;
@@ -11,12 +12,13 @@ import com.pedropathing.util.Timer;
 
 import org.firstinspires.ftc.teamcode.robots.base.GamepadMapping;
 import org.firstinspires.ftc.teamcode.robots.base.RobotBase;
+import org.firstinspires.ftc.teamcode.robots.base.StaticData;
 
 import java.util.Optional;
 
 /**
- * {@link OpModeBase} is an abstract subclass of {@link OpMode}.
- * Use {@link TeleOpBase} or {@link BaseAuto} to create your {@link OpMode}!
+ * {@link OpModeBase} is an abstract subclass of the SDK's {@link OpMode}.
+ * Use {@link TeleOpBase} or {@link BaseAuto} to create your own {@link OpMode}!
  *
  * @author Titus Wolfe
  * @param <Robot> a {@link RobotBase} subclass
@@ -33,20 +35,21 @@ public abstract class OpModeBase<Robot extends RobotBase> extends OpMode {
         BLUE
     }
 
-
     protected Timer opmodeTimer = new Timer();
-    private final static Timer sleepTimer = new Timer();
     protected boolean isEndgame = false;
 
-    private long deltaTimeMs = 0;
-    private Timer deltaTimer = new Timer();
-    // R.I.P AlliancePosition, OpModeType, & FieldType
+    private final Timer deltaTimer = new Timer();
 
     /**
      * Initiates and instantiates hardware & handlers.
      */
     @Override
     public void init() {
+        // TODO: Gamepad
+        // TODO: Panels field
+        // TODO: Make sure gamepads driing don't interfer with each other
+        // TODO: One static instance of robot and opmode etc.
+
         telemetry.addLine("Charger Robotics");
         telemetry.addLine("Please wait . . .");
         telemetry.update();
@@ -55,21 +58,18 @@ public abstract class OpModeBase<Robot extends RobotBase> extends OpMode {
         gamepadMapping1 = instantiateGamepadMapping1();
         gamepadMapping2 = instantiateGamepadMapping2();
 
-//        if (allianceColor != null) {
-//            StaticData.allianceColor = allianceColor;
-//        } else if (StaticData.allianceColor == null) {
-//            StaticData.allianceColor = OpModeBase.AllianceColor.BLUE; // DEFAULT TO BLUE
-//        }
-
         Pose startPose = Optional.ofNullable(instantiateStartPose())
                 .orElse(new Pose(0, 0));
 
         AllianceColor allianceColor = Optional.ofNullable(instantiateAllianceColor())
                 .orElse(OpModeBase.AllianceColor.BLUE);
+        StaticData.allianceColor = allianceColor;
 
         robot.init(hardwareMap, startPose, allianceColor);
 
-        if (robot.getFollower() != null) buildPaths(robot.getFollower());
+        if (robot.getFollower() != null) {
+            buildPaths(robot.getFollower());
+        }
 
         opModeTypeSpecificInit();
 
@@ -86,8 +86,6 @@ public abstract class OpModeBase<Robot extends RobotBase> extends OpMode {
     public abstract void opModeTypeSpecificInit();
     public abstract void buildPaths(Follower follower);
 
-
-
     @Override
     public void start() {
         opmodeTimer.resetTimer();
@@ -95,14 +93,14 @@ public abstract class OpModeBase<Robot extends RobotBase> extends OpMode {
 
     @Override
     public void loop() {
-        deltaTimeMs = deltaTimer.getElapsedTime();
+        long deltaTimeMs = deltaTimer.getElapsedTime();
         deltaTimer.resetTimer();
 
         telemetry.addLine("- OpMode info -");
-        // telemetry.addData("Alliance Color", StaticData.allianceColor);
+        telemetry.addData("Alliance Color", StaticData.allianceColor);
+        telemetry.addData("Delta Time (MS)", deltaTimeMs);
         telemetry.addData("Elapsed time (sec)", opmodeTimer.getElapsedTimeSeconds());
         telemetry.addData("isEndgame", isEndgame);
-        telemetry.addData("Delta Time (MS)", deltaTimeMs);
 
         robot.update(deltaTimeMs, telemetryManager);
 
@@ -111,27 +109,7 @@ public abstract class OpModeBase<Robot extends RobotBase> extends OpMode {
         telemetry.addLine("- DON'T TOUCH THAT RYAN! -");
 
         telemetryManager.update(this.telemetry);
-
-        // updateTelemetry(telemetryManager);
     }
-
-//    public void updateTelemetry(TelemetryManager telemetry) {
-//
-//        telemetry.addLine("- OpMode info -");
-//        // telemetry.addData("Alliance Color", StaticData.allianceColor);
-//        telemetry.addData("Elapsed time (sec)", opmodeTimer.getElapsedTimeSeconds());
-//        telemetry.addData("isEndgame", isEndgame);
-//        telemetry.addData("Delta Time (MS)", deltaTimeMs);
-//
-//
-//        robot.hardwareTelemetry(telemetry);
-//
-//        telemetry.addLine("");
-//        telemetry.addLine("- Charger Robotics -");
-//        telemetry.addLine("- DON'T TOUCH THAT RYAN! -");
-//
-//        telemetryManager.update(this.telemetry);
-//    }
 
     public boolean isEndgame() {
         return isEndgame;

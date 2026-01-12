@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.hardware.vision;
 
+import com.bylazar.configurables.annotations.Configurable;
 import com.pedropathing.ftc.localization.RevHubIMU;
 import com.pedropathing.geometry.Pose;
 import com.qualcomm.hardware.limelightvision.LLResult;
@@ -9,10 +10,11 @@ import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 
+@Configurable
 public class LimelightHandler {
     private final Limelight3A limelight;
     private LLResult lastResult;
-    private static final double HEADING_OFFSET_DEG = 0;
+    public static final double HEADING_OFFSET_DEG = 0;
 
     public LimelightHandler(Limelight3A limelight) {
         this.limelight = limelight;

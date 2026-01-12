@@ -85,13 +85,13 @@ public class JetfireRobot extends RobotBase {
     ServoTimerController transferServoController;
     public static double TRANSFER_SERVO_UP = 0.4;
     public static double TRANSFER_SERVO_DOWN = 0.67;
-    public static int TRANSFER_SERVO_TIME_MS = 70; // TODO: Decrease
+    public static int TRANSFER_SERVO_TIME_MS = 125; // TODO: Decrease
 
     // GATE SERVO
     ServoTimerController gateServoController;
     public static double GATE_SERVO_OPEN = 0.6;
     public static double GATE_SERVO_CLOSED = 0.8;
-    public static int GATE_SERVO_TIME_MS = 130;
+    public static int GATE_SERVO_TIME_MS = 125;
 
     // ARTIFACT CHAMBER DETECTION
     DistanceSensor chamberDistanceSensor;
@@ -101,7 +101,8 @@ public class JetfireRobot extends RobotBase {
 
     // COOLDOWN
     Timer laucnhCooldownTimer = new Timer();
-    public static int LAUNCH_COOLDOWN_MS = 166;
+    public static int LAUNCH_COOLDOWN_MS = 250;
+    // 166 for half second, 250 for 3/4 second
 
     // MARGINS & DELAYS
     public static double FLYWHEEL_VELOCITY_MARGIN_RPM = 100;
