@@ -45,7 +45,6 @@ public abstract class OpModeBase<Robot extends RobotBase> extends OpMode {
      */
     @Override
     public void init() {
-        // TODO: Gamepad
         // TODO: Panels field
         // TODO: Make sure gamepads driing don't interfer with each other
         // TODO: One static instance of robot and opmode etc.
@@ -79,7 +78,6 @@ public abstract class OpModeBase<Robot extends RobotBase> extends OpMode {
 
     @Override
     public void init_loop() {
-        // TODO: Auto select options
         super.init_loop();
     }
 

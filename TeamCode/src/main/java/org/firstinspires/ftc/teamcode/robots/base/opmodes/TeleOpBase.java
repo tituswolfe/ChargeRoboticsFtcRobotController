@@ -20,12 +20,20 @@ public abstract class TeleOpBase<Robot extends RobotBase> extends OpModeBase<Rob
 
     @Override
     public void loop() {
-        if (gamepadMapping1 != null) gamepadMapping1.processGamepad(gamepad1);
-        if (gamepadMapping2 != null) gamepadMapping2.processGamepad(gamepad2);
+        if (gamepadMapping1 != null) {
+            gamepadMapping1.processGamepad(gamepad1);
+        }
+        if (gamepadMapping2 != null) {
+            gamepadMapping2.processGamepad(gamepad2);
+        }
 
-        if (opmodeTimer.getElapsedTimeSeconds() > 150) isEndgame = true;
+        if (opmodeTimer.getElapsedTimeSeconds() > 150) {
+            isEndgame = true;
+        }
 
-        if (robot.getFollower() != null && !robot.getFollower().isBusy() && !robot.getFollower().isTeleopDrive()) robot.getFollower().startTeleopDrive();
+        if (robot.getFollower() != null && !robot.getFollower().isBusy() && !robot.getFollower().isTeleopDrive()) {
+            robot.getFollower().startTeleopDrive();
+        }
 
         super.loop();
     }

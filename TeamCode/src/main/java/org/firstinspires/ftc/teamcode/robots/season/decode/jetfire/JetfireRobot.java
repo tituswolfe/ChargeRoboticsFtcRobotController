@@ -85,13 +85,13 @@ public class JetfireRobot extends RobotBase {
     ServoTimerController transferServoController;
     public static double TRANSFER_SERVO_UP = 0.4;
     public static double TRANSFER_SERVO_DOWN = 0.67;
-    public static int TRANSFER_SERVO_TIME_MS = 125; // TODO: Decrease
+    public static int TRANSFER_SERVO_TIME_MS = 200; // TODO: Decrease
 
     // GATE SERVO
     ServoTimerController gateServoController;
     public static double GATE_SERVO_OPEN = 0.6;
     public static double GATE_SERVO_CLOSED = 0.8;
-    public static int GATE_SERVO_TIME_MS = 125;
+    public static int GATE_SERVO_TIME_MS = 300; // INCREASE A BIT
 
     // ARTIFACT CHAMBER DETECTION
     DistanceSensor chamberDistanceSensor;
@@ -101,11 +101,11 @@ public class JetfireRobot extends RobotBase {
 
     // COOLDOWN
     Timer laucnhCooldownTimer = new Timer();
-    public static int LAUNCH_COOLDOWN_MS = 250;
+    public static int LAUNCH_COOLDOWN_MS = 300;
     // 166 for half second, 250 for 3/4 second
 
     // MARGINS & DELAYS
-    public static double FLYWHEEL_VELOCITY_MARGIN_RPM = 100;
+    public static double FLYWHEEL_VELOCITY_MARGIN_RPM = 60;
     public static double TURNTABLE_HEADING_MARGIN_DEG = 2;
 
     public static long LAUNCH_DELAY_MS = 150;
@@ -123,7 +123,6 @@ public class JetfireRobot extends RobotBase {
     // RUNTIME
     public static Pose targetGoal;
     private boolean isReadyToShoot = false;
-    //private double driverTurntableOffset = 0;
     private boolean isInFarZone = false;
 
     private final StateMachine autoFire = new StateMachine();
@@ -212,6 +211,7 @@ public class JetfireRobot extends RobotBase {
         flywheelSpeedByDistanceMap.put(105.0, 2500.0);
         flywheelSpeedByDistanceMap.put(120.0, 2600.0);
         flywheelSpeedByDistanceMap.put(130.0, 3000.0);
+        flywheelSpeedByDistanceMap.put(160.0, 3200.0);
         flywheelVelocityByDistanceInterpolator = new LinearInterpolator(flywheelSpeedByDistanceMap);
 
         TreeMap<Double, Double> hoodAngleByDistanceMap = new TreeMap<>();
@@ -222,6 +222,7 @@ public class JetfireRobot extends RobotBase {
         hoodAngleByDistanceMap.put(105.0, 41.0);
         hoodAngleByDistanceMap.put(120.0, 41.0);
         hoodAngleByDistanceMap.put(130.0, 41.0);
+        hoodAngleByDistanceMap.put(160.0, 41.0);
         hoodAngleByDistanceInterpolator = new LinearInterpolator(hoodAngleByDistanceMap);
 
         TreeMap<Double, Double> timeOfFlightByDistanceMap = new TreeMap<>();
@@ -232,6 +233,7 @@ public class JetfireRobot extends RobotBase {
         timeOfFlightByDistanceMap.put(105.0, 2400.0);
         timeOfFlightByDistanceMap.put(120.0, 2700.0);
         timeOfFlightByDistanceMap.put(130.0, 3300.0);
+        timeOfFlightByDistanceMap.put(160.0, 3300.0);
         timeOfFlightByDistanceInterpolator = new LinearInterpolator(timeOfFlightByDistanceMap);
 
         for (int i = 0; i <= 2; i++) {
@@ -374,7 +376,7 @@ public class JetfireRobot extends RobotBase {
         // autoFire.update();
 
         telemetry.addLine("- LIMELIGHT -");
-        telemetry.addData("Pose", limelightHandler.getPose() == null ? "N/A :eyes:" : limelightHandler.getPose().toString());
+        //telemetry.addData("Pose", limelightHandler.getPose().toString());
         telemetry.addLine("");
         telemetry.addLine("- OFFSETS -");
         telemetry.addData("isInFarZone", isInFarZone);

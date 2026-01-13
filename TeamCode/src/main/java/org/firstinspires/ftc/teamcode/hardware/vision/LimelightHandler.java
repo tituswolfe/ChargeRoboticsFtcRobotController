@@ -14,7 +14,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 public class LimelightHandler {
     private final Limelight3A limelight;
     private LLResult lastResult;
-    public static final double HEADING_OFFSET_DEG = 0;
+    public static double HEADING_OFFSET_DEG = 0;
 
     public LimelightHandler(Limelight3A limelight) {
         this.limelight = limelight;
@@ -22,7 +22,6 @@ public class LimelightHandler {
 
     public void init(int pipeline) {
         limelight.pipelineSwitch(pipeline);
-        // limelight.start();
     }
 
     public void update(double robotYawDegrees) {
@@ -39,12 +38,11 @@ public class LimelightHandler {
 
         double xInches = DistanceUnit.INCH.fromMeters(pose3D.getPosition().x);
         double yInches = DistanceUnit.INCH.fromMeters(pose3D.getPosition().y);
-        double heading = pose3D.getOrientation().getYaw(AngleUnit.RADIANS);
+        //double heading = pose3D.getOrientation().getYaw(AngleUnit.RADIANS);
 
         return new Pose(
                 xInches,
-                yInches,
-                heading
+                yInches
         );
     }
 

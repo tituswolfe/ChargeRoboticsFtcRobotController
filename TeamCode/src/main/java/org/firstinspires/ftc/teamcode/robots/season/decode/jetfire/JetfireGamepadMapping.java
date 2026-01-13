@@ -27,9 +27,7 @@ public class JetfireGamepadMapping extends GamepadMapping<JetfireRobot> {
 
     @Override
     public void onXPressed() {
-//        if (JetfireRobot.TUNING) {
-//            robot.setChamberKalmanFilter(new KalmanFilter(JetfireRobot.chamberFilterParameters));
-//        }
+
     }
 
     @Override
