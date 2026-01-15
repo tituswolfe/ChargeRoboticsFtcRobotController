@@ -2,7 +2,10 @@ package org.firstinspires.ftc.teamcode.robots.season.decode.jetfire;
 
 import com.pedropathing.geometry.Pose;
 
+import org.firstinspires.ftc.teamcode.hardware.controllers.servo.RGBIndicatorLightController;
 import org.firstinspires.ftc.teamcode.robots.base.GamepadMapping;
+import org.firstinspires.ftc.teamcode.robots.base.StaticData;
+import org.firstinspires.ftc.teamcode.robots.base.opmodes.OpModeBase;
 
 public class JetFireGamepadMapping2 extends GamepadMapping<JetfireRobot> {
     public JetFireGamepadMapping2(JetfireRobot jetfireRobot) {
@@ -11,29 +14,27 @@ public class JetFireGamepadMapping2 extends GamepadMapping<JetfireRobot> {
 
     @Override
     public void onYPressed() {
-        Pose limelightPose = robot.getLimelightHandler().getPose();
-        Pose currentPose = robot.getFollower().getPose();
-
-        if (limelightPose != null) {
-            robot.getFollower().setPose(new Pose(limelightPose.getX(), limelightPose.getY(), currentPose.getHeading()));
-        }
+        robot.getFollower().setHeading(StaticData.allianceColor == OpModeBase.AllianceColor.RED ? 90 : -90);
     }
 
     @Override
     public void onBPressed() {
-
-    }
-
-    @Override
-    public void onAPressed() {
+        robot.getFollower().setHeading(StaticData.allianceColor == OpModeBase.AllianceColor.RED ? 0 : 180);
 //        if (JetfireRobot.TUNING) {
 //            robot.setChamberKalmanFilter(new KalmanFilter(JetfireRobot.chamberFilterParameters));
 //        }
     }
 
     @Override
+    public void onAPressed() {
+        robot.getFollower().setHeading(StaticData.allianceColor == OpModeBase.AllianceColor.RED ? -90 : 90);
+
+    }
+
+    @Override
     public void onXPressed() {
-        robot.getFollower().setHeading(0);
+        robot.getFollower().setHeading(StaticData.allianceColor == OpModeBase.AllianceColor.RED ? 180 : 0);
+
     }
 
     @Override
@@ -83,7 +84,13 @@ public class JetFireGamepadMapping2 extends GamepadMapping<JetfireRobot> {
 
     @Override
     public void onRightBumperPressed() {
+        Pose limelightPose = robot.getLimelightHandler().getPose();
+        Pose currentPose = robot.getFollower().getPose();
 
+        if (limelightPose != null) {
+            robot.getFollower().setPose(new Pose(limelightPose.getX(), limelightPose.getY(), currentPose.getHeading()));
+            robot.indicate(RGBIndicatorLightController.Color.VIOLET);
+        }
     }
 
     @Override

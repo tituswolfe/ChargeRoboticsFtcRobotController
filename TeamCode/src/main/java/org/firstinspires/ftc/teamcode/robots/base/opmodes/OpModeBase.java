@@ -1,12 +1,15 @@
 package org.firstinspires.ftc.teamcode.robots.base.opmodes;
 
+import com.bylazar.field.FieldManager;
 import com.bylazar.field.PanelsField;
+import com.bylazar.field.Style;
 import com.bylazar.gamepad.PanelsGamepad;
 import com.bylazar.lights.PanelsLights;
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.bylazar.telemetry.TelemetryManager;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
+import com.pedropathing.math.Vector;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.pedropathing.util.Timer;
 
@@ -29,6 +32,10 @@ public abstract class OpModeBase<Robot extends RobotBase> extends OpMode {
     protected GamepadMapping<Robot> gamepadMapping2;
 
     TelemetryManager telemetryManager = PanelsTelemetry.INSTANCE.getTelemetry();
+    private static final FieldManager panelsField = PanelsField.INSTANCE.getField();
+    private static final Style robotLook = new Style(
+            "", "#3F51B5", 0.75
+    );
 
     public enum AllianceColor {
         RED,
@@ -94,19 +101,47 @@ public abstract class OpModeBase<Robot extends RobotBase> extends OpMode {
         long deltaTimeMs = deltaTimer.getElapsedTime();
         deltaTimer.resetTimer();
 
-        telemetry.addLine("- OpMode info -");
-        telemetry.addData("Alliance Color", StaticData.allianceColor);
-        telemetry.addData("Delta Time (MS)", deltaTimeMs);
-        telemetry.addData("Elapsed time (sec)", opmodeTimer.getElapsedTimeSeconds());
-        telemetry.addData("isEndgame", isEndgame);
+        telemetryManager.addLine("- OpMode info -");
+        telemetryManager.addData("Alliance Color", StaticData.allianceColor);
+        telemetryManager.addData("Delta Time (MS)", deltaTimeMs);
+        telemetryManager.addData("Elapsed time (sec)", opmodeTimer.getElapsedTimeSeconds());
+        telemetryManager.addData("isEndgame", isEndgame);
 
         robot.update(deltaTimeMs, telemetryManager);
 
-        telemetry.addLine("");
-        telemetry.addLine("- Charger Robotics -");
-        telemetry.addLine("- DON'T TOUCH THAT RYAN! -");
+        telemetryManager.addLine("");
+        telemetryManager.addLine("- Charger Robotics -");
+        telemetryManager.addLine("- DON'T TOUCH THAT RYAN! -");
+
+        //drawRobot(robot.getFollower().getPose(), robotLook);
 
         telemetryManager.update(this.telemetry);
+    }
+
+    /**
+     * This draws a robot at a specified Pose with a specified
+     * look. The heading is represented as a line.
+     *
+     * @param pose  the Pose to draw the robot at
+     * @param style the parameters used to draw the robot with
+     */
+    public static void drawRobot(Pose pose, Style style) {
+        if (pose == null || Double.isNaN(pose.getX()) || Double.isNaN(pose.getY()) || Double.isNaN(pose.getHeading())) {
+            return;
+        }
+
+        panelsField.setStyle(style);
+        panelsField.moveCursor(pose.getX(), pose.getY());
+        panelsField.circle(9);
+
+        Vector v = pose.getHeadingAsUnitVector();
+        v.setMagnitude(v.getMagnitude() * 9);
+        double x1 = pose.getX() + v.getXComponent() / 2, y1 = pose.getY() + v.getYComponent() / 2;
+        double x2 = pose.getX() + v.getXComponent(), y2 = pose.getY() + v.getYComponent();
+
+        panelsField.setStyle(style);
+        panelsField.moveCursor(x1, y1);
+        panelsField.line(x2, y2);
     }
 
     public boolean isEndgame() {

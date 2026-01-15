@@ -5,23 +5,21 @@ import com.pedropathing.geometry.Pose;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
 import org.firstinspires.ftc.teamcode.robots.base.GamepadMapping;
-import org.firstinspires.ftc.teamcode.robots.base.StaticData;
 import org.firstinspires.ftc.teamcode.robots.base.opmodes.OpModeBase;
 import org.firstinspires.ftc.teamcode.robots.season.decode.jetfire.JetfireRobot;
 import org.firstinspires.ftc.teamcode.robots.season.decode.jetfire.JetfireStaticData;
 import org.firstinspires.ftc.teamcode.util.math.Angle;
 
-@TeleOp(name = "RESET")
+@TeleOp(name = "RESET Turntable")
 public class Reset extends OpModeBase<JetfireRobot> {
 
     @Override
+    public void init() {
+        JetfireStaticData.lastTurretHeading = new Angle(0);
+    }
+
+    @Override
     public void start() {
-        super.start();
-
-        JetfireStaticData.lastTurretHeading = null;
-        robot.getFollower().setPose(new Pose(0, 0, 0));
-        StaticData.lastPose = new Pose();
-
         requestOpModeStop();
     }
 
@@ -37,7 +35,7 @@ public class Reset extends OpModeBase<JetfireRobot> {
 
     @Override
     protected JetfireRobot instantiateRobot() {
-        return new JetfireRobot();
+        return null;
     }
 
     @Override

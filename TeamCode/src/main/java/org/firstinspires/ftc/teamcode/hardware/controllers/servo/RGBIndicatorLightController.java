@@ -41,7 +41,7 @@ public class RGBIndicatorLightController {
             case AZURE -> 0.555;
             case BLUE -> 0.611;
             case INDIGO -> 0.666;
-            case VIOLET -> 0.722;
+            case VIOLET -> 0.719;
             case WHITE -> 1;
         });
     }

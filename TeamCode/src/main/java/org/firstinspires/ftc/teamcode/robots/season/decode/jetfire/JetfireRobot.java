@@ -61,14 +61,14 @@ public class JetfireRobot extends RobotBase {
 
     // TURNTABLE
     public static PIDFCoefficients turntablePIDFCoefficients = new PIDFCoefficients(0.051, 0, 0.0012, 0);
-    public static double CLOSE_ZONE_TURNTABLE_OFFSET_DEG = -3;
-    public static double FAR_ZONE_TURNTABLE_OFFSET_DEG = -7; // neg is right, pos is left, blue alliance
+    public static double CLOSE_ZONE_TURNTABLE_OFFSET_DEG = -2;
+    public static double FAR_ZONE_TURNTABLE_OFFSET_DEG = -4; // neg is right, pos is left, blue alliance
     // TODO: Check left and right neg and pos
 
     // INTAKE
     DcMotorEx intakeMotor;
     public static double INTAKE_POWER = 1;
-    public static double REVERSE_INTAKE_POWER = -0.5;
+    public static double REVERSE_INTAKE_POWER = -0.6;
     public enum IntakeMode {
         ON,
         OFF
@@ -101,7 +101,8 @@ public class JetfireRobot extends RobotBase {
 
     // COOLDOWN
     Timer laucnhCooldownTimer = new Timer();
-    public static int LAUNCH_COOLDOWN_MS = 300;
+    public static int LAUNCH_COOLDOWN_MS = 400; // 400
+    public static int INTAKE_COOLDOWN_MS = 150; // 150
     // 166 for half second, 250 for 3/4 second
 
     // MARGINS & DELAYS
@@ -113,6 +114,10 @@ public class JetfireRobot extends RobotBase {
     // LIGHTS
     RGBIndicatorLightController indicatorLightController;
     GoBildaPrismDriver prism;
+
+    Timer indicateTimer = new Timer();
+    private static final int INDICATE_TIME_MS = 500;
+    RGBIndicatorLightController.Color tempIndicateColor = RGBIndicatorLightController.Color.OFF;
 
     // TUNING
     public static boolean TUNING = false;
@@ -206,12 +211,11 @@ public class JetfireRobot extends RobotBase {
         TreeMap<Double, Double> flywheelSpeedByDistanceMap = new TreeMap<>();
         // INCH, RPM
         flywheelSpeedByDistanceMap.put(40.0, 2000.0);
-        flywheelSpeedByDistanceMap.put(66.0, 2250.0);
-        flywheelSpeedByDistanceMap.put(81.0, 2350.0);
+        flywheelSpeedByDistanceMap.put(66.0, 2200.0);
+        flywheelSpeedByDistanceMap.put(81.0, 2300.0);
         flywheelSpeedByDistanceMap.put(105.0, 2500.0);
         flywheelSpeedByDistanceMap.put(120.0, 2600.0);
         flywheelSpeedByDistanceMap.put(130.0, 3000.0);
-        flywheelSpeedByDistanceMap.put(160.0, 3200.0);
         flywheelVelocityByDistanceInterpolator = new LinearInterpolator(flywheelSpeedByDistanceMap);
 
         TreeMap<Double, Double> hoodAngleByDistanceMap = new TreeMap<>();
@@ -222,7 +226,6 @@ public class JetfireRobot extends RobotBase {
         hoodAngleByDistanceMap.put(105.0, 41.0);
         hoodAngleByDistanceMap.put(120.0, 41.0);
         hoodAngleByDistanceMap.put(130.0, 41.0);
-        hoodAngleByDistanceMap.put(160.0, 41.0);
         hoodAngleByDistanceInterpolator = new LinearInterpolator(hoodAngleByDistanceMap);
 
         TreeMap<Double, Double> timeOfFlightByDistanceMap = new TreeMap<>();
@@ -233,7 +236,6 @@ public class JetfireRobot extends RobotBase {
         timeOfFlightByDistanceMap.put(105.0, 2400.0);
         timeOfFlightByDistanceMap.put(120.0, 2700.0);
         timeOfFlightByDistanceMap.put(130.0, 3300.0);
-        timeOfFlightByDistanceMap.put(160.0, 3300.0);
         timeOfFlightByDistanceInterpolator = new LinearInterpolator(timeOfFlightByDistanceMap);
 
         for (int i = 0; i <= 2; i++) {
@@ -243,12 +245,34 @@ public class JetfireRobot extends RobotBase {
             );
         }
 
-        PrismAnimations.Solid solid = new PrismAnimations.Solid(Color.RED);
-        solid.setBrightness(50);
-        solid.setStartIndex(0);
-        solid.setStopIndex(23);
+//        PrismAnimations.Solid solid = new PrismAnimations.Solid(StaticData.allianceColor == OpModeBase.AllianceColor.RED ? Color.RED : Color.BLUE);
+//        solid.setBrightness(50);
+//        solid.setStartIndex(0);
+//        solid.setStopIndex(23);
+//
+//        PrismAnimations.RainbowSnakes rainbowSnakes = new PrismAnimations.RainbowSnakes();
+//        rainbowSnakes.setNumberOfSnakes(1);
+//        rainbowSnakes.setSnakeLength(255);
+//        rainbowSnakes.setSpacingBetween(0);
+//        rainbowSnakes.setSpeed(0.25f);
+//        //rainbowSnakes.setStartIndex(0);
+
+        PrismAnimations.DroidScan droidScan = new PrismAnimations.DroidScan();
+        droidScan.setPrimaryColor(StaticData.allianceColor == OpModeBase.AllianceColor.RED ? Color.RED : Color.BLUE);
+        droidScan.setSpeed(0.05f);
+        //droidScan.setIndexes(0, 36);
+        droidScan.setEyeWidth(4);
+
         prism = hardwareMap.get(GoBildaPrismDriver.class,"prism");
-        prism.insertAndUpdateAnimation(GoBildaPrismDriver.LayerHeight.LAYER_0, solid);
+
+        droidScan.setIndexes(1, 17);
+        prism.insertAndUpdateAnimation(GoBildaPrismDriver.LayerHeight.LAYER_0, droidScan);
+        droidScan.setIndexes(18, 36);
+        prism.insertAndUpdateAnimation(GoBildaPrismDriver.LayerHeight.LAYER_1, droidScan);
+//        droidScan.setIndexes(18, 30);
+//        prism.insertAndUpdateAnimation(GoBildaPrismDriver.LayerHeight.LAYER_2, droidScan);
+//        droidScan.setIndexes(30, 36);
+//        prism.insertAndUpdateAnimation(GoBildaPrismDriver.LayerHeight.LAYER_3, droidScan);
     }
 
     @Override
@@ -290,13 +314,14 @@ public class JetfireRobot extends RobotBase {
         );
 
         double chamberDistanceMM = chamberDistanceSensor.getDistance(DistanceUnit.MM);
-        //chamberKalmanFilter.update(chamberDistanceMM, 0);
-        //double filteredChamberDistanceMM = chamberKalmanFilter.getState();
+        chamberKalmanFilter.update(chamberDistanceMM, 0);
+        double filteredChamberDistanceMM = chamberKalmanFilter.getState();
         boolean isArtifactLoaded = chamberDistanceMM < ARTIFACT_DETECTION_THRESHOLD_MM;
 
         boolean isCooldownOver = laucnhCooldownTimer.getElapsedTime() > LAUNCH_COOLDOWN_MS;
+        boolean isIntakeCooldownOver = laucnhCooldownTimer.getElapsedTime() > INTAKE_COOLDOWN_MS;
 
-        isReadyToShoot = isFlywheelReady && isTurntableReady && isArtifactLoaded && isCooldownOver;
+        isReadyToShoot = isTurntableReady && isArtifactLoaded && isCooldownOver; // isFlywheelReady
 
         long launchDelay = deltaTimeMs + LAUNCH_DELAY_MS;
 
@@ -340,9 +365,7 @@ public class JetfireRobot extends RobotBase {
         //Angle driverOffset = new Angle(driverTurntableOffset, false);
         //Angle turntableOffset = interpolatedOffset//.plus(driverOffset, Angle.AngleSystem.SIGNED);
 
-        Angle targetTurntableHeading = (autoAimTurntable ? virtualGoalHeading.minus(new Angle(currentPose.getHeading()), Angle.AngleSystem.SIGNED)
-                : new Angle(0)
-        ).plus(interpolatedOffset, Angle.AngleSystem.SIGNED);
+        Angle targetTurntableHeading = autoAimTurntable ? virtualGoalHeading.minus(new Angle(currentPose.getHeading()), Angle.AngleSystem.SIGNED).plus(interpolatedOffset, Angle.AngleSystem.SIGNED) : new Angle(0);
 
         Angle hoodAngle = new Angle(hoodAngleByDistanceInterpolator.interpolate(virtualDistanceFromGoal), false);
 
@@ -363,12 +386,25 @@ public class JetfireRobot extends RobotBase {
             );
         }
 
-        intakeMotor.setPower(isCooldownOver ? switch (intakeMode) {
+        intakeMotor.setPower(isIntakeCooldownOver ? switch (intakeMode) {
             case ON -> reverseIntake ? REVERSE_INTAKE_POWER : INTAKE_POWER;
             case OFF -> 0;
         } : 0);
 
-        indicatorLightController.setColor(isReadyToShoot ? RGBIndicatorLightController.Color.GREEN : RGBIndicatorLightController.Color.RED);
+
+        if (indicateTimer.getElapsedTime() < INDICATE_TIME_MS) {
+            indicatorLightController.setColor(tempIndicateColor);
+        } else {
+            if (!isTurntableReady) {
+                indicatorLightController.setColor(RGBIndicatorLightController.Color.ORANGE);
+            } else if (!isArtifactLoaded) {
+                indicatorLightController.setColor(RGBIndicatorLightController.Color.RED);
+            } else {
+                indicatorLightController.setColor(RGBIndicatorLightController.Color.GREEN);
+            }
+        }
+
+
 
         limelightHandler.update(Math.toDegrees(currentPose.getHeading()));
         transferServoController.update();
@@ -376,7 +412,7 @@ public class JetfireRobot extends RobotBase {
         // autoFire.update();
 
         telemetry.addLine("- LIMELIGHT -");
-        //telemetry.addData("Pose", limelightHandler.getPose().toString());
+        telemetry.addData("Pose", limelightHandler.getPose() == null ? "N/A" : limelightHandler.getPose().toString());
         telemetry.addLine("");
         telemetry.addLine("- OFFSETS -");
         telemetry.addData("isInFarZone", isInFarZone);
@@ -411,6 +447,7 @@ public class JetfireRobot extends RobotBase {
         telemetry.addLine("");
         telemetry.addLine("- DISTANCE SENSOR -");
         telemetry.addData("Chamber Distance", chamberDistanceMM);
+        telemetry.addData("Filtered Chamber Distance", filteredChamberDistanceMM);
         //telemetry.addData("Filtered Chamber Distance", filteredChamberDistanceMM);
     }
 
@@ -477,6 +514,11 @@ public class JetfireRobot extends RobotBase {
 
     public void setChamberKalmanFilter(KalmanFilter chamberKalmanFilter) {
         this.chamberKalmanFilter = chamberKalmanFilter;
+    }
+
+    public void indicate(RGBIndicatorLightController.Color color) {
+        tempIndicateColor = color;
+        indicateTimer.resetTimer();
     }
 
     public boolean isInFarZone() {

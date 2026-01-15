@@ -41,9 +41,9 @@ public abstract class BaseAuto<Robot extends RobotBase> extends OpModeBase<Robot
     public void loop() {
         autonomousPathUpdate(pathState);
 
-        telemetry.addLine("- AUTO -");
-        telemetry.addData("Path State", pathState);
-        telemetry.addLine();
+        telemetryManager.addLine("- AUTO -");
+        telemetryManager.addData("Path State", pathState);
+        telemetryManager.addLine("");
 
         super.loop();
     }
