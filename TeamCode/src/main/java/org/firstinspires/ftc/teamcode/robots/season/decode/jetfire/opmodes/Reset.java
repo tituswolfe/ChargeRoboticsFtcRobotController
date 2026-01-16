@@ -1,21 +1,18 @@
 package org.firstinspires.ftc.teamcode.robots.season.decode.jetfire.opmodes;
 
-import com.pedropathing.follower.Follower;
-import com.pedropathing.geometry.Pose;
+import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 
-import org.firstinspires.ftc.teamcode.robots.base.GamepadMapping;
-import org.firstinspires.ftc.teamcode.robots.base.opmodes.OpModeBase;
-import org.firstinspires.ftc.teamcode.robots.season.decode.jetfire.JetfireRobot;
 import org.firstinspires.ftc.teamcode.robots.season.decode.jetfire.JetfireStaticData;
 import org.firstinspires.ftc.teamcode.util.math.Angle;
 
 @TeleOp(name = "RESET Turntable")
-public class Reset extends OpModeBase<JetfireRobot> {
+public class Reset extends OpMode {
 
     @Override
     public void init() {
         JetfireStaticData.lastTurretHeading = new Angle(0);
+        telemetry.addLine("TURNTABLE HAS BEEN ZEROED");
     }
 
     @Override
@@ -24,37 +21,7 @@ public class Reset extends OpModeBase<JetfireRobot> {
     }
 
     @Override
-    public void opModeTypeSpecificInit() {
+    public void loop() {
 
-    }
-
-    @Override
-    public void buildPaths(Follower follower) {
-
-    }
-
-    @Override
-    protected JetfireRobot instantiateRobot() {
-        return null;
-    }
-
-    @Override
-    protected Pose instantiateStartPose() {
-        return null;
-    }
-
-    @Override
-    protected AllianceColor instantiateAllianceColor() {
-        return null;
-    }
-
-    @Override
-    protected GamepadMapping<JetfireRobot> instantiateGamepadMapping1() {
-        return null;
-    }
-
-    @Override
-    protected GamepadMapping<JetfireRobot> instantiateGamepadMapping2() {
-        return null;
     }
 }

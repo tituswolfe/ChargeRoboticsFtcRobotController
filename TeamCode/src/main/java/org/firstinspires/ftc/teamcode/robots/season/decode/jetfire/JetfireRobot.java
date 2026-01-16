@@ -57,13 +57,13 @@ public class JetfireRobot extends RobotBase {
         OFF
     }
     private FlywheelMode flywheelMode = FlywheelMode.OFF;
-    public static PIDFCoefficients flywheelPIDFCoefficients = new PIDFCoefficients(0.0027, 0, 0, 0.0002);
+    //public static PIDFCoefficients flywheelPIDFCoefficients = new PIDFCoefficients(0.0027, 0, 0, 0.0002);
+    public static PIDFCoefficients flywheelPIDFCoefficients = new PIDFCoefficients(0.007, 0, 0, 0.0002);
 
     // TURNTABLE
     public static PIDFCoefficients turntablePIDFCoefficients = new PIDFCoefficients(0.051, 0, 0.0012, 0);
-    public static double CLOSE_ZONE_TURNTABLE_OFFSET_DEG = -2;
-    public static double FAR_ZONE_TURNTABLE_OFFSET_DEG = -4; // neg is right, pos is left, blue alliance
-    // TODO: Check left and right neg and pos
+    public static double CLOSE_ZONE_TURNTABLE_OFFSET_DEG = 2;
+    public static double FAR_ZONE_TURNTABLE_OFFSET_DEG = -1; // neg toward opp alliance, pos toward your alliance
 
     // INTAKE
     DcMotorEx intakeMotor;
@@ -109,7 +109,7 @@ public class JetfireRobot extends RobotBase {
     public static double FLYWHEEL_VELOCITY_MARGIN_RPM = 60;
     public static double TURNTABLE_HEADING_MARGIN_DEG = 2;
 
-    public static long LAUNCH_DELAY_MS = 150;
+    public static long LAUNCH_DELAY_MS = 80;
 
     // LIGHTS
     RGBIndicatorLightController indicatorLightController;
@@ -129,6 +129,8 @@ public class JetfireRobot extends RobotBase {
     public static Pose targetGoal;
     private boolean isReadyToShoot = false;
     private boolean isInFarZone = false;
+    private boolean isFlywheelReady = false;
+    private boolean isArtifactLoaded;
 
     private final StateMachine autoFire = new StateMachine();
 
@@ -139,7 +141,7 @@ public class JetfireRobot extends RobotBase {
     @Override
     public void init(HardwareMap hardwareMap, Pose startPose, OpModeBase.AllianceColor allianceColor) {
         super.init(hardwareMap, startPose, allianceColor);
-        targetGoal = new Pose(-72, allianceColor == OpModeBase.AllianceColor.RED ? 72 : -72);
+        targetGoal = new Pose(-67, allianceColor == OpModeBase.AllianceColor.RED ? 67 : -67);
     }
 
     @Override
@@ -210,32 +212,32 @@ public class JetfireRobot extends RobotBase {
 
         TreeMap<Double, Double> flywheelSpeedByDistanceMap = new TreeMap<>();
         // INCH, RPM
-        flywheelSpeedByDistanceMap.put(40.0, 2000.0);
-        flywheelSpeedByDistanceMap.put(66.0, 2200.0);
-        flywheelSpeedByDistanceMap.put(81.0, 2300.0);
-        flywheelSpeedByDistanceMap.put(105.0, 2500.0);
-        flywheelSpeedByDistanceMap.put(120.0, 2600.0);
-        flywheelSpeedByDistanceMap.put(130.0, 3000.0);
+        flywheelSpeedByDistanceMap.put(33.0, 2000.0);
+        flywheelSpeedByDistanceMap.put(59.0, 2200.0);
+        flywheelSpeedByDistanceMap.put(74.0, 2400.0);
+        flywheelSpeedByDistanceMap.put(98.0, 2500.0);
+        flywheelSpeedByDistanceMap.put(113.0, 2600.0);
+        flywheelSpeedByDistanceMap.put(123.0, 3000.0);
         flywheelVelocityByDistanceInterpolator = new LinearInterpolator(flywheelSpeedByDistanceMap);
 
         TreeMap<Double, Double> hoodAngleByDistanceMap = new TreeMap<>();
         // INCH, DEGREES
-        hoodAngleByDistanceMap.put(40.0, 24.0);
-        hoodAngleByDistanceMap.put(66.0, 31.0);
-        hoodAngleByDistanceMap.put(81.0, 38.0);
-        hoodAngleByDistanceMap.put(105.0, 41.0);
-        hoodAngleByDistanceMap.put(120.0, 41.0);
-        hoodAngleByDistanceMap.put(130.0, 41.0);
+        hoodAngleByDistanceMap.put(33.0, 24.0);
+        hoodAngleByDistanceMap.put(59.0, 31.0);
+        hoodAngleByDistanceMap.put(74.0, 38.0);
+        hoodAngleByDistanceMap.put(98.0, 41.0);
+        hoodAngleByDistanceMap.put(113.0, 41.0);
+        hoodAngleByDistanceMap.put(123.0, 41.0);
         hoodAngleByDistanceInterpolator = new LinearInterpolator(hoodAngleByDistanceMap);
 
         TreeMap<Double, Double> timeOfFlightByDistanceMap = new TreeMap<>();
         // INCH, MILLS
-        timeOfFlightByDistanceMap.put(40.0, 1000.0);
-        timeOfFlightByDistanceMap.put(66.0, 1500.0);
-        timeOfFlightByDistanceMap.put(81.0, 2000.0);
-        timeOfFlightByDistanceMap.put(105.0, 2400.0);
-        timeOfFlightByDistanceMap.put(120.0, 2700.0);
-        timeOfFlightByDistanceMap.put(130.0, 3300.0);
+        timeOfFlightByDistanceMap.put(33.0, 500.0);
+        timeOfFlightByDistanceMap.put(59.0, 640.0);
+        timeOfFlightByDistanceMap.put(74.0, 730.0);
+        timeOfFlightByDistanceMap.put(98.0, 750.0);
+        timeOfFlightByDistanceMap.put(113.0, 820.0);
+        timeOfFlightByDistanceMap.put(123.0, 840.0);
         timeOfFlightByDistanceInterpolator = new LinearInterpolator(timeOfFlightByDistanceMap);
 
         for (int i = 0; i <= 2; i++) {
@@ -245,22 +247,9 @@ public class JetfireRobot extends RobotBase {
             );
         }
 
-//        PrismAnimations.Solid solid = new PrismAnimations.Solid(StaticData.allianceColor == OpModeBase.AllianceColor.RED ? Color.RED : Color.BLUE);
-//        solid.setBrightness(50);
-//        solid.setStartIndex(0);
-//        solid.setStopIndex(23);
-//
-//        PrismAnimations.RainbowSnakes rainbowSnakes = new PrismAnimations.RainbowSnakes();
-//        rainbowSnakes.setNumberOfSnakes(1);
-//        rainbowSnakes.setSnakeLength(255);
-//        rainbowSnakes.setSpacingBetween(0);
-//        rainbowSnakes.setSpeed(0.25f);
-//        //rainbowSnakes.setStartIndex(0);
-
         PrismAnimations.DroidScan droidScan = new PrismAnimations.DroidScan();
         droidScan.setPrimaryColor(StaticData.allianceColor == OpModeBase.AllianceColor.RED ? Color.RED : Color.BLUE);
         droidScan.setSpeed(0.05f);
-        //droidScan.setIndexes(0, 36);
         droidScan.setEyeWidth(4);
 
         prism = hardwareMap.get(GoBildaPrismDriver.class,"prism");
@@ -269,10 +258,6 @@ public class JetfireRobot extends RobotBase {
         prism.insertAndUpdateAnimation(GoBildaPrismDriver.LayerHeight.LAYER_0, droidScan);
         droidScan.setIndexes(18, 36);
         prism.insertAndUpdateAnimation(GoBildaPrismDriver.LayerHeight.LAYER_1, droidScan);
-//        droidScan.setIndexes(18, 30);
-//        prism.insertAndUpdateAnimation(GoBildaPrismDriver.LayerHeight.LAYER_2, droidScan);
-//        droidScan.setIndexes(30, 36);
-//        prism.insertAndUpdateAnimation(GoBildaPrismDriver.LayerHeight.LAYER_3, droidScan);
     }
 
     @Override
@@ -286,8 +271,8 @@ public class JetfireRobot extends RobotBase {
 
         Pose currentPose = follower.getPose();
         Vector velocity = follower.getVelocity();
-        double angularVelocity = follower.getAngularVelocity();
-        Vector acceleration = follower.getAcceleration();
+        double angularVelocity = 0; //follower.getAngularVelocity();
+        Vector acceleration = new Vector(0, 0); // follower.getAcceleration();
         double angularAcceleration = 0;
 
         Pose displacedPose = targetGoal.minus(currentPose);
@@ -301,7 +286,7 @@ public class JetfireRobot extends RobotBase {
         JetfireStaticData.lastTurretHeading = relativeTurntableHeading;
         isInFarZone = currentPose.getX() > 24;
 
-        boolean isFlywheelReady = MathUtil.isWithinRange(
+        isFlywheelReady = MathUtil.isWithinRange(
                 turret.flywheelController().getVelocity(),
                 turret.flywheelController().getTargetVelocity(),
                 FLYWHEEL_VELOCITY_MARGIN_RPM
@@ -314,9 +299,7 @@ public class JetfireRobot extends RobotBase {
         );
 
         double chamberDistanceMM = chamberDistanceSensor.getDistance(DistanceUnit.MM);
-        chamberKalmanFilter.update(chamberDistanceMM, 0);
-        double filteredChamberDistanceMM = chamberKalmanFilter.getState();
-        boolean isArtifactLoaded = chamberDistanceMM < ARTIFACT_DETECTION_THRESHOLD_MM;
+        isArtifactLoaded = chamberDistanceMM < ARTIFACT_DETECTION_THRESHOLD_MM;
 
         boolean isCooldownOver = laucnhCooldownTimer.getElapsedTime() > LAUNCH_COOLDOWN_MS;
         boolean isIntakeCooldownOver = laucnhCooldownTimer.getElapsedTime() > INTAKE_COOLDOWN_MS;
@@ -348,7 +331,9 @@ public class JetfireRobot extends RobotBase {
         );
 
         double virtualDistanceFromGoal = futurePose.distanceFrom(virtualGoal);
-        Angle virtualGoalHeading = new Angle(Math.atan2(displacedPose.getY(), displacedPose.getX()));
+
+        Pose virtualDisplacedPose = virtualGoal.minus(futurePose);
+        Angle virtualGoalHeading = new Angle(Math.atan2(virtualDisplacedPose.getY(), virtualDisplacedPose.getX()));
 
         // UPDATE HARDWARE
         double flywheelSpeed = switch (flywheelMode) {
@@ -361,9 +346,6 @@ public class JetfireRobot extends RobotBase {
                 interpolatedOffsetDeg * ((StaticData.allianceColor == OpModeBase.AllianceColor.BLUE) ? 1 : -1),
                 false
         );
-
-        //Angle driverOffset = new Angle(driverTurntableOffset, false);
-        //Angle turntableOffset = interpolatedOffset//.plus(driverOffset, Angle.AngleSystem.SIGNED);
 
         Angle targetTurntableHeading = autoAimTurntable ? virtualGoalHeading.minus(new Angle(currentPose.getHeading()), Angle.AngleSystem.SIGNED).plus(interpolatedOffset, Angle.AngleSystem.SIGNED) : new Angle(0);
 
@@ -447,7 +429,6 @@ public class JetfireRobot extends RobotBase {
         telemetry.addLine("");
         telemetry.addLine("- DISTANCE SENSOR -");
         telemetry.addData("Chamber Distance", chamberDistanceMM);
-        telemetry.addData("Filtered Chamber Distance", filteredChamberDistanceMM);
         //telemetry.addData("Filtered Chamber Distance", filteredChamberDistanceMM);
     }
 
@@ -516,6 +497,10 @@ public class JetfireRobot extends RobotBase {
         this.chamberKalmanFilter = chamberKalmanFilter;
     }
 
+    public Turret getTurret() {
+        return turret;
+    }
+
     public void indicate(RGBIndicatorLightController.Color color) {
         tempIndicateColor = color;
         indicateTimer.resetTimer();
@@ -523,6 +508,14 @@ public class JetfireRobot extends RobotBase {
 
     public boolean isInFarZone() {
         return isInFarZone;
+    }
+
+    public boolean isFlywheelReady() {
+        return isFlywheelReady;
+    }
+
+    public boolean isArtifactLoaded() {
+        return isArtifactLoaded;
     }
 
     @Override

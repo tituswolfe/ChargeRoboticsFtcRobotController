@@ -122,6 +122,7 @@ public abstract class RobotBase {
             telemetry.addData("Field Centric Offset (Deg)", fieldCentricOffset.getAngle(Angle.AngleUnit.DEGREES, Angle.AngleSystem.SIGNED_180_WRAPPED));
             telemetry.addData("isSlowMode", isSlowMode);
             telemetry.addData("Velocity Magnitude", follower.getVelocity().getMagnitude());
+            telemetry.addData("Velocity Magnitude", follower.getAcceleration().getMagnitude());
             telemetry.addLine("");
 
             StaticData.lastPose = follower.getPose();

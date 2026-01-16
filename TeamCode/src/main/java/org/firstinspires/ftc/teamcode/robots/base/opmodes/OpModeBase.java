@@ -85,7 +85,7 @@ public abstract class OpModeBase<Robot extends RobotBase> extends OpMode {
 
     @Override
     public void init_loop() {
-        super.init_loop();
+        //super.init_loop();
     }
 
     public abstract void opModeTypeSpecificInit();

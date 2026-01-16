@@ -11,7 +11,7 @@ import org.firstinspires.ftc.teamcode.util.math.MathUtil;
 public class TurntableMotorController extends MotorController {
     private final Angle maxPositiveLimit;
     private final Angle minNegativeLimit;
-    private final Angle startAngle;
+    private Angle startAngle;
     private final boolean reversePower;
 
     private Angle targetHeading = new Angle(0);
@@ -66,5 +66,13 @@ public class TurntableMotorController extends MotorController {
 
     public Angle getHeading() {
         return new Angle(dcMotorEx.getCurrentPosition() / ticksPerOutputRadian).plus(startAngle, Angle.AngleSystem.SIGNED_180_WRAPPED);
+    }
+
+    public void setStartAngle(Angle startAngle) {
+        this.startAngle = startAngle;
+    }
+
+    public Angle getStartAngle() {
+        return startAngle;
     }
 }

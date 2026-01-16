@@ -21,8 +21,8 @@ public class BlueClose extends BaseAuto<JetfireRobot> {
     Pose secondLineFinishPose = new Pose(11.5, -46, Math.toRadians(-90));
 
     Pose gateToShootControlPoint = new Pose(12, -34);
-    Pose preOpenGatePose = new Pose(11, -51, Math.toRadians(-118));
-    Pose openGatePose = new Pose(11, -56, Math.toRadians(-118));
+    Pose preOpenGatePose = new Pose(12, -51, Math.toRadians(-126));
+    Pose openGatePose = new Pose(12, -58.2, Math.toRadians(-126));
 
     Pose firstLineStartPose = new Pose(-10, -27.5, Math.toRadians(-90));
     Pose firstLineFinishPose = new Pose(-10, -45, Math.toRadians(-90));
@@ -32,19 +32,11 @@ public class BlueClose extends BaseAuto<JetfireRobot> {
     PathChain shootPreload;
     PathChain cycleLine2;
     PathChain cycleLine1;
-    //PathChain shootPath2;
 
     PathChain openGatePath;
     PathChain shootFromGatePath;
 
-    // PathChain finishPath;
-
     int returnPathState = 0;
-
-    // REVERSE INTAKE BETWEEN LINES
-
-    // TODO: Pose optimsation
-    // TODO: Path optimzation
 
     @Override
     public void autonomousPathUpdate(int pathState) {
@@ -57,7 +49,7 @@ public class BlueClose extends BaseAuto<JetfireRobot> {
                 break;
             case 1:
                 // SHOOT
-                if (actionTimer.getElapsedTime() > 1500) {
+                if (robot.isFlywheelReady()) {
                     returnPathState = 2;
                     setPathState(20, true);
                 }
@@ -131,7 +123,7 @@ public class BlueClose extends BaseAuto<JetfireRobot> {
                 }
                 break;
             case 23:
-                if (actionTimer.getElapsedTime() > 150) {
+                if (actionTimer.getElapsedTime() > 100) {
                     setPathState(returnPathState, true);
                 }
                 break;
@@ -143,7 +135,7 @@ public class BlueClose extends BaseAuto<JetfireRobot> {
                 setPathState(31, true);
                 break;
             case 31:
-                if (!robot.getFollower().isBusy() && actionTimer.getElapsedTime() > 4000) {
+                if (!robot.getFollower().isBusy() && actionTimer.getElapsedTime() > 3750) {
                     robot.getFollower().followPath(shootFromGatePath);
                     setPathState(32, true);
                 }
@@ -186,11 +178,6 @@ public class BlueClose extends BaseAuto<JetfireRobot> {
         openGatePath = follower.pathBuilder()
                 .addPath(new BezierCurve(shootPose, gateToShootControlPoint, preOpenGatePose))
                 .setLinearHeadingInterpolation(shootPose.getHeading(), preOpenGatePose.getHeading())
-
-//                .addPath(new BezierLine(shootPose, secondLineStartPose))
-//                .setLinearHeadingInterpolation(shootPose.getHeading(), secondLineStartPose.getHeading())
-//                .addPath(new BezierLine(secondLineStartPose, preOpenGatePose))
-//                .setLinearHeadingInterpolation(secondLineStartPose.getHeading(), preOpenGatePose.getHeading())
                 .addPath(new BezierLine(preOpenGatePose, openGatePose))
                 .setLinearHeadingInterpolation(preOpenGatePose.getHeading(), openGatePose.getHeading())
                 .build();
@@ -198,12 +185,6 @@ public class BlueClose extends BaseAuto<JetfireRobot> {
         shootFromGatePath = follower.pathBuilder()
                 .addPath(new BezierCurve(openGatePose, gateToShootControlPoint, shootPose))
                 .setLinearHeadingInterpolation(openGatePose.getHeading(), shootPose.getHeading())
-//                .addPath(new BezierLine(openGatePose, preOpenGatePose))
-//                .setLinearHeadingInterpolation(openGatePose.getHeading(), preOpenGatePose.getHeading())
-//                .addPath(new BezierLine(preOpenGatePose, secondLineStartPose))
-//                .setLinearHeadingInterpolation(preOpenGatePose.getHeading(), secondLineStartPose.getHeading())
-//                .addPath(new BezierLine(secondLineStartPose, shootPose))
-//                .setLinearHeadingInterpolation(secondLineStartPose.getHeading(), shootPose.getHeading())
                 .build();
 
 //        finishPath = follower.pathBuilder()
