@@ -5,6 +5,7 @@ import com.pedropathing.util.Timer;
 
 import org.firstinspires.ftc.teamcode.robots.base.GamepadMapping;
 import org.firstinspires.ftc.teamcode.robots.base.RobotBase;
+import org.firstinspires.ftc.teamcode.robots.base.StaticData;
 
 public abstract class BaseAuto<Robot extends RobotBase> extends OpModeBase<Robot> {
     protected Timer pathTimer = new Timer();
@@ -25,9 +26,8 @@ public abstract class BaseAuto<Robot extends RobotBase> extends OpModeBase<Robot
     }
 
     @Override
-    public void updateTelemetry(TelemetryManager telemetry) {
-        telemetry.addData("Path State", pathState);
-        super.updateTelemetry(telemetry);
+    public void init() {
+        super.init();
     }
 
     @Override
@@ -40,6 +40,11 @@ public abstract class BaseAuto<Robot extends RobotBase> extends OpModeBase<Robot
     @Override
     public void loop() {
         autonomousPathUpdate(pathState);
+
+        telemetryManager.addLine("- AUTO -");
+        telemetryManager.addData("Path State", pathState);
+        telemetryManager.addLine("");
+
         super.loop();
     }
 

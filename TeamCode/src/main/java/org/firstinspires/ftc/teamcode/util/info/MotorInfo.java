@@ -9,5 +9,5 @@ public class MotorInfo {
 
     public final double ENCODER_RESOLUTION_PPR;
     public final double SPEED_RPM;
-    public final double TORQUE_KG_CM; //TODO: Unit class
+    public final double TORQUE_KG_CM;
 }

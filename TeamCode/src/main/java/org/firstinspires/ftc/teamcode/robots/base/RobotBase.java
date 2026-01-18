@@ -30,14 +30,18 @@
 package org.firstinspires.ftc.teamcode.robots.base;
 
 import com.bylazar.configurables.annotations.Configurable;
+import com.bylazar.telemetry.TelemetryManager;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
-import com.pedropathing.paths.PathBuilder;
+import com.pedropathing.util.Timer;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
+import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
+import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.teamcode.hardware.drivetrain.pedroPathing.Constants;
 import org.firstinspires.ftc.teamcode.robots.base.opmodes.OpModeBase;
+import org.firstinspires.ftc.teamcode.util.math.Angle;
 
 // - Dedication -
 // In memory of DraculaBase & Mr. Miller.
@@ -60,53 +64,33 @@ public abstract class RobotBase {
     protected Follower follower;
     public double speedFactor = 1;
     public boolean isRobotCentric = false;
-    public boolean isSlowMode = false;
-    public double fieldCentricOffset = 0;
-
+    public static boolean isSlowMode = false;
+    public Angle fieldCentricOffset;
     public static double slowSpeedFactor = 0.3;
 
 
-    private Limelight3A limelight3A;
 
     /**
      * Called in {@link OpModeBase#init()}
      * @param hardwareMap hardware map
-     * @param startPose start pose
      */
     public void init(HardwareMap hardwareMap, Pose startPose, OpModeBase.AllianceColor allianceColor) {
         fieldType = instantiateFieldType();
         follower = instantiateFollower(hardwareMap);
-        limelight3A = instantiateLimelight3A(hardwareMap);
         initHardware(hardwareMap);
-
-        if (allianceColor != null) {
-            StaticData.allianceColor = allianceColor;
-        } else if (StaticData.allianceColor == null) {
-            StaticData.allianceColor = OpModeBase.AllianceColor.BLUE; // DEFAULT TO BLUE
-        }
-
-        setAllianceColor(StaticData.allianceColor);
+        setFieldCentricOffset(allianceColor);
 
         if (follower != null) {
-            if (startPose == null) {
-                startPose = new Pose(0, 0, 0);
-            }
             follower.setStartingPose(startPose);
-            StaticData.lastPose = startPose;
             follower.update();
         }
     }
 
-    public void setAllianceColor(OpModeBase.AllianceColor allianceColor) {
-        StaticData.allianceColor = allianceColor;
-        switch(allianceColor) {
-            case RED:
-                fieldCentricOffset = Math.toRadians(90);
-                break;
-            case BLUE:
-                fieldCentricOffset = (fieldType == FieldType.DIAMOND) ? Math.toRadians(180) : Math.toRadians(-90);
-                break;
-        }
+    public void setFieldCentricOffset(OpModeBase.AllianceColor allianceColor) {
+        fieldCentricOffset = switch (allianceColor) {
+            case RED -> new Angle(90, false);
+            case BLUE -> new Angle((fieldType == FieldType.DIAMOND) ? 180 : -90, false);
+        };
     }
 
     /**
@@ -117,15 +101,30 @@ public abstract class RobotBase {
 
     /**
      * Activate any hardware to set or hold a starting configuration.
-     * This method is called in {@link com.qualcomm.robotcore.eventloop.opmode.Autonomous} during {@link #init}.
-     * This method is NOT called in {@link com.qualcomm.robotcore.eventloop.opmode.TeleOp}.
+     * This method is called in {@link Autonomous} during {@link #init}.
+     * This method is NOT called in {@link TeleOp}.
      * You cannot have any CONTINUOUS movement during init.
      */
     public abstract void startConfiguration();
 
-    public void updateHardwareStates() {
+    // public abstract void teleopStartHardware();
+
+    /**
+     * Update hardware states and telemetry. Do not {@link TelemetryManager#update()} in this method. Robot uses auto caching. do not get sensor data twice.
+     */
+    public void update(long deltaTimeMs, TelemetryManager telemetry) {
         if (follower != null) {
             follower.update();
+
+            telemetry.addLine("- DRIVETRAIN -");
+            telemetry.addData("Pose", follower.getPose().toString());
+            telemetry.addData("isRobotCentric", isRobotCentric);
+            telemetry.addData("Field Centric Offset (Deg)", fieldCentricOffset.getAngle(Angle.AngleUnit.DEGREES, Angle.AngleSystem.SIGNED_180_WRAPPED));
+            telemetry.addData("isSlowMode", isSlowMode);
+            telemetry.addData("Velocity Magnitude", follower.getVelocity().getMagnitude());
+            telemetry.addData("Velocity Magnitude", follower.getAcceleration().getMagnitude());
+            telemetry.addLine("");
+
             StaticData.lastPose = follower.getPose();
         }
     }
@@ -140,22 +139,11 @@ public abstract class RobotBase {
      */
     public abstract Follower instantiateFollower(HardwareMap hardwareMap);
 
-    /**
-     * @param hardwareMap hardwareMap
-     * @return {@link Limelight3A}
-     */
-    public abstract Limelight3A instantiateLimelight3A(HardwareMap hardwareMap);
-
-
     public FieldType getFieldType() {
         return fieldType;
     }
 
     public Follower getFollower() {
         return follower;
-    }
-
-    public Limelight3A getLimelight3A() {
-        return limelight3A;
     }
 }

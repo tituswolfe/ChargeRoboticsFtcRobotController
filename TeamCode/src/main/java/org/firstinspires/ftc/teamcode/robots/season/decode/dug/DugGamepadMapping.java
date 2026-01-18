@@ -1,17 +1,13 @@
-package org.firstinspires.ftc.teamcode.robots.season.decode.jetfire;
-
-
-import com.pedropathing.geometry.Pose;
+package org.firstinspires.ftc.teamcode.robots.season.decode.dug;
 
 import org.firstinspires.ftc.teamcode.robots.base.GamepadMapping;
-import org.firstinspires.ftc.teamcode.robots.base.StaticData;
-import org.firstinspires.ftc.teamcode.robots.base.opmodes.OpModeBase;
+import org.firstinspires.ftc.teamcode.util.math.Angle;
 
-public class JetFireGamepadMapping extends GamepadMapping<JetFireRobot> {
+public class DugGamepadMapping extends GamepadMapping<DugRobot> {
     boolean isIntakeActive = false;
     boolean headingLock = false;
 
-    public JetFireGamepadMapping(JetFireRobot decodeRobot) {
+    public DugGamepadMapping(DugRobot decodeRobot) {
         super(decodeRobot);
     }
 
@@ -22,7 +18,6 @@ public class JetFireGamepadMapping extends GamepadMapping<JetFireRobot> {
 
     @Override
     public void onBPressed() {
-        robot.setAllianceColor((StaticData.allianceColor == OpModeBase.AllianceColor.BLUE) ? OpModeBase.AllianceColor.RED : OpModeBase.AllianceColor.BLUE);
     }
 
     @Override
@@ -55,18 +50,18 @@ public class JetFireGamepadMapping extends GamepadMapping<JetFireRobot> {
                 leftX * robot.speedFactor,
                 (headingLock ? robot.getHeadingPIDFController().run() : rightX * robot.speedFactor),
                 robot.isRobotCentric,
-                (robot.isRobotCentric ? 0 : robot.fieldCentricOffset)
+                (robot.isRobotCentric ? 0 : robot.fieldCentricOffset.getAngle(Angle.AngleSystem.SIGNED))
         );
     }
 
     @Override
     public void leftTrigger(float val) {
         if (val > 0.1) {
-            robot.setIntakeMode(JetFireRobot.IntakeMode.REVERSE);
+            robot.setIntakeMode(DugRobot.IntakeMode.REVERSE);
         } else if (isIntakeActive) {
-            robot.setIntakeMode(JetFireRobot.IntakeMode.INTAKE);
+            robot.setIntakeMode(DugRobot.IntakeMode.INTAKE);
         } else {
-            robot.setIntakeMode(JetFireRobot.IntakeMode.OFF);
+            robot.setIntakeMode(DugRobot.IntakeMode.OFF);
         }
     }
 
@@ -83,7 +78,6 @@ public class JetFireGamepadMapping extends GamepadMapping<JetFireRobot> {
     @Override
     public void onRightTriggerPressed() {
         robot.launchArtifact();
-
     }
 
     @Override
@@ -100,9 +94,9 @@ public class JetFireGamepadMapping extends GamepadMapping<JetFireRobot> {
     public void onLeftBumperPressed() {
         isIntakeActive = !isIntakeActive;
         if (isIntakeActive) {
-            robot.setIntakeMode(JetFireRobot.IntakeMode.INTAKE);
+            robot.setIntakeMode(DugRobot.IntakeMode.INTAKE);
         } else {
-            robot.setIntakeMode(JetFireRobot.IntakeMode.OFF);
+            robot.setIntakeMode(DugRobot.IntakeMode.OFF);
         }
         // isIntakeActive = toggle(isIntakeActive, robot::setIntakeMode, robot::stopIntake);
     }
@@ -110,11 +104,10 @@ public class JetFireGamepadMapping extends GamepadMapping<JetFireRobot> {
     @Override
     public void onRightBumperPressed() {
         robot.setFlywheelSpeedMode(switch (robot.getFlywheelSpeedMode()) {
-            case AUTO -> JetFireRobot.FlywheelSpeedMode.OFF;
-            case MANUEL -> JetFireRobot.FlywheelSpeedMode.OFF;
-            case OFF -> JetFireRobot.FlywheelSpeedMode.AUTO;
+            case AUTO -> DugRobot.FlywheelSpeedMode.OFF;
+            case MANUEL -> DugRobot.FlywheelSpeedMode.OFF;
+            case OFF -> DugRobot.FlywheelSpeedMode.AUTO;
         });
-
     }
 
     @Override
