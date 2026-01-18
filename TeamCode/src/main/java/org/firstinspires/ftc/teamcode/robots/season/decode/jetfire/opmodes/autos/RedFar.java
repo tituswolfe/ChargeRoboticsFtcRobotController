@@ -22,7 +22,7 @@ public class RedFar extends BaseAuto<JetfireRobot> {
     Pose intakeHumanPlayerLine = new Pose(59.3, 59.1, Math.toRadians(90));
 
     Pose intakeFromHumanPlayerStart = new Pose(58, 57, Math.toRadians(120));
-    Pose intakeFromHumanPlayerFinish = new Pose(28, 57, Math.toRadians(120));
+    Pose intakeFromHumanPlayerFinish = new Pose(28 + 18, 57, Math.toRadians(120));
     Pose intakeFromHumanPlayerControlPoint = new Pose(20, 56.8, Math.toRadians(135));
 
     Pose endPose = new Pose(60, 35, Math.toRadians(180));

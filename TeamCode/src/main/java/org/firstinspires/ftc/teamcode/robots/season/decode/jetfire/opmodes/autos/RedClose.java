@@ -20,7 +20,7 @@ public class RedClose extends BaseAuto<JetfireRobot> {
     Pose secondLineFinishPose = new Pose(11.5, 46, Math.toRadians(90));
 
     Pose gateToShootControlPoint = new Pose(12, 34);
-    Pose preOpenGatePose = new Pose(12, 51, Math.toRadians(126));
+    Pose preOpenGatePose = new Pose(12, 50, Math.toRadians(126));
     Pose openGatePose = new Pose(12, 58.2, Math.toRadians(126));
 
     Pose firstLineStartPose = new Pose(-10, 27.5, Math.toRadians(90));
@@ -56,7 +56,7 @@ public class RedClose extends BaseAuto<JetfireRobot> {
                 break;
             case 1:
                 // SHOOT
-                if (robot.isFlywheelReady()) {
+                if (actionTimer.getElapsedTime() > 2000) {
                     returnPathState = 2;
                     setPathState(20, true);
                 }
@@ -142,7 +142,7 @@ public class RedClose extends BaseAuto<JetfireRobot> {
                 setPathState(31, true);
                 break;
             case 31:
-                if (!robot.getFollower().isBusy() && actionTimer.getElapsedTime() > 3750) {
+                if (!robot.getFollower().isBusy() && actionTimer.getElapsedTime() > 3750 || actionTimer.getElapsedTimeSeconds() > 5000) {
                     robot.getFollower().followPath(shootFromGatePath);
                     setPathState(32, true);
                 }

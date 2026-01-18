@@ -66,6 +66,7 @@ public abstract class OpModeBase<Robot extends RobotBase> extends OpMode {
 
         Pose startPose = Optional.ofNullable(instantiateStartPose())
                 .orElse(new Pose(0, 0));
+        StaticData.lastPose = startPose;
 
         AllianceColor allianceColor = Optional.ofNullable(instantiateAllianceColor())
                 .orElse(OpModeBase.AllianceColor.BLUE);
