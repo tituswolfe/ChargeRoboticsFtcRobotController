@@ -1,10 +1,12 @@
 package org.firstinspires.ftc.teamcode.robots.base.opmodes;
 
+
 import com.bylazar.field.FieldManager;
 import com.bylazar.field.PanelsField;
 import com.bylazar.field.Style;
 import com.bylazar.gamepad.PanelsGamepad;
 import com.bylazar.lights.PanelsLights;
+import com.bylazar.panels.Panels;
 import com.bylazar.telemetry.PanelsTelemetry;
 import com.bylazar.telemetry.TelemetryManager;
 import com.pedropathing.follower.Follower;
@@ -13,6 +15,7 @@ import com.pedropathing.math.Vector;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.pedropathing.util.Timer;
 
+import org.firstinspires.ftc.teamcode.hardware.drivetrain.pedroPathing.Drawing;
 import org.firstinspires.ftc.teamcode.robots.base.GamepadMapping;
 import org.firstinspires.ftc.teamcode.robots.base.RobotBase;
 import org.firstinspires.ftc.teamcode.robots.base.StaticData;
@@ -42,7 +45,7 @@ public abstract class OpModeBase<Robot extends RobotBase> extends OpMode {
         BLUE
     }
 
-    protected Timer opmodeTimer = new Timer();
+    protected static Timer opmodeTimer = new Timer();
     protected boolean isEndgame = false;
 
     private final Timer deltaTimer = new Timer();
@@ -52,7 +55,6 @@ public abstract class OpModeBase<Robot extends RobotBase> extends OpMode {
      */
     @Override
     public void init() {
-        // TODO: Panels field
         // TODO: Make sure gamepads driing don't interfer with each other
         // TODO: One static instance of robot and opmode etc.
 
@@ -73,6 +75,8 @@ public abstract class OpModeBase<Robot extends RobotBase> extends OpMode {
         StaticData.allianceColor = allianceColor;
 
         robot.init(hardwareMap, startPose, allianceColor);
+
+        Drawing.init();
 
         if (robot.getFollower() != null) {
             buildPaths(robot.getFollower());
@@ -114,40 +118,26 @@ public abstract class OpModeBase<Robot extends RobotBase> extends OpMode {
         telemetryManager.addLine("- Charger Robotics -");
         telemetryManager.addLine("- DON'T TOUCH THAT RYAN! -");
 
-        //drawRobot(robot.getFollower().getPose(), robotLook);
+
+        panelsField.update();
 
         telemetryManager.update(this.telemetry);
     }
 
-    /**
-     * This draws a robot at a specified Pose with a specified
-     * look. The heading is represented as a line.
-     *
-     * @param pose  the Pose to draw the robot at
-     * @param style the parameters used to draw the robot with
-     */
-    public static void drawRobot(Pose pose, Style style) {
-        if (pose == null || Double.isNaN(pose.getX()) || Double.isNaN(pose.getY()) || Double.isNaN(pose.getHeading())) {
-            return;
-        }
-
-        panelsField.setStyle(style);
-        panelsField.moveCursor(pose.getX(), pose.getY());
-        panelsField.circle(9);
-
-        Vector v = pose.getHeadingAsUnitVector();
-        v.setMagnitude(v.getMagnitude() * 9);
-        double x1 = pose.getX() + v.getXComponent() / 2, y1 = pose.getY() + v.getYComponent() / 2;
-        double x2 = pose.getX() + v.getXComponent(), y2 = pose.getY() + v.getYComponent();
-
-        panelsField.setStyle(style);
-        panelsField.moveCursor(x1, y1);
-        panelsField.line(x2, y2);
-    }
 
     public boolean isEndgame() {
         return isEndgame;
     }
+
+    public static long getOpModeElapsedTime() {
+        return opmodeTimer.getElapsedTime();
+    }
+
+    public static double getOpModeElapsedTimeSeconds() {
+        return opmodeTimer.getElapsedTimeSeconds();
+    }
+
+
 
     protected abstract Robot instantiateRobot();
     protected abstract Pose instantiateStartPose();

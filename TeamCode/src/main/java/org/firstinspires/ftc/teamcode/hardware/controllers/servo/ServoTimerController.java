@@ -7,8 +7,7 @@ public class ServoTimerController {
     private final Servo servo;
     private final Timer actionTimer = new Timer();
 //    private Timer cooldownTimer = new Timer();
- private int cooldownTimeMills;
-    private int transitTimeMills;
+    private int transitTimeMills = 0;
     private double resetPosition;
 
     public ServoTimerController(Servo servo, double initPos) {
@@ -24,26 +23,17 @@ public class ServoTimerController {
         actionTimer.resetTimer();
     }
 
-
-//    /**
-//     * @param position target position
-//     * @param transitTimeMills milliseconds to wait before going to resetPosition
-//     * @param resetPosition reset position
-//     * @param cooldownTimeMills milliseconds to wait after transit, before you can {@link #setPosition(double, int, double, int)} again
-//     */
-//    public void setPosition(double position, int transitTimeMills, double resetPosition, int cooldownTimeMills) {
-//        if (actionTimer.getElapsedTime() < this.transitTimeMills + this.cooldownTimeMills) return;
-//
-//        servo.setPosition(position);
-//        this.transitTimeMills = transitTimeMills;
-//        this.cooldownTimeMills = cooldownTimeMills;
-//        this.resetPosition = resetPosition;
-//
-//        actionTimer.resetTimer();
-//    }
-
     public void update() {
-        if (transitTimeMills < actionTimer.getElapsedTime() && servo.getPosition() != resetPosition) servo.setPosition(resetPosition);
+        if (transitTimeMills < actionTimer.getElapsedTime() && servo.getPosition() != resetPosition){
+            servo.setPosition(resetPosition);
+        }
+    }
+
+    public void setPosition(double position) {
+        servo.setPosition(position);
+        this.transitTimeMills = 0;
+        this.resetPosition = position;
+        actionTimer.resetTimer();
     }
 
     public Servo getServo() {

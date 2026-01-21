@@ -1,10 +1,11 @@
 package org.firstinspires.ftc.teamcode.robots.season.decode.jetfire;
 
-import org.firstinspires.ftc.teamcode.robots.base.GamepadMapping;
+import com.qualcomm.robotcore.hardware.Gamepad;
+import org.firstinspires.ftc.teamcode.robots.base.PrimaryDriverGamepadMapping;
 
-public class JetfireGamepadMapping extends GamepadMapping<JetfireRobot> {
-    public JetfireGamepadMapping(JetfireRobot dugRobot) {
-        super(dugRobot);
+public class JetfireGamepadMapping extends PrimaryDriverGamepadMapping<JetfireRobot> {
+    public JetfireGamepadMapping(JetfireRobot jetfireRobot, Gamepad gamepad) {
+        super(jetfireRobot, gamepad);
     }
 
     @Override
@@ -47,7 +48,10 @@ public class JetfireGamepadMapping extends GamepadMapping<JetfireRobot> {
 
     @Override
     public void rightTrigger(float val) {
-         if (val > 0.05 && robot.isReadyToShoot()) robot.fire();
+         if (val > 0.05 && robot.isReadyToShoot()){
+             robot.fire();
+             gamepad.rumble(200);
+         }
     }
 
     @Override

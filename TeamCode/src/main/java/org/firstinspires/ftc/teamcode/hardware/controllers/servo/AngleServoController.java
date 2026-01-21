@@ -21,15 +21,15 @@ public class AngleServoController extends ServoController {
 
     public void setTargetAngle(Angle angle) {
         Angle targetAngle = new Angle(MathUtil.clamp(
-                angle.getAngle(Angle.AngleSystem.SIGNED),
-                minLimit.getAngle(Angle.AngleSystem.SIGNED),
-                maxLimit.getAngle(Angle.AngleSystem.SIGNED)
+                angle.getAngle(Angle.AngleNormalization.NONE),
+                minLimit.getAngle(Angle.AngleNormalization.NONE),
+                maxLimit.getAngle(Angle.AngleNormalization.NONE)
         ));
 
-        servo.setPosition(targetAngle.minus(offset, Angle.AngleSystem.SIGNED).getAngle(Angle.AngleSystem.SIGNED) * percentagePerOutputRadian);
+        servo.setPosition(targetAngle.minus(offset, Angle.AngleNormalization.NONE).getAngle(Angle.AngleNormalization.NONE) * percentagePerOutputRadian);
     }
 
     public Angle getTargetAngle() {
-        return new Angle(servo.getPosition() / percentagePerOutputRadian).plus(offset, Angle.AngleSystem.SIGNED);
+        return new Angle(servo.getPosition() / percentagePerOutputRadian).plus(offset, Angle.AngleNormalization.NONE);
     }
 }

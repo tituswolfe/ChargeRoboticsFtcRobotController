@@ -33,13 +33,14 @@ import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.telemetry.TelemetryManager;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
-import com.pedropathing.util.Timer;
-import com.qualcomm.hardware.limelightvision.Limelight3A;
+import com.pedropathing.paths.PathChain;
+import com.pedropathing.util.PoseHistory;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 
 import org.firstinspires.ftc.teamcode.hardware.drivetrain.pedroPathing.Constants;
+import org.firstinspires.ftc.teamcode.hardware.drivetrain.pedroPathing.Drawing;
 import org.firstinspires.ftc.teamcode.robots.base.opmodes.OpModeBase;
 import org.firstinspires.ftc.teamcode.util.math.Angle;
 
@@ -67,8 +68,6 @@ public abstract class RobotBase {
     public static boolean isSlowMode = false;
     public Angle fieldCentricOffset;
     public static double slowSpeedFactor = 0.3;
-
-
 
     /**
      * Called in {@link OpModeBase#init()}
@@ -116,14 +115,20 @@ public abstract class RobotBase {
         if (follower != null) {
             follower.update();
 
+            Pose currentPose = follower.getPose();
+
             telemetry.addLine("- DRIVETRAIN -");
-            telemetry.addData("Pose", follower.getPose().toString());
+            telemetry.addData("X", currentPose.getX());
+            telemetry.addData("Y", currentPose.getY());
+            telemetry.addData("Heading (Deg)", Math.toDegrees(currentPose.getHeading()));
             telemetry.addData("isRobotCentric", isRobotCentric);
-            telemetry.addData("Field Centric Offset (Deg)", fieldCentricOffset.getAngle(Angle.AngleUnit.DEGREES, Angle.AngleSystem.SIGNED_180_WRAPPED));
+            telemetry.addData("Field Centric Offset (Deg)", fieldCentricOffset.getAngle(Angle.AngleUnit.DEGREES, Angle.AngleNormalization.BIPOLAR));
             telemetry.addData("isSlowMode", isSlowMode);
             telemetry.addData("Velocity Magnitude", follower.getVelocity().getMagnitude());
-            telemetry.addData("Velocity Magnitude", follower.getAcceleration().getMagnitude());
+            telemetry.addData("Acceleration Magnitude", follower.getAcceleration().getMagnitude());
             telemetry.addLine("");
+
+            Drawing.drawDebug(follower);
 
             StaticData.lastPose = follower.getPose();
         }

@@ -7,6 +7,7 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
 import org.firstinspires.ftc.teamcode.util.math.MathUtil;
 
+@Deprecated
 public class VelocityMotorController extends MotorController{
     private double targetRotationsPerMinute = 0;
     private boolean isEngaged = true;

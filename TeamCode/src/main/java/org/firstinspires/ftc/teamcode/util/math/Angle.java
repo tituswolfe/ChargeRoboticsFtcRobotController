@@ -10,10 +10,10 @@ public class Angle {
         RADIANS
     }
 
-    public enum AngleSystem {
-        SIGNED, // -360 or less TO 360 or more
-        SIGNED_180_WRAPPED, // -180 to 180
-        UNSIGNED_WRAPPED, // 0 to 360 (wrapped, 370 = 10)
+    public enum AngleNormalization {
+        NONE,
+        BIPOLAR, // -180 to 180
+        UNIPOLAR, // 0 to 360 (wrapped, 370 = 10)
     }
 
     public Angle(double angleRadians) {
@@ -33,14 +33,14 @@ public class Angle {
 
     /**
      * @param angleUnit degrees or radians
-     * @param angleSystem signed (-180 to 180, two-quadrant) or unsigned (0 to 360, positive or full clockwise circle rotation)
-     * @return angle with the specified {@link AngleUnit} and {@link AngleSystem}
+     * @param angleNormalization signed (-180 to 180, two-quadrant) or unsigned (0 to 360, positive or full clockwise circle rotation)
+     * @return angle with the specified {@link AngleUnit} and {@link AngleNormalization}
      */
-    public double getAngle(AngleUnit angleUnit, AngleSystem angleSystem) {
-        double requestedAngleInRadians = switch (angleSystem) {
-            case SIGNED -> this.angleInRadians;
-            case SIGNED_180_WRAPPED -> Math.IEEEremainder(this.angleInRadians, MathUtil.TAU);
-            case UNSIGNED_WRAPPED -> normalizeAngleUnsigned(this.angleInRadians);
+    public double getAngle(AngleUnit angleUnit, AngleNormalization angleNormalization) {
+        double requestedAngleInRadians = switch (angleNormalization) {
+            case NONE -> this.angleInRadians;
+            case BIPOLAR -> Math.IEEEremainder(this.angleInRadians, MathUtil.TAU);
+            case UNIPOLAR -> normalizeAngleUnsigned(this.angleInRadians);
         };
 
         return (angleUnit == AngleUnit.DEGREES) ? Math.toDegrees(requestedAngleInRadians) : requestedAngleInRadians;
@@ -54,19 +54,23 @@ public class Angle {
     }
 
     /**
-     * @param angleSystem signed (-180 to 180, two-quadrant) or unsigned (0 to 360, positive or full clockwise circle rotation)
-     * @return angle in {@link AngleUnit#RADIANS} with the specified {@link AngleSystem}
+     * @param angleNormalization signed (-180 to 180, two-quadrant) or unsigned (0 to 360, positive or full clockwise circle rotation)
+     * @return angle in {@link AngleUnit#RADIANS} with the specified {@link AngleNormalization}
      */
-    public double getAngle(AngleSystem angleSystem) {
-        return getAngle(AngleUnit.RADIANS, angleSystem);
+    public double getAngle(AngleNormalization angleNormalization) {
+        return getAngle(AngleUnit.RADIANS, angleNormalization);
     }
 
-    public Angle minus(Angle angle, AngleSystem angleSystem) {
-        return new Angle(getAngle(angleSystem) - angle.getAngle(angleSystem));
+    public Angle minus(Angle angle, AngleNormalization angleNormalization) {
+        return new Angle(getAngle(angleNormalization) - angle.getAngle(angleNormalization));
     }
 
-    public Angle plus(Angle angle, AngleSystem angleSystem) {
-        return new Angle(getAngle(angleSystem) + angle.getAngle(angleSystem));
+    public Angle plus(Angle angle, AngleNormalization angleNormalization) {
+        return new Angle(getAngle(angleNormalization) + angle.getAngle(angleNormalization));
     }
+//
+//    public Angle times(Angle angle, AngleNormalization) {
+//
+//    }
 
 }

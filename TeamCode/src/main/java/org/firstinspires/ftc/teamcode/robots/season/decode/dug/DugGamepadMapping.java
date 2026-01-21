@@ -50,7 +50,7 @@ public class DugGamepadMapping extends GamepadMapping<DugRobot> {
                 leftX * robot.speedFactor,
                 (headingLock ? robot.getHeadingPIDFController().run() : rightX * robot.speedFactor),
                 robot.isRobotCentric,
-                (robot.isRobotCentric ? 0 : robot.fieldCentricOffset.getAngle(Angle.AngleSystem.SIGNED))
+                (robot.isRobotCentric ? 0 : robot.fieldCentricOffset.getAngle(Angle.AngleNormalization.NONE))
         );
     }
 

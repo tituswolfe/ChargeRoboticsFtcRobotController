@@ -27,4 +27,10 @@ public class PhysicsUtil {
 
         return pose.plus(new Pose(totalDisplacement.getXComponent(), totalDisplacement.getYComponent(), totalRotation));
     }
+
+    public static Pose predictFuturePose(Pose pose, Vector velocity, double lookaheadTimeSec) {
+        Vector linearDisplacement = velocity.times(lookaheadTimeSec);
+        return pose.plus(new Pose(linearDisplacement.getXComponent(), linearDisplacement.getYComponent(), 0));
+        //return predictFuturePose(pose, velocity, 0, new Vector(0, 0), 0, lookaheadTimeSec);
+    }
 }

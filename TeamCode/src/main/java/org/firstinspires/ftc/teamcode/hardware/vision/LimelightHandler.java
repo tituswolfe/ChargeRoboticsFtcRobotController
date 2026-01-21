@@ -15,7 +15,6 @@ public class LimelightHandler {
     private final Limelight3A limelight;
     private LLResult lastResult;
 
-    public static double HEADING_OFFSET_DEG = 0;
     public static double X_OFFSET_INCH = 0;
     public static double Y_OFFSET_INCH = 0;
 
@@ -28,15 +27,20 @@ public class LimelightHandler {
         limelight.start();
     }
 
-    public void update(double robotYawDegrees) {
-        limelight.updateRobotOrientation(robotYawDegrees + HEADING_OFFSET_DEG);
+    public void update(double robotYawDeg) {
+        if (!limelight.isRunning()) {
+            limelight.start();
+        }
+        limelight.updateRobotOrientation(robotYawDeg);
         lastResult = limelight.getLatestResult();
     }
 
     public Pose getPose() {
-        if (lastResult == null || !lastResult.isValid()) {
+        if (!hasResult()) {
             return null;
         }
+        lastResult.getCaptureLatency()
+
 
         Pose3D pose3D = lastResult.getBotpose_MT2();
 
@@ -44,11 +48,11 @@ public class LimelightHandler {
         double yInches = DistanceUnit.INCH.fromMeters(pose3D.getPosition().y) + Y_OFFSET_INCH;
         double heading = pose3D.getOrientation().getYaw(AngleUnit.RADIANS);
 
-        return new Pose(
-                xInches,
-                yInches,
-                heading
-        );
+        return new Pose(xInches, yInches, heading);
+    }
+
+    public boolean hasResult() {
+        return lastResult != null && lastResult.isValid();
     }
 
     public Limelight3A getLimelight() {

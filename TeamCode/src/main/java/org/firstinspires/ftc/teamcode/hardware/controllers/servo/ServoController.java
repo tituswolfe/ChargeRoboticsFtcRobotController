@@ -24,8 +24,8 @@ public class ServoController {
 
     public void setTotalGearRatio(double totalGearRatio) {
         this.totalGearRatio = totalGearRatio;
-        this.percentagePerOutputDegree = (1.0 / totalRotation.getAngle(Angle.AngleUnit.DEGREES, Angle.AngleSystem.SIGNED)) * totalGearRatio;
-        this.percentagePerOutputRadian = (1.0 / totalRotation.getAngle(Angle.AngleUnit.RADIANS, Angle.AngleSystem.SIGNED)) * totalGearRatio;
+        this.percentagePerOutputDegree = (1.0 / totalRotation.getAngle(Angle.AngleUnit.DEGREES, Angle.AngleNormalization.NONE)) * totalGearRatio;
+        this.percentagePerOutputRadian = (1.0 / totalRotation.getAngle(Angle.AngleUnit.RADIANS, Angle.AngleNormalization.NONE)) * totalGearRatio;
     }
 
     public Servo getServo() {

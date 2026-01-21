@@ -8,6 +8,7 @@ import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
 import org.firstinspires.ftc.teamcode.util.math.MathUtil;
 
+@Deprecated
 public abstract class MotorController {
     protected final DcMotorEx dcMotorEx;
     protected PIDFController pidfController;
@@ -39,10 +40,6 @@ public abstract class MotorController {
 
     public abstract void update();
 
-    // TODO
-//    public setPowerConstrained() {
-//
-//    }
 
 
     public DcMotorEx getDcMotorEx() {

@@ -9,16 +9,19 @@ import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.math.Vector;
 import com.pedropathing.util.Timer;
+import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
+import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.DistanceSensor;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 import org.firstinspires.ftc.teamcode.hardware.controllers.StateMachine;
+import org.firstinspires.ftc.teamcode.hardware.controllers.digital.GoBildaLaserDistanceSensorDigital;
 import org.firstinspires.ftc.teamcode.hardware.controllers.lights.Prism.Color;
 import org.firstinspires.ftc.teamcode.hardware.controllers.lights.Prism.GoBildaPrismDriver;
 import org.firstinspires.ftc.teamcode.hardware.controllers.lights.Prism.PrismAnimations;
@@ -57,7 +60,6 @@ public class JetfireRobot extends RobotBase {
         OFF
     }
     private FlywheelMode flywheelMode = FlywheelMode.OFF;
-    //public static PIDFCoefficients flywheelPIDFCoefficients = new PIDFCoefficients(0.0027, 0, 0, 0.0002);
     public static PIDFCoefficients flywheelPIDFCoefficients = new PIDFCoefficients(0.007, 0, 0, 0.0002);
 
     // TURNTABLE
@@ -99,6 +101,9 @@ public class JetfireRobot extends RobotBase {
     private KalmanFilter chamberKalmanFilter = new KalmanFilter(chamberFilterParameters);
     public static double ARTIFACT_DETECTION_THRESHOLD_MM = 100;
 
+
+    GoBildaLaserDistanceSensorDigital chamberSensor;
+
     // COOLDOWN
     Timer laucnhCooldownTimer = new Timer();
     public static int LAUNCH_COOLDOWN_MS = 400; // 400
@@ -125,6 +130,8 @@ public class JetfireRobot extends RobotBase {
     public static double HOOD_ANGLE = 16;
     public static double TURNTABLE_OFFSET_DEG = 0;
 
+    private final static double FAR_ZONE_X_THRESHOLD = 24;
+
     // RUNTIME
     public static Pose targetGoal;
     private boolean isReadyToShoot = false;
@@ -138,21 +145,60 @@ public class JetfireRobot extends RobotBase {
     private LimelightHandler limelightHandler;
 
 
+    List<LynxModule> allLynxModules;
+
     @Override
     public void init(HardwareMap hardwareMap, Pose startPose, OpModeBase.AllianceColor allianceColor) {
         super.init(hardwareMap, startPose, allianceColor);
+
         targetGoal = new Pose(-67, allianceColor == OpModeBase.AllianceColor.RED ? 67 : -67);
+
+        TreeMap<Double, Double> flywheelSpeedByDistanceMap = new TreeMap<>();
+        // INCH, RPM
+        flywheelSpeedByDistanceMap.put(33.0, 2000.0);
+        flywheelSpeedByDistanceMap.put(59.0, 2200.0);
+        flywheelSpeedByDistanceMap.put(74.0, 2400.0);
+        flywheelSpeedByDistanceMap.put(98.0, 2500.0);
+        flywheelSpeedByDistanceMap.put(113.0, 2600.0);
+        flywheelSpeedByDistanceMap.put(123.0, 3000.0);
+        flywheelVelocityByDistanceInterpolator = new LinearInterpolator(flywheelSpeedByDistanceMap);
+
+        TreeMap<Double, Double> hoodAngleByDistanceMap = new TreeMap<>();
+        // INCH, DEGREES
+        hoodAngleByDistanceMap.put(33.0, 24.0);
+        hoodAngleByDistanceMap.put(59.0, 31.0);
+        hoodAngleByDistanceMap.put(74.0, 38.0);
+        hoodAngleByDistanceMap.put(98.0, 41.0);
+        hoodAngleByDistanceMap.put(113.0, 41.0);
+        hoodAngleByDistanceMap.put(123.0, 41.0);
+        hoodAngleByDistanceInterpolator = new LinearInterpolator(hoodAngleByDistanceMap);
+
+        TreeMap<Double, Double> timeOfFlightByDistanceMap = new TreeMap<>();
+        // INCH, MILLS
+        timeOfFlightByDistanceMap.put(33.0, 500.0);
+        timeOfFlightByDistanceMap.put(59.0, 640.0);
+        timeOfFlightByDistanceMap.put(74.0, 730.0);
+        timeOfFlightByDistanceMap.put(98.0, 750.0);
+        timeOfFlightByDistanceMap.put(113.0, 760.0);
+        timeOfFlightByDistanceMap.put(123.0, 770.0);
+        timeOfFlightByDistanceInterpolator = new LinearInterpolator(timeOfFlightByDistanceMap);
+
+
+        // TODO: State machine class
+//        for (int i = 0; i <= 2; i++) {
+//            autoFire.addStep(
+//                    () -> isReadyToShoot,
+//                    this::fire
+//            );
+//        }
     }
 
     @Override
     public void initHardware(HardwareMap hardwareMap) {
-        List<LynxModule> allHubs = hardwareMap.getAll(LynxModule.class);
-        for (LynxModule hub : allHubs) {
-            hub.setBulkCachingMode(LynxModule.BulkCachingMode.AUTO);
+        allLynxModules = hardwareMap.getAll(LynxModule.class);
+        for (LynxModule hub : allLynxModules) {
+            hub.setBulkCachingMode(LynxModule.BulkCachingMode.MANUAL);
         }
-
-        Angle turretStartHeading = Optional.ofNullable(JetfireStaticData.lastTurretHeading)
-                    .orElse(new Angle(0));
 
         VelocityMotorController flywheelController = new VelocityMotorController(
                 hardwareMap.get(DcMotorEx.class, "flywheel"),
@@ -162,6 +208,9 @@ public class JetfireRobot extends RobotBase {
                 1,
                 1
         );
+
+        Angle turretStartHeading = Optional.ofNullable(JetfireStaticData.lastTurretHeading)
+                .orElse(new Angle(0));
 
         TurntableMotorController turntableController = new TurntableMotorController(
                 hardwareMap.get(DcMotorEx.class, "turntable"),
@@ -195,64 +244,27 @@ public class JetfireRobot extends RobotBase {
         intakeMotor = hardwareMap.get(DcMotorEx.class, "intake");
         intakeMotor.setDirection(DcMotorSimple.Direction.REVERSE);
 
-        indicatorLightController = new RGBIndicatorLightController(hardwareMap.get(Servo.class, "indicator"));
-        indicatorLightController.setColor(RGBIndicatorLightController.Color.RED);
-
-        chamberDistanceSensor = hardwareMap.get(DistanceSensor.class, "chamber");
-
         Servo gateServo = hardwareMap.get(Servo.class, "gate");
         gateServoController = new ServoTimerController(gateServo, GATE_SERVO_CLOSED);
 
         Servo transferServo = hardwareMap.get(Servo.class, "transfer");
         transferServoController = new ServoTimerController(transferServo, TRANSFER_SERVO_DOWN);
 
+        chamberDistanceSensor = hardwareMap.get(DistanceSensor.class, "chamber");
+        //chamberSensor = new GoBildaLaserDistanceSensorDigital(hardwareMap.get(DigitalChannel.class, "laser-digital-input"));
+
         Limelight3A limelight3A = hardwareMap.get(Limelight3A.class, "limelight");
         limelightHandler = new LimelightHandler(limelight3A);
         limelightHandler.init(0);
 
-        TreeMap<Double, Double> flywheelSpeedByDistanceMap = new TreeMap<>();
-        // INCH, RPM
-        flywheelSpeedByDistanceMap.put(33.0, 2000.0);
-        flywheelSpeedByDistanceMap.put(59.0, 2200.0);
-        flywheelSpeedByDistanceMap.put(74.0, 2400.0);
-        flywheelSpeedByDistanceMap.put(98.0, 2500.0);
-        flywheelSpeedByDistanceMap.put(113.0, 2600.0);
-        flywheelSpeedByDistanceMap.put(123.0, 3000.0);
-        flywheelVelocityByDistanceInterpolator = new LinearInterpolator(flywheelSpeedByDistanceMap);
+        indicatorLightController = new RGBIndicatorLightController(hardwareMap.get(Servo.class, "indicator"));
+        indicatorLightController.setColor(StaticData.allianceColor == OpModeBase.AllianceColor.RED ? RGBIndicatorLightController.Color.RED : RGBIndicatorLightController.Color.BLUE);
 
-        TreeMap<Double, Double> hoodAngleByDistanceMap = new TreeMap<>();
-        // INCH, DEGREES
-        hoodAngleByDistanceMap.put(33.0, 24.0);
-        hoodAngleByDistanceMap.put(59.0, 31.0);
-        hoodAngleByDistanceMap.put(74.0, 38.0);
-        hoodAngleByDistanceMap.put(98.0, 41.0);
-        hoodAngleByDistanceMap.put(113.0, 41.0);
-        hoodAngleByDistanceMap.put(123.0, 41.0);
-        hoodAngleByDistanceInterpolator = new LinearInterpolator(hoodAngleByDistanceMap);
-
-        TreeMap<Double, Double> timeOfFlightByDistanceMap = new TreeMap<>();
-        // INCH, MILLS
-        timeOfFlightByDistanceMap.put(33.0, 500.0);
-        timeOfFlightByDistanceMap.put(59.0, 640.0);
-        timeOfFlightByDistanceMap.put(74.0, 730.0);
-        timeOfFlightByDistanceMap.put(98.0, 750.0);
-        timeOfFlightByDistanceMap.put(113.0, 820.0);
-        timeOfFlightByDistanceMap.put(123.0, 840.0);
-        timeOfFlightByDistanceInterpolator = new LinearInterpolator(timeOfFlightByDistanceMap);
-
-        for (int i = 0; i <= 2; i++) {
-            autoFire.addStep(
-                    () -> isReadyToShoot,
-                    this::fire
-            );
-        }
-
+        prism = hardwareMap.get(GoBildaPrismDriver.class,"prism");
         PrismAnimations.DroidScan droidScan = new PrismAnimations.DroidScan();
         droidScan.setPrimaryColor(StaticData.allianceColor == OpModeBase.AllianceColor.RED ? Color.RED : Color.BLUE);
         droidScan.setSpeed(0.05f);
         droidScan.setEyeWidth(4);
-
-        prism = hardwareMap.get(GoBildaPrismDriver.class,"prism");
 
         droidScan.setIndexes(1, 17);
         prism.insertAndUpdateAnimation(GoBildaPrismDriver.LayerHeight.LAYER_0, droidScan);
@@ -262,29 +274,34 @@ public class JetfireRobot extends RobotBase {
 
     @Override
     public void startConfiguration() {
-
+        // TODO: Init servo pos here
     }
 
     @Override
     public void update(long deltaTimeMs, TelemetryManager telemetry) {
-        super.update(deltaTimeMs, telemetry);
+        for (LynxModule hub : allLynxModules) {
+            hub.clearBulkCache();
+        }
 
-        Pose currentPose = follower.getPose();
+        Pose currentPose;
         Vector velocity = follower.getVelocity();
-        double angularVelocity = 0; //follower.getAngularVelocity();
-        Vector acceleration = new Vector(0, 0); // follower.getAcceleration();
-        double angularAcceleration = 0;
 
-        Pose displacedPose = targetGoal.minus(currentPose);
-        double distanceFromGoal = currentPose.distanceFrom(targetGoal);
+        Pose pinpointPose = follower.getPose();
+        Pose limelightPose = limelightHandler.getPose();
 
-        Angle goalHeading = new Angle(Math.atan2(displacedPose.getY(), displacedPose.getX()));
+        if (limelightPose == null) {
+            currentPose = pinpointPose;
+        } else {
+            currentPose = limelightPose;
+            follower.setPose(limelightPose);
+        }
+
+        double headingDeg = Math.toDegrees(pinpointPose.getHeading());
 
         Angle relativeTurntableHeading = turret.turntableController().getHeading();
-        Angle absoluteTurntableHeading = new Angle(relativeTurntableHeading.getAngle(Angle.AngleSystem.SIGNED_180_WRAPPED) + follower.getHeading());
+        //Angle absoluteTurntableHeading = new Angle(relativeTurntableHeading.getAngle(Angle.AngleNormalization.BIPOLAR) + follower.getHeading());
 
-        JetfireStaticData.lastTurretHeading = relativeTurntableHeading;
-        isInFarZone = currentPose.getX() > 24;
+        isInFarZone = currentPose.getX() > FAR_ZONE_X_THRESHOLD;
 
         isFlywheelReady = MathUtil.isWithinRange(
                 turret.flywheelController().getVelocity(),
@@ -293,47 +310,44 @@ public class JetfireRobot extends RobotBase {
         ) && !flywheelMode.equals(FlywheelMode.OFF);
 
         boolean isTurntableReady = MathUtil.isWithinRange(
-                relativeTurntableHeading.getAngle(Angle.AngleUnit.DEGREES, Angle.AngleSystem.SIGNED_180_WRAPPED),
-                turret.turntableController().getTargetHeading().getAngle(Angle.AngleUnit.DEGREES, Angle.AngleSystem.SIGNED_180_WRAPPED),
+                relativeTurntableHeading.getAngle(Angle.AngleUnit.DEGREES, Angle.AngleNormalization.BIPOLAR),
+                turret.turntableController().getTargetHeading().getAngle(Angle.AngleUnit.DEGREES, Angle.AngleNormalization.BIPOLAR),
                 TURNTABLE_HEADING_MARGIN_DEG
         );
 
         double chamberDistanceMM = chamberDistanceSensor.getDistance(DistanceUnit.MM);
         isArtifactLoaded = chamberDistanceMM < ARTIFACT_DETECTION_THRESHOLD_MM;
+        // isArtifactLoaded = chamberSensor.isObjectDetected();
 
         boolean isCooldownOver = laucnhCooldownTimer.getElapsedTime() > LAUNCH_COOLDOWN_MS;
         boolean isIntakeCooldownOver = laucnhCooldownTimer.getElapsedTime() > INTAKE_COOLDOWN_MS;
 
         isReadyToShoot = isTurntableReady && isArtifactLoaded && isCooldownOver; // isFlywheelReady
 
-        long launchDelay = deltaTimeMs + LAUNCH_DELAY_MS;
-
         // Lead Computing
-        Pose futurePose = PhysicsUtil.predictFuturePose(
+        double launchDelaySec = (deltaTimeMs + LAUNCH_DELAY_MS) / 1000.0;
+
+        Pose predictedFuturePose = PhysicsUtil.predictFuturePose(
                 currentPose,
                 velocity,
-                angularVelocity,
-                acceleration,
-                angularAcceleration,
-                (launchDelay / 1000.0)
+                launchDelaySec
         );
 
-        double distanceFromGoalAtFuturePose = futurePose.distanceFrom(targetGoal);
-        double timeOfFlightMs = timeOfFlightByDistanceInterpolator.interpolate(distanceFromGoalAtFuturePose);
+        double distanceFromGoalAtFuturePose = predictedFuturePose.distanceFrom(targetGoal);
+        double timeOfFlightSec = timeOfFlightByDistanceInterpolator.interpolate(distanceFromGoalAtFuturePose) / 1000.0;
 
         Pose virtualGoal = PhysicsUtil.predictFuturePose(
                 targetGoal,
                 velocity.times(-1),
-                0,
-                new Vector(0, 0),
-                0,
-                (timeOfFlightMs / 1000.0)
+                timeOfFlightSec
         );
 
-        double virtualDistanceFromGoal = futurePose.distanceFrom(virtualGoal);
+        //follower.getPoseHistory().
 
-        Pose virtualDisplacedPose = virtualGoal.minus(futurePose);
-        Angle virtualGoalHeading = new Angle(Math.atan2(virtualDisplacedPose.getY(), virtualDisplacedPose.getX()));
+        double virtualDistanceFromGoal = predictedFuturePose.distanceFrom(virtualGoal);
+//        Pose virtualDisplacedPose = virtualGoal.minus(predictedFuturePose);
+//        Angle virtualGoalHeading = new Angle(Math.atan2(virtualDisplacedPose.getY(), virtualDisplacedPose.getX()));
+        Angle virtualGoalHeading = new Angle(MathUtil.bearingTo(predictedFuturePose, virtualGoal));
 
         // UPDATE HARDWARE
         double flywheelSpeed = switch (flywheelMode) {
@@ -341,20 +355,19 @@ public class JetfireRobot extends RobotBase {
             case OFF -> 0.0;
         };
 
-        double interpolatedOffsetDeg = isInFarZone ? FAR_ZONE_TURNTABLE_OFFSET_DEG : CLOSE_ZONE_TURNTABLE_OFFSET_DEG;
-        Angle interpolatedOffset = new Angle(
-                interpolatedOffsetDeg * ((StaticData.allianceColor == OpModeBase.AllianceColor.BLUE) ? 1 : -1),
+        double turntableZoneOffsetDeg = isInFarZone ? FAR_ZONE_TURNTABLE_OFFSET_DEG : CLOSE_ZONE_TURNTABLE_OFFSET_DEG;
+        Angle turntableZoneOffset = new Angle(
+                turntableZoneOffsetDeg * ((StaticData.allianceColor == OpModeBase.AllianceColor.BLUE) ? 1 : -1),
                 false
         );
 
-        Angle targetTurntableHeading = autoAimTurntable ? virtualGoalHeading.minus(new Angle(currentPose.getHeading()), Angle.AngleSystem.SIGNED).plus(interpolatedOffset, Angle.AngleSystem.SIGNED) : new Angle(0);
-
+        Angle turntableHeading = virtualGoalHeading.minus(new Angle(currentPose.getHeading()), Angle.AngleNormalization.NONE).plus(turntableZoneOffset, Angle.AngleNormalization.NONE);
         Angle hoodAngle = new Angle(hoodAngleByDistanceInterpolator.interpolate(virtualDistanceFromGoal), false);
 
         if (!TUNING) {
             turret.update(
                     flywheelSpeed,
-                    targetTurntableHeading,
+                    autoAimTurntable ? turntableHeading : new Angle(0),
                     hoodAngle
             );
         } else {
@@ -373,8 +386,9 @@ public class JetfireRobot extends RobotBase {
             case OFF -> 0;
         } : 0);
 
-
-        if (indicateTimer.getElapsedTime() < INDICATE_TIME_MS) {
+        if (OpModeBase.getOpModeElapsedTimeSeconds() > 110) {
+            indicatorLightController.setColor(RGBIndicatorLightController.Color.WHITE);
+        } else if (indicateTimer.getElapsedTime() < INDICATE_TIME_MS) {
             indicatorLightController.setColor(tempIndicateColor);
         } else {
             if (!isTurntableReady) {
@@ -386,22 +400,43 @@ public class JetfireRobot extends RobotBase {
             }
         }
 
+        // UPDATE HARDWARE
+        super.update(deltaTimeMs, telemetry);
 
+        limelightHandler.update(headingDeg);
 
-        limelightHandler.update(Math.toDegrees(currentPose.getHeading()));
         transferServoController.update();
         gateServoController.update();
         // autoFire.update();
 
+
+        // UPDATE STATIC
+        JetfireStaticData.lastTurretHeading = relativeTurntableHeading;
+
+        // TODO: LL primary odo (sensor fusion problems while moving, Kalman, or poseTracker for latency)
+        // TODO: Indicator light for endgame park time
+        // TODO: Rumble on controllers
+        // TODO: Should we filter and use acceleration? Nah Michael Jackson
+        // TODO: bare motor, new distance sensor, faster kick server for transfer, poinpoint v2
+        // INTAKE that goes all the way to edge
+        // breakpads
+        // TODO: Double servos for kicker
+        // TODO: Switch to 2mm Timing belt over chain?
+        // Manualy reset lynx
+        // TODO: Dual motor class for flywheel
+
+
+        // - UPDATE TELEMETRY -
+
         telemetry.addLine("- LIMELIGHT -");
-        telemetry.addData("Pose", limelightHandler.getPose() == null ? "N/A" : limelightHandler.getPose().toString());
+        telemetry.addData("Active", limelightPose != null);
         telemetry.addLine("");
         telemetry.addLine("- OFFSETS -");
         telemetry.addData("isInFarZone", isInFarZone);
         telemetry.addData("Close Turntable Offset", CLOSE_ZONE_TURNTABLE_OFFSET_DEG);
         telemetry.addData("Far Turntable Offset", FAR_ZONE_TURNTABLE_OFFSET_DEG);
         telemetry.addLine("");
-        telemetry.addLine("- FIRE CONDITIONS -");
+        telemetry.addLine("- CONDITIONS -");
         telemetry.addData("isReadyToShoot", isReadyToShoot);
         telemetry.addData("isArtifactLoaded", isArtifactLoaded);
         telemetry.addData("isTurntableReady", isTurntableReady);
@@ -409,27 +444,40 @@ public class JetfireRobot extends RobotBase {
         telemetry.addData("isCooldownOver", isCooldownOver);
         telemetry.addLine("");
         telemetry.addLine("- TURNTABLE -");
-        telemetry.addData("Relative Heading", relativeTurntableHeading.getAngle(Angle.AngleUnit.DEGREES, Angle.AngleSystem.SIGNED));
-        telemetry.addData("Absolute Heading", absoluteTurntableHeading.getAngle(Angle.AngleUnit.DEGREES, Angle.AngleSystem.SIGNED));
-        telemetry.addData("Absolute Target Goal Heading", goalHeading.getAngle(Angle.AngleUnit.DEGREES, Angle.AngleSystem.SIGNED_180_WRAPPED));
-        telemetry.addData("Absolute Error", goalHeading.getAngle(Angle.AngleUnit.DEGREES, Angle.AngleSystem.SIGNED_180_WRAPPED) - absoluteTurntableHeading.getAngle(Angle.AngleUnit.DEGREES, Angle.AngleSystem.SIGNED_180_WRAPPED));
+        telemetry.addData("Relative Heading", relativeTurntableHeading.getAngle(Angle.AngleUnit.DEGREES, Angle.AngleNormalization.NONE));
+        //telemetry.addData("Absolute Heading", absoluteTurntableHeading.getAngle(Angle.AngleUnit.DEGREES, Angle.AngleNormalization.NONE));
+        //telemetry.addData("Absolute Error", goalHeading.getAngle(Angle.AngleUnit.DEGREES, Angle.AngleNormalization.BIPOLAR) - absoluteTurntableHeading.getAngle(Angle.AngleUnit.DEGREES, Angle.AngleNormalization.BIPOLAR));
         telemetry.addLine("");
         telemetry.addLine("- FLYWHEEL -");
         telemetry.addData("FLYWHEEL VELOCITY RPM", turret.flywheelController().getVelocity());
         telemetry.addData("FLYWHEEL TARGET VELOCITY RPM", turret.flywheelController().getTargetVelocity());
         telemetry.addLine("");
         telemetry.addLine("- HOOD -");
-        telemetry.addData("HOOD ANGLE", turret.hoodServoController().getTargetAngle().getAngle(Angle.AngleUnit.DEGREES, Angle.AngleSystem.SIGNED));
-        telemetry.addLine("");
-        telemetry.addLine("- LEAD COMPUTING & LUTs -");
-        telemetry.addData("Future Pose X", futurePose.getX());
-        telemetry.addData("Future Pose Y", futurePose.getY());
-        telemetry.addData("Time of Flight Estimate", timeOfFlightMs);
-        telemetry.addData("Goal Distance", distanceFromGoal);
-        telemetry.addLine("");
-        telemetry.addLine("- DISTANCE SENSOR -");
-        telemetry.addData("Chamber Distance", chamberDistanceMM);
-        //telemetry.addData("Filtered Chamber Distance", filteredChamberDistanceMM);
+        telemetry.addData("HOOD ANGLE", turret.hoodServoController().getTargetAngle().getAngle(Angle.AngleUnit.DEGREES, Angle.AngleNormalization.NONE));
+
+
+        if (TUNING) {
+            Angle goalHeading = new Angle(MathUtil.bearingTo(currentPose, targetGoal));
+            telemetry.addLine("");
+            telemetry.addLine("- TUNING DATA -");
+            telemetry.addData("Absolute Heading Toward Goal", goalHeading.getAngle(Angle.AngleUnit.DEGREES, Angle.AngleNormalization.BIPOLAR));
+            telemetry.addLine("");
+
+            //Pose displacedPose = targetGoal.minus(currentPose);
+            double distanceFromGoal = currentPose.distanceFrom(targetGoal);
+//            Angle goalHeading = new Angle(Math.atan2(displacedPose.getY(), displacedPose.getX()));
+
+            telemetry.addLine("- LEAD COMPUTING & LUTs -");
+            telemetry.addData("Future Pose X", predictedFuturePose.getX());
+            telemetry.addData("Future Pose Y", predictedFuturePose.getY());
+            telemetry.addData("Time of Flight (sec)", timeOfFlightSec);
+            telemetry.addData("Goal Distance", distanceFromGoal);
+            telemetry.addLine("");
+            telemetry.addLine("- DISTANCE SENSOR -");
+            telemetry.addData("Chamber Distance", chamberDistanceMM);
+
+
+        }
     }
 
     public void fire() {
