@@ -16,8 +16,7 @@ public abstract class HardwareController<Device extends HardwareDevice> {
         this.name = name;
     }
 
-    public abstract void update(long deltaTime);
-
+    public abstract void update();
 
     public void addTelemetry(TelemetryManager telemetry) {
         telemetry.addData("Name", name);

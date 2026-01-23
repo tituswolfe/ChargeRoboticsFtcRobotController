@@ -6,30 +6,35 @@ import org.firstinspires.ftc.teamcode.util.math.Angle;
 import org.firstinspires.ftc.teamcode.util.math.MathUtil;
 
 public class AngleServoController extends ServoController {
-    public final Angle offset;
-    public final Angle maxLimit;
-    public final Angle minLimit; // TODO: RENAME
+//    public final Angle initialOffset;
 
+    public final Angle minSoftLimit;
+    public final Angle maxSoftLimit;
 
-
-    public AngleServoController(Servo servo, Servo.Direction direction, Angle totalRotation, double totalGearRatio, Angle offset, Angle maxLimit, Angle minLimit) {
-        super(servo, direction, totalRotation, totalGearRatio);
-        this.offset = offset;
-        this.maxLimit = maxLimit;
-        this.minLimit = minLimit;
+    public AngleServoController(Servo device, String name, Angle totalRotation, Angle minSoftLimit, Angle maxSoftLimit) {
+        super(device, name, totalRotation);
+        this.minSoftLimit = minSoftLimit;
+        this.maxSoftLimit = maxSoftLimit;
     }
+
+//    public AngleServoController(Servo servo, Servo.Direction direction, Angle totalRotation, double totalGearRatio, Angle offset, Angle maxSoftLimit, Angle minSoftLimit) {
+//        super(servo, direction, totalRotation, totalGearRatio);
+//        this.offset = offset;
+//        this.maxSoftLimit = maxSoftLimit;
+//        this.minSoftLimit = minSoftLimit;
+//    }
 
     public void setTargetAngle(Angle angle) {
         Angle targetAngle = new Angle(MathUtil.clamp(
                 angle.getAngle(Angle.AngleNormalization.NONE),
-                minLimit.getAngle(Angle.AngleNormalization.NONE),
-                maxLimit.getAngle(Angle.AngleNormalization.NONE)
+                minSoftLimit.getAngle(Angle.AngleNormalization.NONE),
+                maxSoftLimit.getAngle(Angle.AngleNormalization.NONE)
         ));
 
-        servo.setPosition(targetAngle.minus(offset, Angle.AngleNormalization.NONE).getAngle(Angle.AngleNormalization.NONE) * percentagePerOutputRadian);
+        device.setPosition(targetAngle.minus(minSoftLimit, Angle.AngleNormalization.NONE).getAngle(Angle.AngleNormalization.NONE) * percentagePerOutputRadian);
     }
 
     public Angle getTargetAngle() {
-        return new Angle(servo.getPosition() / percentagePerOutputRadian).plus(offset, Angle.AngleNormalization.NONE);
+        return new Angle(device.getPosition() / percentagePerOutputRadian).plus(minSoftLimit, Angle.AngleNormalization.NONE);
     }
 }

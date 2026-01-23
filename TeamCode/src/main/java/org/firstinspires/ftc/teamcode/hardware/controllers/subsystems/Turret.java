@@ -5,9 +5,9 @@ import org.firstinspires.ftc.teamcode.hardware.controllers.motor.VelocityMotorCo
 import org.firstinspires.ftc.teamcode.hardware.controllers.servo.AngleServoController;
 import org.firstinspires.ftc.teamcode.util.math.Angle;
 
-public record Turret(VelocityMotorController flywheelController,
-                     TurntableMotorController turntableController,
-                     AngleServoController hoodServoController) {
+public record Turret<FlywheelController extends VelocityMotorController>(
+        FlywheelController flywheelController, TurntableMotorController turntableController,
+        AngleServoController hoodServoController) {
 
     public void update(double targetVelRPM, Angle targetTurntableHeading, Angle targetHoodAngle) {
         flywheelController.setTargetVelocity(targetVelRPM);

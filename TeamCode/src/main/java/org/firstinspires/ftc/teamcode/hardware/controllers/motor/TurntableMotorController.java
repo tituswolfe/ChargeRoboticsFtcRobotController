@@ -1,62 +1,62 @@
 package org.firstinspires.ftc.teamcode.hardware.controllers.motor;
 
+import com.bylazar.telemetry.TelemetryManager;
 import com.pedropathing.control.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
 import org.firstinspires.ftc.teamcode.util.math.Angle;
 import org.firstinspires.ftc.teamcode.util.math.MathUtil;
 
 public class TurntableMotorController extends MotorController {
-    private final Angle maxPositiveLimit;
-    private final Angle minNegativeLimit;
-    private Angle startAngle;
+    private final Angle minSoftLimit;
+    private final Angle maxSoftLimit;
+
     private final boolean reversePower;
 
+    private Angle initialAngle;
+
     private Angle targetHeading = new Angle(0);
+    private Angle currentHeading = new Angle(0);
 
-    public TurntableMotorController(DcMotorEx dcMotorEx, DcMotorSimple.Direction direction, PIDFCoefficients pidfCoefficients, double ticksPerRevolution, double totalGearRatio, double maxPower, Angle maxPositiveLimit, Angle minNegativeLimit, Angle startAngle, boolean reversePower) {
-        super(dcMotorEx, direction, pidfCoefficients, ticksPerRevolution, totalGearRatio, maxPower);
+    public TurntableMotorController(DcMotorEx device, String name, PIDFCoefficients pidfCoefficients, double ticksPerRevolution, double totalGearRatio, double maxPower, Angle minSoftLimit, Angle maxSoftLimit, boolean reversePower, Angle initialAngle) {
+        super(device, name, pidfCoefficients, ticksPerRevolution, totalGearRatio, maxPower);
 
-        assert maxPositiveLimit.getAngle(Angle.AngleNormalization.BIPOLAR) > minNegativeLimit.getAngle(Angle.AngleNormalization.BIPOLAR);
-        this.maxPositiveLimit = maxPositiveLimit;
-        this.minNegativeLimit = minNegativeLimit;
-
-        assert startAngle.getAngle(Angle.AngleNormalization.BIPOLAR) < maxPositiveLimit.getAngle(Angle.AngleNormalization.BIPOLAR);
-        assert startAngle.getAngle(Angle.AngleNormalization.BIPOLAR) > minNegativeLimit.getAngle(Angle.AngleNormalization.BIPOLAR);
-        this.startAngle = startAngle;
+        this.minSoftLimit = minSoftLimit;
+        this.maxSoftLimit = maxSoftLimit;
 
         this.reversePower = reversePower;
 
-        this.dcMotorEx.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        this.initialAngle = initialAngle;
+
+        device.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
     }
 
     @Override
     public void update() {
-        pidfController.updateError(getConstrainedError().getAngle(Angle.AngleUnit.DEGREES, Angle.AngleNormalization.NONE));
-        pidfController.updateFeedForwardInput(targetHeading.getAngle(Angle.AngleUnit.DEGREES, Angle.AngleNormalization.BIPOLAR));
+        currentHeading = new Angle(currentPosition / ticksPerOutputRadian).plus(initialAngle, Angle.AngleNormalization.BIPOLAR);
 
-        double power = pidfController.run();
-        this.dcMotorEx.setPower(reversePower ? -power : power);
+        double clampedTarget = MathUtil.clamp(
+                targetHeading.getAngle(Angle.AngleUnit.DEGREES, Angle.AngleNormalization.BIPOLAR),
+                minSoftLimit.getAngle(Angle.AngleUnit.DEGREES, Angle.AngleNormalization.BIPOLAR),
+                maxSoftLimit.getAngle(Angle.AngleUnit.DEGREES, Angle.AngleNormalization.BIPOLAR)
+        );
+
+        double linearError = clampedTarget - currentHeading.getAngle(Angle.AngleUnit.DEGREES, Angle.AngleNormalization.BIPOLAR);
+
+        pidfController.updateError(linearError);
+        //pidfController.updateFeedForwardInput(targetHeading.getAngle(Angle.AngleUnit.DEGREES, Angle.AngleNormalization.BIPOLAR));
+
+        setPowerFromPIDFController();
+    }
+
+    @Override
+    public void setPower(double power) {
+        super.setPower(reversePower ? -power : power);
     }
 
     public void setTargetHeading(Angle targetHeading) {
         this.targetHeading = targetHeading;
-    }
-
-    public Angle getConstrainedError() {
-        double currentPos = getHeading().getAngle(Angle.AngleNormalization.BIPOLAR);
-
-        double clampedTarget = MathUtil.clamp(
-                targetHeading.getAngle(Angle.AngleNormalization.BIPOLAR),
-                minNegativeLimit.getAngle(Angle.AngleNormalization.BIPOLAR),
-                maxPositiveLimit.getAngle(Angle.AngleNormalization.BIPOLAR)
-        );
-
-        double linearError = clampedTarget - currentPos;
-
-        return new Angle(linearError);
     }
 
 
@@ -65,14 +65,20 @@ public class TurntableMotorController extends MotorController {
     }
 
     public Angle getHeading() {
-        return new Angle(dcMotorEx.getCurrentPosition() / ticksPerOutputRadian).plus(startAngle, Angle.AngleNormalization.BIPOLAR);
+        return currentHeading;
     }
 
-    public void setStartAngle(Angle startAngle) {
-        this.startAngle = startAngle;
+    public void setInitialAngle(Angle initialAngle) {
+        this.initialAngle = initialAngle;
     }
 
-    public Angle getStartAngle() {
-        return startAngle;
+    public Angle getInitialAngle() {
+        return initialAngle;
+    }
+
+    @Override
+    public void addTelemetry(TelemetryManager telemetry) {
+        super.addTelemetry(telemetry);
+        telemetry.addData("Relative Heading", currentHeading.getAngle(Angle.AngleUnit.DEGREES, Angle.AngleNormalization.NONE));
     }
 }

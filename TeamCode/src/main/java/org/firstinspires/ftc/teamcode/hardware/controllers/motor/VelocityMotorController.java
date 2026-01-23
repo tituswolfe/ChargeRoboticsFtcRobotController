@@ -1,62 +1,37 @@
 package org.firstinspires.ftc.teamcode.hardware.controllers.motor;
 
+import com.bylazar.telemetry.TelemetryManager;
 import com.pedropathing.control.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
 
-import org.firstinspires.ftc.teamcode.util.math.MathUtil;
+public class VelocityMotorController extends MotorController {
+    private double targetVelocity = 0;
 
-@Deprecated
-public class VelocityMotorController extends MotorController{
-    private double targetRotationsPerMinute = 0;
-    private boolean isEngaged = true;
-    private double velocity = 0;
+    public VelocityMotorController(DcMotorEx device, String name, PIDFCoefficients pidfCoefficients, double ticksPerRevolution, double totalGearRatio, double maxPower) {
+        super(device, name, pidfCoefficients, ticksPerRevolution, totalGearRatio, maxPower);
+        device.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+    }
 
-    public VelocityMotorController(DcMotorEx dcMotorEx, DcMotorSimple.Direction direction, PIDFCoefficients pidfCoefficients, double ticksPerRevolution, double totalGearRatio, double maxPower) {
-        super(dcMotorEx, direction, pidfCoefficients, ticksPerRevolution, totalGearRatio, maxPower);
-        this.dcMotorEx.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+    public void setTargetVelocity(double targetVelocityRPM) {
+        this.targetVelocity = targetVelocityRPM;
     }
 
     @Override
     public void update() {
-        velocity = (dcMotorEx.getVelocity() * 60) / ticksPerRevolution;
-        pidfController.updateError(targetRotationsPerMinute - velocity);
-        pidfController.updateFeedForwardInput(targetRotationsPerMinute);
+        pidfController.updateError(targetVelocity - velocity);
+        pidfController.updateFeedForwardInput(targetVelocity);
 
-        this.dcMotorEx.setPower(isEngaged ? MathUtil.clamp(pidfController.run(), -maxPower, maxPower) : 0);
+        setPowerFromPIDFController();
     }
 
-    /**
-     * @param rotationsPerMinute
-     */
-    public void setTargetVelocity(double rotationsPerMinute) {
-        this.targetRotationsPerMinute = rotationsPerMinute;
-    }
-
-    /**
-     * @return target velocity in rotations per minute
-     */
     public double getTargetVelocity() {
-        return targetRotationsPerMinute;
+        return targetVelocity;
     }
 
-    /**
-     * @return velocity in rotations per minute
-     */
-    public double getVelocity() {
-        return velocity;
-    }
-
-    public boolean isEngaged() {
-        return isEngaged;
-    }
-
-    public void setEngaged(boolean engaged) {
-        this.isEngaged = engaged;
-    }
-
-    public DcMotorEx getDcMotorEx() {
-        return dcMotorEx;
+    @Override
+    public void addTelemetry(TelemetryManager telemetry) {
+        super.addTelemetry(telemetry);
+        telemetry.addData("Target Velocity (RPM)", targetVelocity);
     }
 }

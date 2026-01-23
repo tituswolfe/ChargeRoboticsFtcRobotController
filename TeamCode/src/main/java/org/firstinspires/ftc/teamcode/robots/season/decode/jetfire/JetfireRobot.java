@@ -9,7 +9,6 @@ import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.math.Vector;
 import com.pedropathing.util.Timer;
-import com.qualcomm.hardware.gobilda.GoBildaPinpointDriver;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
@@ -26,10 +25,10 @@ import org.firstinspires.ftc.teamcode.hardware.controllers.lights.Prism.Color;
 import org.firstinspires.ftc.teamcode.hardware.controllers.lights.Prism.GoBildaPrismDriver;
 import org.firstinspires.ftc.teamcode.hardware.controllers.lights.Prism.PrismAnimations;
 import org.firstinspires.ftc.teamcode.hardware.controllers.motor.TurntableMotorController;
-import org.firstinspires.ftc.teamcode.hardware.controllers.motor.VelocityMotorController;
 import org.firstinspires.ftc.teamcode.hardware.controllers.servo.AngleServoController;
 import org.firstinspires.ftc.teamcode.hardware.controllers.servo.RGBIndicatorLightController;
 import org.firstinspires.ftc.teamcode.hardware.controllers.servo.ServoTimerController;
+import org.firstinspires.ftc.teamcode.hardware.controllers.subsystems.DualMotorVelocityController;
 import org.firstinspires.ftc.teamcode.hardware.controllers.subsystems.Turret;
 import org.firstinspires.ftc.teamcode.hardware.drivetrain.pedroPathing.Constants;
 import org.firstinspires.ftc.teamcode.hardware.vision.LimelightHandler;
@@ -49,7 +48,7 @@ import java.util.TreeMap;
 @Configurable
 public class JetfireRobot extends RobotBase {
     // TURRET
-    private Turret turret;
+    private Turret<DualMotorVelocityController> turret;
 
     // TURNTABLE
     private boolean autoAimTurntable = false;
@@ -64,6 +63,9 @@ public class JetfireRobot extends RobotBase {
 
     // TURNTABLE
     public static PIDFCoefficients turntablePIDFCoefficients = new PIDFCoefficients(0.051, 0, 0.0012, 0);
+    private static final double TURNTABLE_GEAR_RATIO = 64.0 / 16.0;
+    private static final double TURNTABLE_HARD_STOP = 130;
+
     public static double CLOSE_ZONE_TURNTABLE_OFFSET_DEG = 2;
     public static double FAR_ZONE_TURNTABLE_OFFSET_DEG = -1; // neg toward opp alliance, pos toward your alliance
 
@@ -97,8 +99,6 @@ public class JetfireRobot extends RobotBase {
 
     // ARTIFACT CHAMBER DETECTION
     DistanceSensor chamberDistanceSensor;
-    public static KalmanFilterParameters chamberFilterParameters = new KalmanFilterParameters(0.1, 0.1);
-    private KalmanFilter chamberKalmanFilter = new KalmanFilter(chamberFilterParameters);
     public static double ARTIFACT_DETECTION_THRESHOLD_MM = 100;
 
 
@@ -143,7 +143,6 @@ public class JetfireRobot extends RobotBase {
 
     // LimeLight
     private LimelightHandler limelightHandler;
-
 
     List<LynxModule> allLynxModules;
 
@@ -200,34 +199,46 @@ public class JetfireRobot extends RobotBase {
             hub.setBulkCachingMode(LynxModule.BulkCachingMode.MANUAL);
         }
 
-        VelocityMotorController flywheelController = new VelocityMotorController(
-                hardwareMap.get(DcMotorEx.class, "flywheel"),
-                DcMotorSimple.Direction.REVERSE,
+        DcMotorEx rightFlywheelMotor = hardwareMap.get(DcMotorEx.class, "right-flywheel");
+        rightFlywheelMotor.setDirection(DcMotorSimple.Direction.FORWARD);
+
+        DcMotorEx leftFlywheelMotor = hardwareMap.get(DcMotorEx.class, "left-flywheel");
+        leftFlywheelMotor.setDirection(DcMotorSimple.Direction.REVERSE);
+
+        DualMotorVelocityController flywheelController = new DualMotorVelocityController(
+                rightFlywheelMotor,
+                "Flywheel",
                 flywheelPIDFCoefficients,
                 HardwareInfo.GOBILDA_5203_YELLOW_JACKET_MOTOR_6000_RPM.ENCODER_RESOLUTION_PPR,
                 1,
-                1
+                1,
+                leftFlywheelMotor
         );
 
         Angle turretStartHeading = Optional.ofNullable(JetfireStaticData.lastTurretHeading)
                 .orElse(new Angle(0));
 
+        DcMotorEx turntableMotor = hardwareMap.get(DcMotorEx.class, "turntable");
+
         TurntableMotorController turntableController = new TurntableMotorController(
-                hardwareMap.get(DcMotorEx.class, "turntable"),
-                DcMotorSimple.Direction.FORWARD,
+                turntableMotor,
+                "Turntable",
                 turntablePIDFCoefficients,
                 HardwareInfo.GOBILDA_5203_YELLOW_JACKET_MOTOR_435_RPM.ENCODER_RESOLUTION_PPR,
-                64.0 / 16.0,
+                TURNTABLE_GEAR_RATIO,
                 0.75,
                 new Angle(130, false),
                 new Angle(-130, false),
-                turretStartHeading,
-                false
+                false,
+                turretStartHeading
         );
 
+        Servo hoodServo = hardwareMap.get(Servo.class, "hood");
+        hoodServo.setDirection(Servo.Direction.REVERSE);
+
         AngleServoController hoodController = new AngleServoController(
-                hardwareMap.get(Servo.class, "hood"),
-                Servo.Direction.REVERSE,
+                hoodServo,
+                "Hood",
                 new Angle(300, false),
                 (48.0 / 40.0) * (116.0 / 12.0),
                 new Angle(22, false),
@@ -235,11 +246,7 @@ public class JetfireRobot extends RobotBase {
                 new Angle(22, false)
         );
 
-        turret = new Turret(
-                flywheelController,
-                turntableController,
-                hoodController
-        );
+        turret = new Turret<>(flywheelController, turntableController, hoodController);
 
         intakeMotor = hardwareMap.get(DcMotorEx.class, "intake");
         intakeMotor.setDirection(DcMotorSimple.Direction.REVERSE);
@@ -250,8 +257,8 @@ public class JetfireRobot extends RobotBase {
         Servo transferServo = hardwareMap.get(Servo.class, "transfer");
         transferServoController = new ServoTimerController(transferServo, TRANSFER_SERVO_DOWN);
 
-        chamberDistanceSensor = hardwareMap.get(DistanceSensor.class, "chamber");
-        //chamberSensor = new GoBildaLaserDistanceSensorDigital(hardwareMap.get(DigitalChannel.class, "laser-digital-input"));
+//        chamberDistanceSensor = hardwareMap.get(DistanceSensor.class, "chamber");
+        chamberSensor = new GoBildaLaserDistanceSensorDigital(hardwareMap.get(DigitalChannel.class, "laser-digital-input"));
 
         Limelight3A limelight3A = hardwareMap.get(Limelight3A.class, "limelight");
         limelightHandler = new LimelightHandler(limelight3A);
@@ -345,8 +352,6 @@ public class JetfireRobot extends RobotBase {
         //follower.getPoseHistory().
 
         double virtualDistanceFromGoal = predictedFuturePose.distanceFrom(virtualGoal);
-//        Pose virtualDisplacedPose = virtualGoal.minus(predictedFuturePose);
-//        Angle virtualGoalHeading = new Angle(Math.atan2(virtualDisplacedPose.getY(), virtualDisplacedPose.getX()));
         Angle virtualGoalHeading = new Angle(MathUtil.bearingTo(predictedFuturePose, virtualGoal));
 
         // UPDATE HARDWARE
@@ -443,8 +448,10 @@ public class JetfireRobot extends RobotBase {
         telemetry.addData("isFlywheelReady", isFlywheelReady);
         telemetry.addData("isCooldownOver", isCooldownOver);
         telemetry.addLine("");
-        telemetry.addLine("- TURNTABLE -");
-        telemetry.addData("Relative Heading", relativeTurntableHeading.getAngle(Angle.AngleUnit.DEGREES, Angle.AngleNormalization.NONE));
+
+        turret.turntableController().addTelemetry(telemetry);
+//        telemetry.addLine("- TURNTABLE -");
+//        telemetry.addData("Relative Heading", relativeTurntableHeading.getAngle(Angle.AngleUnit.DEGREES, Angle.AngleNormalization.NONE));
         //telemetry.addData("Absolute Heading", absoluteTurntableHeading.getAngle(Angle.AngleUnit.DEGREES, Angle.AngleNormalization.NONE));
         //telemetry.addData("Absolute Error", goalHeading.getAngle(Angle.AngleUnit.DEGREES, Angle.AngleNormalization.BIPOLAR) - absoluteTurntableHeading.getAngle(Angle.AngleUnit.DEGREES, Angle.AngleNormalization.BIPOLAR));
         telemetry.addLine("");
@@ -535,14 +542,6 @@ public class JetfireRobot extends RobotBase {
 
     public StateMachine getAutoFire() {
         return autoFire;
-    }
-
-    public KalmanFilter getChamberKalmanFilter() {
-        return chamberKalmanFilter;
-    }
-
-    public void setChamberKalmanFilter(KalmanFilter chamberKalmanFilter) {
-        this.chamberKalmanFilter = chamberKalmanFilter;
     }
 
     public Turret getTurret() {

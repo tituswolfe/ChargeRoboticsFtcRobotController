@@ -1,6 +1,5 @@
 package org.firstinspires.ftc.teamcode.robots.season.decode.jetfire;
 
-import com.pedropathing.geometry.Pose;
 import com.qualcomm.robotcore.hardware.Gamepad;
 
 import org.firstinspires.ftc.teamcode.hardware.controllers.servo.RGBIndicatorLightController;
@@ -30,7 +29,7 @@ public class JetFireGamepadMapping2 extends GamepadMapping<JetfireRobot> {
 
     @Override
     public void onXPressed() {
-        robot.getTurret().turntableController().setStartAngle(new Angle(0));
+        robot.getTurret().turntableController().setInitialAngle(new Angle(0));
     }
 
     @Override

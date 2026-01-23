@@ -1,4 +1,4 @@
-package org.firstinspires.ftc.teamcode.hardware.controllers;
+package org.firstinspires.ftc.teamcode.hardware.controllers.motor;
 
 import com.pedropathing.control.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.DcMotorEx;

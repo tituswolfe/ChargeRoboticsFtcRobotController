@@ -17,7 +17,6 @@ public class GoBildaPrismController extends HardwareController<GoBildaPrismDrive
         super(device, name);
     }
 
-
     @Override
     public void update(long deltaTime) {
         if (indicateTimer.getElapsedTime() > indicateTimeMills && !doneIndicating) {
@@ -25,8 +24,6 @@ public class GoBildaPrismController extends HardwareController<GoBildaPrismDrive
             doneIndicating = true;
         }
     }
-    // TODO TURRET PRISM LIGHTS??
-
 
     public void indicate(Color indicateColor) {
         indicate(indicateColor, 300);
