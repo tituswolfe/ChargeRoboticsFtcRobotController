@@ -30,7 +30,6 @@ import org.firstinspires.ftc.teamcode.hardware.vision.LimelightController;
 import org.firstinspires.ftc.teamcode.robots.base.RobotBase;
 import org.firstinspires.ftc.teamcode.robots.base.StaticData;
 import org.firstinspires.ftc.teamcode.robots.base.opmodes.OpModeBase;
-import org.firstinspires.ftc.teamcode.util.LinearInterpolator;
 import org.firstinspires.ftc.teamcode.util.PoseHistory;
 import org.firstinspires.ftc.teamcode.util.info.HardwareInfo;
 import org.firstinspires.ftc.teamcode.util.math.Angle;
@@ -38,7 +37,6 @@ import org.firstinspires.ftc.teamcode.util.math.MathUtil;
 import static org.firstinspires.ftc.teamcode.robots.season.decode.jetfire.JetFireConstants.*;
 
 import java.util.Optional;
-import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
 
 @Configurable
@@ -54,6 +52,8 @@ public class JetfireRobot extends RobotBase {
     RGBIndicatorLightController indicatorLightController;
     GoBildaPrismDriver prism;
 
+    private LimelightController limelightController;
+
     private boolean autoAimTurntable = false;
 
     private boolean isFlywheelOn = false;
@@ -64,11 +64,6 @@ public class JetfireRobot extends RobotBase {
     public static double CLOSE_ZONE_TURNTABLE_OFFSET_DEG = 2;
     public static double FAR_ZONE_TURNTABLE_OFFSET_DEG = -1; // neg toward opp alliance, pos toward your alliance
 
-    // LUTs
-    private LinearInterpolator flywheelVelocityByDistanceInterpolator;
-    private LinearInterpolator hoodAngleByDistanceInterpolator;
-    private LinearInterpolator timeOfFlightByDistanceInterpolator;
-
     // COOLDOWN
     Timer laucnhCooldownTimer = new Timer();
 
@@ -78,7 +73,6 @@ public class JetfireRobot extends RobotBase {
     public static double HOOD_ANGLE = 16;
     public static double TURNTABLE_OFFSET_DEG = 0;
 
-    private final static double FAR_ZONE_X_THRESHOLD = 24;
 
     // RUNTIME
     public static Pose targetGoal;
@@ -89,45 +83,11 @@ public class JetfireRobot extends RobotBase {
 
     private final StateMachine autoFire = new StateMachine();
 
-    // LimeLight
-    private LimelightController limelightController;
-
     @Override
     public void init(HardwareMap hardwareMap, Pose startPose, OpModeBase.AllianceColor allianceColor) {
         super.init(hardwareMap, startPose, allianceColor);
 
         targetGoal = new Pose(-67, allianceColor == OpModeBase.AllianceColor.RED ? 67 : -67);
-
-        TreeMap<Double, Double> flywheelSpeedByDistanceMap = new TreeMap<>();
-        // INCH, RPM
-        flywheelSpeedByDistanceMap.put(33.0, 2000.0);
-        flywheelSpeedByDistanceMap.put(59.0, 2200.0);
-        flywheelSpeedByDistanceMap.put(74.0, 2400.0);
-        flywheelSpeedByDistanceMap.put(98.0, 2500.0);
-        flywheelSpeedByDistanceMap.put(113.0, 2600.0);
-        flywheelSpeedByDistanceMap.put(123.0, 3000.0);
-        flywheelVelocityByDistanceInterpolator = new LinearInterpolator(flywheelSpeedByDistanceMap);
-
-        TreeMap<Double, Double> hoodAngleByDistanceMap = new TreeMap<>();
-        // INCH, DEGREES
-        hoodAngleByDistanceMap.put(33.0, 24.0);
-        hoodAngleByDistanceMap.put(59.0, 31.0);
-        hoodAngleByDistanceMap.put(74.0, 38.0);
-        hoodAngleByDistanceMap.put(98.0, 41.0);
-        hoodAngleByDistanceMap.put(113.0, 41.0);
-        hoodAngleByDistanceMap.put(123.0, 41.0);
-        hoodAngleByDistanceInterpolator = new LinearInterpolator(hoodAngleByDistanceMap);
-
-        TreeMap<Double, Double> timeOfFlightByDistanceMap = new TreeMap<>();
-        // INCH, MILLS
-        timeOfFlightByDistanceMap.put(33.0, 500.0);
-        timeOfFlightByDistanceMap.put(59.0, 640.0);
-        timeOfFlightByDistanceMap.put(74.0, 730.0);
-        timeOfFlightByDistanceMap.put(98.0, 750.0);
-        timeOfFlightByDistanceMap.put(113.0, 760.0);
-        timeOfFlightByDistanceMap.put(123.0, 770.0);
-        timeOfFlightByDistanceInterpolator = new LinearInterpolator(timeOfFlightByDistanceMap);
-
 
         // TODO: State machine class
 //        for (int i = 0; i <= 2; i++) {
@@ -289,7 +249,7 @@ public class JetfireRobot extends RobotBase {
 
         double distanceFromGoalAtFuturePose = predictedFuturePose.distanceFrom(targetGoal);
 
-        long timeOfFlightMills = (long) timeOfFlightByDistanceInterpolator.interpolate(distanceFromGoalAtFuturePose);
+        long timeOfFlightMills = (long) TIME_OF_FLIGHT_BY_DISTANCE.interpolate(distanceFromGoalAtFuturePose);
         double timeOfFlightSec = TimeUnit.MILLISECONDS.convert(timeOfFlightMills, TimeUnit.SECONDS);
 
         Pose virtualGoal = MathUtil.predictFuturePose(targetGoal, velocity.times(-1), timeOfFlightSec);
@@ -298,7 +258,7 @@ public class JetfireRobot extends RobotBase {
         Angle virtualGoalHeading = new Angle(MathUtil.bearingTo(predictedFuturePose, virtualGoal));
 
         // UPDATE HARDWARE
-        double flywheelSpeed = isFlywheelOn ? flywheelVelocityByDistanceInterpolator.interpolate(virtualDistanceFromGoal) : 0;
+        double flywheelSpeed = isFlywheelOn ? FLYWHEEL_VELOCITY_BY_DISTANCE.interpolate(virtualDistanceFromGoal) : 0;
 
         double turntableZoneOffsetDeg = isInFarZone ? FAR_ZONE_TURNTABLE_OFFSET_DEG : CLOSE_ZONE_TURNTABLE_OFFSET_DEG;
         Angle turntableZoneOffset = new Angle(
@@ -307,7 +267,7 @@ public class JetfireRobot extends RobotBase {
         );
 
         Angle turntableHeading = virtualGoalHeading.minus(new Angle(currentPose.getHeading()), Angle.AngleNormalization.NONE).plus(turntableZoneOffset, Angle.AngleNormalization.NONE);
-        Angle hoodAngle = new Angle(hoodAngleByDistanceInterpolator.interpolate(virtualDistanceFromGoal), false);
+        Angle hoodAngle = new Angle(HOOD_ANGLE_BY_DISTANCE.interpolate(virtualDistanceFromGoal), false);
 
         if (!TUNING) {
             turret.update(
