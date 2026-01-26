@@ -242,6 +242,7 @@ public class JetfireRobot extends RobotBase {
         Pose limelightPose = limelightController.hasResult() ? limelightController.getPose() : pinpointPose;
 
         long limelightLatency = (long) limelightController.getLatencyMs();
+        poseHistory.update(pinpointPose);
 
         // either odo has moved past ll
         // or odo has drifeted and ll is correct
@@ -353,6 +354,7 @@ public class JetfireRobot extends RobotBase {
         gateServoController.update();
 
         intakeMotorController.setPower(intakePower);
+
         // autoFire.update();
 
 
@@ -408,10 +410,10 @@ public class JetfireRobot extends RobotBase {
         laucnhCooldownTimer.resetTimer();
     }
 
-    public void startAllSubsystems() {
-        setFlywheelOn(true);
-        setIntakeOn(true);
-        setAutoAimTurntable(true);
+    public void toggleSubsystems(boolean on) {
+        setFlywheelOn(on);
+        setIntakeOn(on);
+        setAutoAimTurntable(on);
     }
 
     public void setIntakeOn(boolean isIntakeOn) {
@@ -472,6 +474,10 @@ public class JetfireRobot extends RobotBase {
 
     public boolean isArtifactLoaded() {
         return isArtifactLoaded;
+    }
+
+    public RGBIndicatorLightController getIndicatorLightController() {
+        return indicatorLightController;
     }
 
     @Override

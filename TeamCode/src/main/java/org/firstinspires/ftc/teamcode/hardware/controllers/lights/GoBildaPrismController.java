@@ -18,7 +18,7 @@ public class GoBildaPrismController extends HardwareController<GoBildaPrismDrive
     }
 
     @Override
-    public void update(long deltaTime) {
+    public void update() {
         if (indicateTimer.getElapsedTime() > indicateTimeMills && !doneIndicating) {
             device.insertAndUpdateAnimation(GoBildaPrismDriver.LayerHeight.LAYER_0, new PrismAnimations.Solid(indicateColor));
             doneIndicating = true;

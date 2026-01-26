@@ -49,7 +49,7 @@ public class RedFar extends BaseAuto<JetfireRobot> {
             case 0:
                 // START
                 robot.getFollower().followPath(shootPreload);
-                robot.startAllSubsystems();
+                robot.toggleSubsystems(true);
                 setPathState(1, true);
                 break;
             case 1:
@@ -93,10 +93,8 @@ public class RedFar extends BaseAuto<JetfireRobot> {
                 break;
 
             case -1:
-                if(!robot.getFollower().isBusy() ){
-                    robot.setAutoAimTurntable(false);
-                    robot.setFlywheelMode(JetfireRobot.FlywheelMode.OFF);
-                    robot.setIntakeMode(JetfireRobot.IntakeMode.OFF);
+                if(!robot.getFollower().isBusy()) {
+                    robot.toggleSubsystems(false);
 
                     robot.getFollower().holdPoint(endPose);
                     setPathState(-2, true);

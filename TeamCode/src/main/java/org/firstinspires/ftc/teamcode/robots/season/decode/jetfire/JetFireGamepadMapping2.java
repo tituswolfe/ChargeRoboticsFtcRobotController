@@ -16,7 +16,7 @@ public class JetFireGamepadMapping2 extends GamepadMapping<JetfireRobot> {
     @Override
     public void onYPressed() {
         robot.getFollower().setHeading(Math.toRadians(-180));
-        robot.indicate(RGBIndicatorLightController.Color.VIOLET);
+        robot.getIndicatorLightController().indicate(RGBIndicatorLightController.Color.VIOLET);
     }
 
     @Override

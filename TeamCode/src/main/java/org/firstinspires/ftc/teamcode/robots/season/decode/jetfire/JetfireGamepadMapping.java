@@ -10,10 +10,7 @@ public class JetfireGamepadMapping extends PrimaryDriverGamepadMapping<JetfireRo
 
     @Override
     public void onYPressed() {
-        robot.setFlywheelMode(switch (robot.getFlywheelMode()) {
-            case AUTO -> JetfireRobot.FlywheelMode.OFF;
-            case OFF -> JetfireRobot.FlywheelMode.AUTO;
-        });
+        robot.setFlywheelOn(!robot.isFlywheelOn());
     }
 
     @Override
@@ -23,7 +20,7 @@ public class JetfireGamepadMapping extends PrimaryDriverGamepadMapping<JetfireRo
 
     @Override
     public void onAPressed() {
-        robot.startAllSubsystems();
+        robot.toggleSubsystems(!robot.isFlywheelOn());
     }
 
     @Override
@@ -76,10 +73,7 @@ public class JetfireGamepadMapping extends PrimaryDriverGamepadMapping<JetfireRo
 
     @Override
     public void onLeftBumperPressed() {
-        robot.setIntakeMode(switch (robot.getIntakeMode()) {
-            case ON -> JetfireRobot.IntakeMode.OFF;
-            case OFF -> JetfireRobot.IntakeMode.ON;
-        });
+        robot.setIntakeOn(!robot.isIntakeOn());
     }
 
     @Override
