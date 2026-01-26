@@ -45,7 +45,6 @@ public class TurntableMotorController extends MotorController {
         double linearError = clampedTarget - currentHeading.getAngle(Angle.AngleUnit.DEGREES, Angle.AngleNormalization.BIPOLAR);
 
         pidfController.updateError(linearError);
-        //pidfController.updateFeedForwardInput(targetHeading.getAngle(Angle.AngleUnit.DEGREES, Angle.AngleNormalization.BIPOLAR));
 
         setPowerFromPIDFController();
     }

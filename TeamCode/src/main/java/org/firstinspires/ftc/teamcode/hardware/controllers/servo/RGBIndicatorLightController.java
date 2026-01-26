@@ -1,10 +1,11 @@
 package org.firstinspires.ftc.teamcode.hardware.controllers.servo;
 
+import com.pedropathing.util.Timer;
 import com.qualcomm.robotcore.hardware.Servo;
 
-public class RGBIndicatorLightController {
-    private final Servo indicatorLight;
-    
+import org.firstinspires.ftc.teamcode.hardware.controllers.HardwareController;
+
+public class RGBIndicatorLightController extends HardwareController<Servo> {
     public enum Color {
         OFF,
         RED,
@@ -18,12 +19,22 @@ public class RGBIndicatorLightController {
         VIOLET,
         WHITE
     }
-    Color color;
-    
-    public RGBIndicatorLightController(Servo indicatorLight) {
-        this.indicatorLight = indicatorLight;
-        this.indicatorLight.setPosition(0);
-        color = Color.OFF;
+    Color color = Color.OFF;
+
+    Timer indicateTimer = new Timer();
+    private static final int INDICATE_TIME_MS = 500;
+    RGBIndicatorLightController.Color indicateColor = RGBIndicatorLightController.Color.OFF;
+
+    public RGBIndicatorLightController(Servo device, String name) {
+        super(device, name);
+        device.setPosition(0);
+    }
+
+    @Override
+    public void update() {
+        if (indicateTimer.getElapsedTime() < INDICATE_TIME_MS) {
+            setColor(indicateColor);
+        }
     }
 
     // https://www.gobilda.com/rgb-indicator-light-pwm-controlled/
@@ -31,7 +42,7 @@ public class RGBIndicatorLightController {
         if (this.color == color) return;
         this.color = color;
 
-        indicatorLight.setPosition(switch (color) {
+        device.setPosition(switch (color) {
             case OFF -> 0;
             case RED -> 0.28; // RED position increased due to PWM variation, turning it OFF
             case ORANGE -> 0.333;
@@ -44,5 +55,10 @@ public class RGBIndicatorLightController {
             case VIOLET -> 0.719;
             case WHITE -> 1;
         });
+    }
+
+    public void indicate(Color color) {
+        indicateColor = color;
+        indicateTimer.resetTimer();
     }
 }

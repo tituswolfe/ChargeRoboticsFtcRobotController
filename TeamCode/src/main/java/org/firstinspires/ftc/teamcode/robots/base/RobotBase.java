@@ -35,6 +35,7 @@ import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.PathChain;
 import com.pedropathing.util.PoseHistory;
+import com.qualcomm.hardware.lynx.LynxModule;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.HardwareMap;
@@ -43,6 +44,8 @@ import org.firstinspires.ftc.teamcode.hardware.drivetrain.pedroPathing.Constants
 import org.firstinspires.ftc.teamcode.hardware.drivetrain.pedroPathing.Drawing;
 import org.firstinspires.ftc.teamcode.robots.base.opmodes.OpModeBase;
 import org.firstinspires.ftc.teamcode.util.math.Angle;
+
+import java.util.List;
 
 // - Dedication -
 // In memory of DraculaBase & Mr. Miller.
@@ -69,6 +72,9 @@ public abstract class RobotBase {
     public Angle fieldCentricOffset;
     public static double slowSpeedFactor = 0.3;
 
+
+    List<LynxModule> lynxModules;
+
     /**
      * Called in {@link OpModeBase#init()}
      * @param hardwareMap hardware map
@@ -82,6 +88,11 @@ public abstract class RobotBase {
         if (follower != null) {
             follower.setStartingPose(startPose);
             follower.update();
+        }
+
+        lynxModules = hardwareMap.getAll(LynxModule.class);
+        for (LynxModule hub : lynxModules) {
+            hub.setBulkCachingMode(LynxModule.BulkCachingMode.MANUAL);
         }
     }
 
@@ -112,6 +123,10 @@ public abstract class RobotBase {
      * Update hardware states and telemetry. Do not {@link TelemetryManager#update()} in this method. Robot uses auto caching. do not get sensor data twice.
      */
     public void update(long deltaTimeMs, TelemetryManager telemetry) {
+        for (LynxModule hub : lynxModules) {
+            hub.clearBulkCache();
+        }
+
         if (follower != null) {
             follower.update();
 
@@ -121,9 +136,10 @@ public abstract class RobotBase {
             telemetry.addData("X", currentPose.getX());
             telemetry.addData("Y", currentPose.getY());
             telemetry.addData("Heading (Deg)", Math.toDegrees(currentPose.getHeading()));
+            telemetry.addLine("");
             telemetry.addData("isRobotCentric", isRobotCentric);
-            telemetry.addData("Field Centric Offset (Deg)", fieldCentricOffset.getAngle(Angle.AngleUnit.DEGREES, Angle.AngleNormalization.BIPOLAR));
             telemetry.addData("isSlowMode", isSlowMode);
+            telemetry.addLine("");
             telemetry.addData("Velocity Magnitude", follower.getVelocity().getMagnitude());
             telemetry.addData("Acceleration Magnitude", follower.getAcceleration().getMagnitude());
             telemetry.addLine("");

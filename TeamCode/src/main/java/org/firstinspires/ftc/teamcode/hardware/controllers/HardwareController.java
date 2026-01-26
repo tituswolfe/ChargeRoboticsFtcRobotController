@@ -5,7 +5,7 @@ import com.bylazar.telemetry.TelemetryManager;
 import com.qualcomm.robotcore.hardware.HardwareDevice;
 
 /**
- * Abstract HardwareController for closed loop control
+ * Abstract HardwareController for closed loop control.
  */
 public abstract class HardwareController<Device extends HardwareDevice> {
     protected final Device device;
@@ -19,7 +19,8 @@ public abstract class HardwareController<Device extends HardwareDevice> {
     public abstract void update();
 
     public void addTelemetry(TelemetryManager telemetry) {
-        telemetry.addData("Name", name);
+        telemetry.addLine("");
+        telemetry.addLine("- " + name + " -");
     }
 
     public Device getDevice() {

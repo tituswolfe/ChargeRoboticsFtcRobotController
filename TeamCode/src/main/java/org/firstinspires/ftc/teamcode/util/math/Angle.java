@@ -68,6 +68,10 @@ public class Angle {
     public Angle plus(Angle angle, AngleNormalization angleNormalization) {
         return new Angle(getAngle(angleNormalization) + angle.getAngle(angleNormalization));
     }
+
+    public Angle times(double scalar, AngleNormalization angleNormalization) {
+        return new Angle(getAngle(angleNormalization) * scalar);
+    }
 //
 //    public Angle times(Angle angle, AngleNormalization) {
 //

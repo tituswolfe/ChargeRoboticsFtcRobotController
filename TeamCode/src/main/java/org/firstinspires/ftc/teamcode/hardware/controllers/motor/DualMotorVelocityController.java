@@ -1,15 +1,12 @@
-package org.firstinspires.ftc.teamcode.hardware.controllers.subsystems;
+package org.firstinspires.ftc.teamcode.hardware.controllers.motor;
 
 import com.pedropathing.control.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.hardware.DcMotorSimple;
-
-import org.firstinspires.ftc.teamcode.hardware.controllers.motor.VelocityMotorController;
 
 public class DualMotorVelocityController extends VelocityMotorController {
     DcMotorEx secondMotor;
 
-    public DualMotorVelocityController(DcMotorEx device, String name, PIDFCoefficients pidfCoefficients, double ticksPerRevolution, double totalGearRatio, double maxPower, DcMotorEx secondMotor) {
+    public DualMotorVelocityController(DcMotorEx device, DcMotorEx secondMotor, String name, PIDFCoefficients pidfCoefficients, double ticksPerRevolution, double totalGearRatio, double maxPower) {
         super(device, name, pidfCoefficients, ticksPerRevolution, totalGearRatio, maxPower);
 
         this.secondMotor = secondMotor;

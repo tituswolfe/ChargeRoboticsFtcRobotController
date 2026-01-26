@@ -19,6 +19,7 @@ import org.firstinspires.ftc.teamcode.hardware.drivetrain.pedroPathing.Drawing;
 import org.firstinspires.ftc.teamcode.robots.base.GamepadMapping;
 import org.firstinspires.ftc.teamcode.robots.base.RobotBase;
 import org.firstinspires.ftc.teamcode.robots.base.StaticData;
+import org.firstinspires.ftc.teamcode.util.math.RollingAverage;
 
 import java.util.Optional;
 
@@ -35,10 +36,6 @@ public abstract class OpModeBase<Robot extends RobotBase> extends OpMode {
     protected GamepadMapping<Robot> gamepadMapping2;
 
     TelemetryManager telemetryManager = PanelsTelemetry.INSTANCE.getTelemetry();
-    private static final FieldManager panelsField = PanelsField.INSTANCE.getField();
-    private static final Style robotLook = new Style(
-            "", "#3F51B5", 0.75
-    );
 
     public enum AllianceColor {
         RED,
@@ -48,6 +45,8 @@ public abstract class OpModeBase<Robot extends RobotBase> extends OpMode {
     protected static Timer opmodeTimer = new Timer();
     protected boolean isEndgame = false;
 
+    private static final int DELTA_TIME_SAMPLE_SIZE = 50;
+    RollingAverage rollingAverage = new RollingAverage(DELTA_TIME_SAMPLE_SIZE);
     private final Timer deltaTimer = new Timer();
 
     /**
@@ -56,7 +55,7 @@ public abstract class OpModeBase<Robot extends RobotBase> extends OpMode {
     @Override
     public void init() {
         // TODO: Make sure gamepads driing don't interfer with each other
-        // TODO: One static instance of robot and opmode etc.
+        // TODO: Single static instance of robot and opmode
 
         telemetry.addLine("Charger Robotics");
         telemetry.addLine("Please wait . . .");
@@ -106,9 +105,13 @@ public abstract class OpModeBase<Robot extends RobotBase> extends OpMode {
         long deltaTimeMs = deltaTimer.getElapsedTime();
         deltaTimer.resetTimer();
 
+        rollingAverage.update(deltaTimeMs);
+
         telemetryManager.addLine("- OpMode info -");
         telemetryManager.addData("Alliance Color", StaticData.allianceColor);
         telemetryManager.addData("Delta Time (MS)", deltaTimeMs);
+        telemetryManager.addData("Avrg. Delta Time (MS)", rollingAverage.getAverage());
+
         telemetryManager.addData("Elapsed time (sec)", opmodeTimer.getElapsedTimeSeconds());
         telemetryManager.addData("isEndgame", isEndgame);
 
@@ -117,9 +120,6 @@ public abstract class OpModeBase<Robot extends RobotBase> extends OpMode {
         telemetryManager.addLine("");
         telemetryManager.addLine("- Charger Robotics -");
         telemetryManager.addLine("- DON'T TOUCH THAT RYAN! -");
-
-
-        panelsField.update();
 
         telemetryManager.update(this.telemetry);
     }

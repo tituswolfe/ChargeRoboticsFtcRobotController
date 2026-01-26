@@ -54,7 +54,8 @@ public abstract class MotorController extends HardwareController<DcMotorEx> {
     public void setPower(double power) {
         double clampedPower = MathUtils.clamp(power, maxPower, -maxPower);
 
-        if (!MathUtil.isWithinRange(power, clampedPower, deltaFilteringThreshold)) {
+        // not withing threshold or power is equal zero
+        if (!MathUtil.isWithinRange(power, clampedPower, deltaFilteringThreshold) || clampedPower == 0) {
             this.power = isMotorEngaged ? clampedPower : 0;
         }
     }

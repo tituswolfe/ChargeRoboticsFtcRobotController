@@ -15,7 +15,8 @@ public class JetFireGamepadMapping2 extends GamepadMapping<JetfireRobot> {
 
     @Override
     public void onYPressed() {
-
+        robot.getFollower().setHeading(Math.toRadians(-180));
+        robot.indicate(RGBIndicatorLightController.Color.VIOLET);
     }
 
     @Override
@@ -29,7 +30,7 @@ public class JetFireGamepadMapping2 extends GamepadMapping<JetfireRobot> {
 
     @Override
     public void onXPressed() {
-        robot.getTurret().turntableController().setInitialAngle(new Angle(0));
+
     }
 
     @Override
@@ -94,26 +95,21 @@ public class JetFireGamepadMapping2 extends GamepadMapping<JetfireRobot> {
 
     @Override
     public void onDpadUpPressed() {
-        robot.getFollower().setHeading(Math.toRadians(StaticData.allianceColor == OpModeBase.AllianceColor.RED ? 90 : -90));
-        robot.indicate(RGBIndicatorLightController.Color.VIOLET);
+
     }
 
     @Override
     public void onDpadRightPressed() {
-        robot.getFollower().poseTracker.set(Math.toRadians(StaticData.allianceColor == OpModeBase.AllianceColor.RED ? 0 : -180));
-        robot.indicate(RGBIndicatorLightController.Color.VIOLET);
+
     }
 
     @Override
     public void onDpadDownPressed() {
-        robot.getFollower().setHeading(Math.toRadians(StaticData.allianceColor == OpModeBase.AllianceColor.RED ? -90 : 90));
-        robot.indicate(RGBIndicatorLightController.Color.VIOLET);
+
     }
 
     @Override
     public void onDpadLeftPressed() {
-        robot.getFollower().setHeading(Math.toRadians(StaticData.allianceColor == OpModeBase.AllianceColor.RED ? -180 : 0));
-        robot.indicate(RGBIndicatorLightController.Color.VIOLET);
 
     }
 
