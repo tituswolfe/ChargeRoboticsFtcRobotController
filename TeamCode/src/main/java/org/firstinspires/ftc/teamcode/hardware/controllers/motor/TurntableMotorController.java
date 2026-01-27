@@ -19,6 +19,8 @@ public class TurntableMotorController extends MotorController {
     private Angle targetHeading = new Angle(0);
     private Angle currentHeading = new Angle(0);
 
+    private double error = 0;
+
     public TurntableMotorController(DcMotorEx device, String name, PIDFCoefficients pidfCoefficients, double ticksPerRevolution, double totalGearRatio, double maxPower, Angle minSoftLimit, Angle maxSoftLimit, boolean reversePower, Angle initialAngle) {
         super(device, name, pidfCoefficients, ticksPerRevolution, totalGearRatio, maxPower);
 
@@ -43,6 +45,7 @@ public class TurntableMotorController extends MotorController {
         );
 
         double linearError = clampedTarget - currentHeading.getAngle(Angle.AngleUnit.DEGREES, Angle.AngleNormalization.BIPOLAR);
+        error = linearError;
 
         pidfController.updateError(linearError);
 
@@ -73,6 +76,10 @@ public class TurntableMotorController extends MotorController {
 
     public Angle getInitialAngle() {
         return initialAngle;
+    }
+
+    public double getError() {
+        return error;
     }
 
     @Override

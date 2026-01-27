@@ -34,6 +34,8 @@ import org.firstinspires.ftc.teamcode.util.PoseHistory;
 import org.firstinspires.ftc.teamcode.util.info.HardwareInfo;
 import org.firstinspires.ftc.teamcode.util.math.Angle;
 import org.firstinspires.ftc.teamcode.util.math.MathUtil;
+
+import static org.firstinspires.ftc.teamcode.robots.base.StaticData.allianceColor;
 import static org.firstinspires.ftc.teamcode.robots.season.decode.jetfire.JetFireConstants.*;
 
 import java.util.Optional;
@@ -42,30 +44,29 @@ import java.util.concurrent.TimeUnit;
 @Configurable
 public class JetfireRobot extends RobotBase {
     private Turret<DualMotorVelocityController> turret;
-    BasicMotorController intakeMotorController;
+    private BasicMotorController intakeMotorController;
 
-    ServoTimerController transferServoController;
-    ServoTimerController gateServoController;
+    private ServoTimerController transferServoController;
+    private ServoTimerController gateServoController;
 
-    GoBildaLaserDistanceSensorDigital chamberSensor;
+    private GoBildaLaserDistanceSensorDigital chamberSensor;
 
-    RGBIndicatorLightController indicatorLightController;
-    GoBildaPrismDriver prism;
+    private RGBIndicatorLightController indicatorLightController;
+    private GoBildaPrismDriver prism;
 
     private LimelightController limelightController;
 
     private boolean autoAimTurntable = false;
-
     private boolean isFlywheelOn = false;
-
     private boolean isIntakeOn = false;
     private boolean reverseIntake = false;
 
     public static double CLOSE_ZONE_TURNTABLE_OFFSET_DEG = 2;
     public static double FAR_ZONE_TURNTABLE_OFFSET_DEG = -1; // neg toward opp alliance, pos toward your alliance
 
-    // COOLDOWN
     Timer laucnhCooldownTimer = new Timer();
+
+    PoseHistory poseHistory = new PoseHistory(5);
 
     // TUNING
     public static boolean TUNING = false;
@@ -73,21 +74,23 @@ public class JetfireRobot extends RobotBase {
     public static double HOOD_ANGLE = 16;
     public static double TURNTABLE_OFFSET_DEG = 0;
 
-
     // RUNTIME
-    public static Pose targetGoal;
+    public static Pose targetGoal = new Pose(-67, 67); //y for blue: -67
     private boolean isReadyToShoot = false;
     private boolean isInFarZone = false;
     private boolean isFlywheelReady = false;
-    private boolean isArtifactLoaded;
+    private boolean isArtifactLoaded = false;
 
-    private final StateMachine autoFire = new StateMachine();
+//    private final StateMachine autoFire = new StateMachine();
 
     @Override
     public void init(HardwareMap hardwareMap, Pose startPose, OpModeBase.AllianceColor allianceColor) {
         super.init(hardwareMap, startPose, allianceColor);
 
-        targetGoal = new Pose(-67, allianceColor == OpModeBase.AllianceColor.RED ? 67 : -67);
+        if (allianceColor.equals(OpModeBase.AllianceColor.BLUE)) {
+            targetGoal = targetGoal.mirror();
+        }
+//        targetGoal = new Pose(-67, allianceColor == OpModeBase.AllianceColor.RED ? 67 : -67);
 
         // TODO: State machine class
 //        for (int i = 0; i <= 2; i++) {
@@ -128,8 +131,8 @@ public class JetfireRobot extends RobotBase {
                 HardwareInfo.GOBILDA_5203_YELLOW_JACKET_MOTOR_435_RPM.ENCODER_RESOLUTION_PPR,
                 TURNTABLE_TOTAL_GEAR_RATIO,
                 TURNTABLE_MAX_POWER,
-                new Angle(TURNTABLE_HARD_STOP, false),
-                new Angle(-TURNTABLE_HARD_STOP, false),
+                new Angle(TURNTABLE_HARD_STOP, Angle.AngleUnit.DEGREES),
+                new Angle(-TURNTABLE_HARD_STOP, Angle.AngleUnit.DEGREES),
                 false,
                 turretStartHeading
         );
@@ -176,11 +179,11 @@ public class JetfireRobot extends RobotBase {
 
         Servo indicator = hardwareMap.get(Servo.class, "indicator");
         indicatorLightController = new RGBIndicatorLightController(indicator, "Indicator");
-        indicatorLightController.setColor(StaticData.allianceColor == OpModeBase.AllianceColor.RED ? RGBIndicatorLightController.Color.RED : RGBIndicatorLightController.Color.BLUE);
+        indicatorLightController.setColor(allianceColor == OpModeBase.AllianceColor.RED ? RGBIndicatorLightController.Color.RED : RGBIndicatorLightController.Color.BLUE);
 
         prism = hardwareMap.get(GoBildaPrismDriver.class,"prism");
         PrismAnimations.DroidScan droidScan = new PrismAnimations.DroidScan();
-        droidScan.setPrimaryColor(StaticData.allianceColor == OpModeBase.AllianceColor.RED ? Color.RED : Color.BLUE);
+        droidScan.setPrimaryColor(allianceColor == OpModeBase.AllianceColor.RED ? Color.RED : Color.BLUE);
         droidScan.setSpeed(0.05f);
         droidScan.setEyeWidth(4);
 
@@ -195,19 +198,19 @@ public class JetfireRobot extends RobotBase {
         // TODO: Init servo pos here
     }
 
-    PoseHistory poseHistory = new PoseHistory(5);
     @Override
     public void update(long deltaTimeMs, TelemetryManager telemetry) {
         Pose pinpointPose = follower.getPose();
         Pose limelightPose = limelightController.hasResult() ? limelightController.getPose() : pinpointPose;
 
-        long limelightLatency = (long) limelightController.getLatencyMs();
+        // Latency Compensation
+        long limelightLatencyMs = (long) limelightController.getLatencyMs();
         poseHistory.update(pinpointPose);
 
         // either odo has moved past ll
-        // or odo has drifeted and ll is correct
+        // or odo has drifted and ll is correct
         if (pinpointPose.distanceFrom(limelightPose) > 2) {
-            Pose pinpointPoseAtLimelightCapture = poseHistory.getPoseAt(limelightLatency);
+            Pose pinpointPoseAtLimelightCapture = poseHistory.getPoseAt(limelightLatencyMs);
 
             follower.poseTracker.setXOffset(limelightPose.getX() - pinpointPoseAtLimelightCapture.getX());
             follower.poseTracker.setYOffset(limelightPose.getY() - pinpointPoseAtLimelightCapture.getY());
@@ -217,93 +220,86 @@ public class JetfireRobot extends RobotBase {
         Vector velocity = follower.getVelocity();
 
         double headingDeg = Math.toDegrees(pinpointPose.getHeading());
+        Angle heading = new Angle(currentPose.getHeading());
 
         Angle relativeTurntableHeading = turret.turntableController().getHeading();
-        double relativeTurntableHeadingDeg = relativeTurntableHeading.getAngle(Angle.AngleUnit.DEGREES, Angle.AngleNormalization.BIPOLAR);
-        double relativeTurntableTargetHeadingDeg = turret.turntableController().getTargetHeading().getAngle(Angle.AngleUnit.DEGREES, Angle.AngleNormalization.BIPOLAR);
-
-        //Angle absoluteTurntableHeading = new Angle(relativeTurntableHeading.getAngle(Angle.AngleNormalization.BIPOLAR) + follower.getHeading());
+//        double relativeTurntableHeadingDeg = relativeTurntableHeading.getAngle(Angle.AngleUnit.DEGREES, Angle.AngleNormalization.BIPOLAR);
+//        double relativeTurntableTargetHeadingDeg = turret.turntableController().getTargetHeading().getAngle(Angle.AngleUnit.DEGREES, Angle.AngleNormalization.BIPOLAR);
 
         isInFarZone = currentPose.getX() > FAR_ZONE_X_THRESHOLD;
 
-        double flywheelVelocity = turret.flywheelController().getVelocity();
-        double flywheelTargetVelocity = turret.flywheelController().getTargetVelocity();
+        double flywheelError = turret.flywheelController().getError();
+        isFlywheelReady = Math.abs(flywheelError) < FLYWHEEL_VELOCITY_MARGIN_RPM && !isFlywheelOn;
 
-        isFlywheelReady = MathUtil.isWithinRange(flywheelVelocity, flywheelTargetVelocity, FLYWHEEL_VELOCITY_MARGIN_RPM) && !isFlywheelOn;
-
-        boolean isTurntableReady = MathUtil.isWithinRange(relativeTurntableHeadingDeg, relativeTurntableTargetHeadingDeg, TURNTABLE_HEADING_MARGIN_DEG);
+        double turntableErrorDeg = turret.turntableController().getError();
+        boolean isTurntableReady = Math.abs(turntableErrorDeg) < TURNTABLE_HEADING_MARGIN_DEG;
 
         isArtifactLoaded = chamberSensor.isObjectDetected();
 
         boolean isCooldownOver = laucnhCooldownTimer.getElapsedTime() > LAUNCH_COOLDOWN_MS;
         boolean isIntakeCooldownOver = laucnhCooldownTimer.getElapsedTime() > INTAKE_COOLDOWN_MS;
 
-        isReadyToShoot = isTurntableReady && isArtifactLoaded && isCooldownOver; // isFlywheelReady
+        isReadyToShoot = isTurntableReady && isArtifactLoaded && isCooldownOver;
 
         // Lead Computing
         long totalLaunchDelayMills = deltaTimeMs + LEAD_COMPUTING_TRANSFER_DELAY_MS;
         double launchDelaySec = TimeUnit.MILLISECONDS.convert(totalLaunchDelayMills, TimeUnit.SECONDS);
-                //(deltaTimeMs + LEAD_COMPUTING_TRANSFER_DELAY_MS) / 1000.0;
 
         Pose predictedFuturePose = MathUtil.predictFuturePose(currentPose, velocity, launchDelaySec);
-
         double distanceFromGoalAtFuturePose = predictedFuturePose.distanceFrom(targetGoal);
 
         long timeOfFlightMills = (long) TIME_OF_FLIGHT_BY_DISTANCE.interpolate(distanceFromGoalAtFuturePose);
         double timeOfFlightSec = TimeUnit.MILLISECONDS.convert(timeOfFlightMills, TimeUnit.SECONDS);
 
-        Pose virtualGoal = MathUtil.predictFuturePose(targetGoal, velocity.times(-1), timeOfFlightSec);
+        Vector virtualGoalVelocity = velocity.times(-1);
+        Pose virtualGoal = MathUtil.predictFuturePose(targetGoal, virtualGoalVelocity, timeOfFlightSec);
 
         double virtualDistanceFromGoal = predictedFuturePose.distanceFrom(virtualGoal);
         Angle virtualGoalHeading = new Angle(MathUtil.bearingTo(predictedFuturePose, virtualGoal));
 
-        // UPDATE HARDWARE
-        double flywheelSpeed = isFlywheelOn ? FLYWHEEL_VELOCITY_BY_DISTANCE.interpolate(virtualDistanceFromGoal) : 0;
+        // HARDWARE VARIABLES
+        double flywheelSpeed = FLYWHEEL_VELOCITY_BY_DISTANCE.interpolate(virtualDistanceFromGoal);
 
+        // TODO: Better soulution for zone offset and adjustment controls
         double turntableZoneOffsetDeg = isInFarZone ? FAR_ZONE_TURNTABLE_OFFSET_DEG : CLOSE_ZONE_TURNTABLE_OFFSET_DEG;
-        Angle turntableZoneOffset = new Angle(
-                turntableZoneOffsetDeg * ((StaticData.allianceColor == OpModeBase.AllianceColor.BLUE) ? 1 : -1),
-                false
-        );
+        double turntableZoneOffsetByAlliance = (allianceColor == OpModeBase.AllianceColor.BLUE) ? turntableZoneOffsetDeg : -turntableZoneOffsetDeg;
+        Angle turntableZoneOffset = new Angle(turntableZoneOffsetByAlliance, false);
 
-        Angle turntableHeading = virtualGoalHeading.minus(new Angle(currentPose.getHeading()), Angle.AngleNormalization.NONE).plus(turntableZoneOffset, Angle.AngleNormalization.NONE);
-        Angle hoodAngle = new Angle(HOOD_ANGLE_BY_DISTANCE.interpolate(virtualDistanceFromGoal), false);
+        Angle turntableHeading = virtualGoalHeading
+                .minus(heading, Angle.AngleNormalization.NONE)
+                .plus(turntableZoneOffset, Angle.AngleNormalization.NONE);
 
-        if (!TUNING) {
-            turret.update(
-                    flywheelSpeed,
-                    autoAimTurntable ? turntableHeading : new Angle(0),
-                    hoodAngle
-            );
-        } else {
-            if (!turret.flywheelController().getPidfController().getCoefficients().equals(FLYWHEEL_PIDF_COEFFICIENTS)) turret.flywheelController().getPidfController().setCoefficients(FLYWHEEL_PIDF_COEFFICIENTS);
-            if (!turret.turntableController().getPidfController().getCoefficients().equals(TURNTABLE_PIDF_COEFFICIENTS)) turret.turntableController().getPidfController().setCoefficients(TURNTABLE_PIDF_COEFFICIENTS);
-
-            turret.update(
-                    FLYWHEEL_TARGET_VELOCITY,
-                    new Angle(TURNTABLE_OFFSET_DEG, false),
-                    new Angle(HOOD_ANGLE, false)
-            );
-        }
+        double interpolatedHoodAngleDeg = HOOD_ANGLE_BY_DISTANCE.interpolate(virtualDistanceFromGoal);
+        double hoodRegression = flywheelError * HOOD_REGRESSION_RATIO;
+        Angle hoodAngle = new Angle(interpolatedHoodAngleDeg + hoodRegression, Angle.AngleUnit.DEGREES);
 
         double intakePower = 0.0;
-
         if (isIntakeOn && isIntakeCooldownOver) {
             intakePower = reverseIntake ? REVERSE_INTAKE_POWER : INTAKE_POWER;
         }
 
+        RGBIndicatorLightController.Color indicatorColor;
         if (OpModeBase.getOpModeElapsedTimeSeconds() > 110) {
-            indicatorLightController.setColor(RGBIndicatorLightController.Color.WHITE);
+            indicatorColor = RGBIndicatorLightController.Color.WHITE;
         } else if (!isTurntableReady) {
-            indicatorLightController.setColor(RGBIndicatorLightController.Color.ORANGE);
+            indicatorColor = RGBIndicatorLightController.Color.ORANGE;
         } else if (!isArtifactLoaded) {
-            indicatorLightController.setColor(RGBIndicatorLightController.Color.RED);
+            indicatorColor = RGBIndicatorLightController.Color.RED;
         } else {
-            indicatorLightController.setColor(RGBIndicatorLightController.Color.GREEN);
+            indicatorColor = RGBIndicatorLightController.Color.GREEN;
         }
 
-        // UPDATE HARDWARE
+        // - UPDATE HARDWARE -
         super.update(deltaTimeMs, telemetry);
+
+        turret.flywheelController().setMotorEngaged(isFlywheelOn);
+        turret.turntableController().setMotorEngaged(autoAimTurntable);
+
+        if (!TUNING) {
+            turret.update(flywheelSpeed, turntableHeading, hoodAngle);
+        } else {
+            turret.update(FLYWHEEL_TARGET_VELOCITY, new Angle(TURNTABLE_OFFSET_DEG, Angle.AngleUnit.DEGREES), new Angle(HOOD_ANGLE, Angle.AngleUnit.DEGREES));
+        }
 
         chamberSensor.update();
 
@@ -314,20 +310,15 @@ public class JetfireRobot extends RobotBase {
         gateServoController.update();
 
         intakeMotorController.setPower(intakePower);
+        intakeMotorController.update();
+
+        indicatorLightController.setColor(indicatorColor);
 
         // autoFire.update();
-
-
         // UPDATE STATIC
         JetfireStaticData.lastTurretHeading = relativeTurntableHeading;
 
-        // TODO: LL primary odo (sensor fusion problems while moving, Kalman, or poseTracker for latency)
-        // TODO: Indicator light for endgame park time
-        // TODO: Rumble on controllers
-        // INTAKE that goes all the way to edge
-
-        // - UPDATE TELEMETRY -
-
+        // - TELEMETRY -
         telemetry.addLine("- CONDITIONS -");
         telemetry.addData("isReadyToShoot", isReadyToShoot);
         telemetry.addData("isArtifactLoaded", isArtifactLoaded);
@@ -346,8 +337,12 @@ public class JetfireRobot extends RobotBase {
         turret.hoodServoController().addTelemetry(telemetry);
 
         if (TUNING) {
+            if (!turret.flywheelController().getPidfController().getCoefficients().equals(FLYWHEEL_PIDF_COEFFICIENTS)) turret.flywheelController().getPidfController().setCoefficients(FLYWHEEL_PIDF_COEFFICIENTS);
+            if (!turret.turntableController().getPidfController().getCoefficients().equals(TURNTABLE_PIDF_COEFFICIENTS)) turret.turntableController().getPidfController().setCoefficients(TURNTABLE_PIDF_COEFFICIENTS);
+
             Angle goalHeading = new Angle(MathUtil.bearingTo(currentPose, targetGoal));
             double distanceFromGoal = currentPose.distanceFrom(targetGoal);
+            Angle absoluteTurntableHeading = new Angle(relativeTurntableHeading.getAngle(Angle.AngleNormalization.BIPOLAR) + follower.getHeading());
 
             telemetry.addLine("");
             telemetry.addLine("- TUNING DATA -");
@@ -416,9 +411,9 @@ public class JetfireRobot extends RobotBase {
         return limelightController;
     }
 
-    public StateMachine getAutoFire() {
-        return autoFire;
-    }
+//    public StateMachine getAutoFire() {
+//        return autoFire;
+//    }
 
     public Turret getTurret() {
         return turret;

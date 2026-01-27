@@ -25,10 +25,15 @@ public class JetFireConstants {
 
     // HOOD
     public static final String HOOD_NAME = "Hood";
-    public static final Angle HOOD_TOTAL_ROTATION = new Angle(300, false);
-    public static final double HOOD_TOTAL_GEAR_RATIO = (48.0 / 40.0) * (116.0 / 12.0);
-    public static final Angle MIN_HOOD_ANGLE = new Angle(22, false);
-    public static final Angle MAX_HOOD_ANGLE = new Angle(42, false);
+    public static final Angle HOOD_TOTAL_ROTATION = new Angle(300, Angle.AngleUnit.DEGREES);
+    public static final double HOOD_TOTAL_GEAR_RATIO = (48.0 / 40.0) * (225.0 / 22.0);
+    public static final Angle MIN_HOOD_ANGLE = new Angle(27, Angle.AngleUnit.DEGREES);
+    public static final Angle MAX_HOOD_ANGLE = new Angle(49, Angle.AngleUnit.DEGREES);
+
+    // Regression (Deg) : Error (RPM)
+    // 0.01 : 1
+    // 1 : 100
+    public static double HOOD_REGRESSION_RATIO = 0.01;
 
     // INTAKE
     public static final String INTAKE_NAME = "Intake";

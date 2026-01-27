@@ -22,6 +22,7 @@ public abstract class MotorController extends HardwareController<DcMotorEx> {
     private final double maxPower;
 
     protected double velocity = 0;
+    protected double lastPower = 0;
     protected double power = 0;
     protected boolean isMotorEngaged = true;
     protected double currentPosition = 0;
@@ -48,16 +49,18 @@ public abstract class MotorController extends HardwareController<DcMotorEx> {
         velocity = (device.getVelocity() * 60) / ticksPerRevolution;
         currentPosition = device.getCurrentPosition();
 
-        device.setPower(power);
+        double clampedPower = MathUtils.clamp(power, maxPower, -maxPower);
+        if (!MathUtil.isWithinRange(clampedPower, lastPower, deltaFilteringThreshold)) {
+            device.setPower(clampedPower);
+        } else if (clampedPower == 0 && lastPower != 0) {
+            device.setPower(0);
+        }
+
+        lastPower = clampedPower;
     }
 
     public void setPower(double power) {
-        double clampedPower = MathUtils.clamp(power, maxPower, -maxPower);
-
-        // not withing threshold or power is equal zero
-        if (!MathUtil.isWithinRange(power, clampedPower, deltaFilteringThreshold) || clampedPower == 0) {
-            this.power = isMotorEngaged ? clampedPower : 0;
-        }
+        this.power = isMotorEngaged ? power : 0;
     }
 
     protected void setPowerFromPIDFController() {
