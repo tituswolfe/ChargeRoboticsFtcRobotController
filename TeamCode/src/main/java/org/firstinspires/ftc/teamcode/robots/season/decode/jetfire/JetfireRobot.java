@@ -270,6 +270,8 @@ public class JetfireRobot extends RobotBase {
                 .plus(turntableZoneOffset, Angle.AngleNormalization.NONE);
 
         double interpolatedHoodAngleDeg = HOOD_ANGLE_BY_DISTANCE.interpolate(virtualDistanceFromGoal);
+        // TODO: Regression distance factor, or far and close zone factor
+        // TODO: Only use regression if flywheel dips below certin amount
         double hoodRegression = flywheelError * HOOD_REGRESSION_RATIO;
         Angle hoodAngle = new Angle(interpolatedHoodAngleDeg + hoodRegression, Angle.AngleUnit.DEGREES);
 
@@ -312,6 +314,7 @@ public class JetfireRobot extends RobotBase {
         intakeMotorController.setPower(intakePower);
         intakeMotorController.update();
 
+
         indicatorLightController.setColor(indicatorColor);
 
         // autoFire.update();
@@ -335,6 +338,9 @@ public class JetfireRobot extends RobotBase {
         turret.turntableController().addTelemetry(telemetry);
         turret.flywheelController().addTelemetry(telemetry);
         turret.hoodServoController().addTelemetry(telemetry);
+
+        telemetry.addData("Interpolated Hood Angle (Deg)", interpolatedHoodAngleDeg);
+        telemetry.addData("Additive Linear Offset Regression (Deg)", hoodRegression);
 
         if (TUNING) {
             if (!turret.flywheelController().getPidfController().getCoefficients().equals(FLYWHEEL_PIDF_COEFFICIENTS)) turret.flywheelController().getPidfController().setCoefficients(FLYWHEEL_PIDF_COEFFICIENTS);
