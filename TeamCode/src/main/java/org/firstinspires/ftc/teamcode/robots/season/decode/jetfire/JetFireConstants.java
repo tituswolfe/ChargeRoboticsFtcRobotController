@@ -33,7 +33,7 @@ public class JetFireConstants {
     // Regression (Deg) : Error (RPM)
     // 0.01 : 1
     // 1 : 100
-    public static double HOOD_REGRESSION_RATIO = 0.01;
+    public static double HOOD_REGRESSION_RATIO = 0;
 
     // INTAKE
     public static final String INTAKE_NAME = "Intake";
@@ -64,41 +64,41 @@ public class JetFireConstants {
     public static long LEAD_COMPUTING_TRANSFER_DELAY_MS = 80;
 
     // LUTs
-    private static final TreeMap<Double, Double> flywheelSpeedByDistanceMap = new TreeMap<>();
+    public static TreeMap<Double, Double> FLYWHEEL_VELOCITY_BY_DISTANCE_MAP = new TreeMap<>();
     static {
         // INCH, RPM
-        flywheelSpeedByDistanceMap.put(33.0, 2000.0);
-        flywheelSpeedByDistanceMap.put(59.0, 2200.0);
-        flywheelSpeedByDistanceMap.put(74.0, 2400.0);
-        flywheelSpeedByDistanceMap.put(98.0, 2500.0);
-        flywheelSpeedByDistanceMap.put(113.0, 2600.0);
-        flywheelSpeedByDistanceMap.put(123.0, 3000.0);
+        FLYWHEEL_VELOCITY_BY_DISTANCE_MAP.put(33.0, 2000.0);
+        FLYWHEEL_VELOCITY_BY_DISTANCE_MAP.put(59.0, 2200.0);
+        FLYWHEEL_VELOCITY_BY_DISTANCE_MAP.put(74.0, 2400.0);
+        FLYWHEEL_VELOCITY_BY_DISTANCE_MAP.put(98.0, 2500.0);
+        FLYWHEEL_VELOCITY_BY_DISTANCE_MAP.put(113.0, 2600.0);
+        FLYWHEEL_VELOCITY_BY_DISTANCE_MAP.put(123.0, 3000.0);
     }
-    public static final LinearInterpolator FLYWHEEL_VELOCITY_BY_DISTANCE = new LinearInterpolator(flywheelSpeedByDistanceMap);
+    public static final LinearInterpolator FLYWHEEL_VELOCITY_BY_DISTANCE = new LinearInterpolator(FLYWHEEL_VELOCITY_BY_DISTANCE_MAP);
 
-    private static final TreeMap<Double, Double> hoodAngleByDistanceMap = new TreeMap<>();
+    public static TreeMap<Double, Double> HOOD_ANGLE_BY_DISTANCE_MAP = new TreeMap<>();
     static  {
         // INCH, DEGREES
-        hoodAngleByDistanceMap.put(33.0, 24.0);
-        hoodAngleByDistanceMap.put(59.0, 31.0);
-        hoodAngleByDistanceMap.put(74.0, 38.0);
-        hoodAngleByDistanceMap.put(98.0, 41.0);
-        hoodAngleByDistanceMap.put(113.0, 41.0);
-        hoodAngleByDistanceMap.put(123.0, 41.0);
+        HOOD_ANGLE_BY_DISTANCE_MAP.put(33.0, 24.0);
+        HOOD_ANGLE_BY_DISTANCE_MAP.put(59.0, 31.0);
+        HOOD_ANGLE_BY_DISTANCE_MAP.put(74.0, 38.0);
+        HOOD_ANGLE_BY_DISTANCE_MAP.put(98.0, 41.0);
+        HOOD_ANGLE_BY_DISTANCE_MAP.put(113.0, 41.0);
+        HOOD_ANGLE_BY_DISTANCE_MAP.put(123.0, 41.0);
     }
-    public static final LinearInterpolator HOOD_ANGLE_BY_DISTANCE = new LinearInterpolator(hoodAngleByDistanceMap);
+    public static final LinearInterpolator HOOD_ANGLE_BY_DISTANCE = new LinearInterpolator(HOOD_ANGLE_BY_DISTANCE_MAP);
 
-    private static final TreeMap<Double, Double> timeOfFlightByDistanceMap = new TreeMap<>();
+    public static TreeMap<Double, Double> TIME_OF_FLIGHT_BY_DISTANCE_MAP = new TreeMap<>();
     static {
         // INCH, MILLS
-        timeOfFlightByDistanceMap.put(33.0, 500.0);
-        timeOfFlightByDistanceMap.put(59.0, 640.0);
-        timeOfFlightByDistanceMap.put(74.0, 730.0);
-        timeOfFlightByDistanceMap.put(98.0, 750.0);
-        timeOfFlightByDistanceMap.put(113.0, 760.0);
-        timeOfFlightByDistanceMap.put(123.0, 770.0);
+        TIME_OF_FLIGHT_BY_DISTANCE_MAP.put(33.0, 500.0);
+        TIME_OF_FLIGHT_BY_DISTANCE_MAP.put(59.0, 640.0);
+        TIME_OF_FLIGHT_BY_DISTANCE_MAP.put(74.0, 730.0);
+        TIME_OF_FLIGHT_BY_DISTANCE_MAP.put(98.0, 750.0);
+        TIME_OF_FLIGHT_BY_DISTANCE_MAP.put(113.0, 760.0);
+        TIME_OF_FLIGHT_BY_DISTANCE_MAP.put(123.0, 770.0);
     }
-    public static final LinearInterpolator TIME_OF_FLIGHT_BY_DISTANCE = new LinearInterpolator(timeOfFlightByDistanceMap);
+    public static final LinearInterpolator TIME_OF_FLIGHT_BY_DISTANCE = new LinearInterpolator(TIME_OF_FLIGHT_BY_DISTANCE_MAP);
 
     // OTHER
     public static final double FAR_ZONE_X_THRESHOLD = 24;
