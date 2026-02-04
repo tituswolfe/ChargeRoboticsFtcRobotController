@@ -4,6 +4,7 @@ import com.qualcomm.robotcore.hardware.DigitalChannel;
 
 public class GoBildaLaserDistanceSensorDigital {
     private final DigitalChannel laserInput;
+    private boolean isObjectDetected = false;
 
     public GoBildaLaserDistanceSensorDigital(DigitalChannel laserInput) {
         this.laserInput = laserInput;
@@ -11,10 +12,10 @@ public class GoBildaLaserDistanceSensorDigital {
     }
 
     public void update() {
-
+        isObjectDetected = laserInput.getState();
     }
 
     public boolean isObjectDetected() {
-        return laserInput.getState();
+        return isObjectDetected;
     }
 }

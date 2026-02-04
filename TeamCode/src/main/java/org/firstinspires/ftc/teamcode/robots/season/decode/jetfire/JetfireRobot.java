@@ -13,7 +13,6 @@ import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
-import org.firstinspires.ftc.teamcode.hardware.controllers.StateMachine;
 import org.firstinspires.ftc.teamcode.hardware.controllers.digital.GoBildaLaserDistanceSensorDigital;
 import org.firstinspires.ftc.teamcode.hardware.controllers.lights.Prism.Color;
 import org.firstinspires.ftc.teamcode.hardware.controllers.lights.Prism.GoBildaPrismDriver;
@@ -28,7 +27,6 @@ import org.firstinspires.ftc.teamcode.hardware.controllers.subsystems.Turret;
 import org.firstinspires.ftc.teamcode.hardware.drivetrain.pedroPathing.Constants;
 import org.firstinspires.ftc.teamcode.hardware.vision.LimelightController;
 import org.firstinspires.ftc.teamcode.robots.base.RobotBase;
-import org.firstinspires.ftc.teamcode.robots.base.StaticData;
 import org.firstinspires.ftc.teamcode.robots.base.opmodes.OpModeBase;
 import org.firstinspires.ftc.teamcode.util.PoseHistory;
 import org.firstinspires.ftc.teamcode.util.info.HardwareInfo;
@@ -44,7 +42,7 @@ import java.util.concurrent.TimeUnit;
 @Configurable
 public class JetfireRobot extends RobotBase {
     private Turret<DualMotorVelocityController> turret;
-    private BasicMotorController intakeMotorController;
+    DcMotorEx intakeMotor;
 
     private ServoTimerController transferServoController;
     private ServoTimerController gateServoController;
@@ -151,19 +149,10 @@ public class JetfireRobot extends RobotBase {
 
         turret = new Turret<>(flywheelController, turntableController, hoodController);
 
-        DcMotorEx intakeMotor;
 
         intakeMotor = hardwareMap.get(DcMotorEx.class, "intake");
         intakeMotor.setDirection(DcMotorSimple.Direction.REVERSE);
 
-        intakeMotorController = new BasicMotorController(
-                intakeMotor,
-                INTAKE_NAME,
-                INTAKE_PIDF_COEFFICIENTS,
-                HardwareInfo.GOBILDA_5203_YELLOW_JACKET_MOTOR_1150_RPM.ENCODER_RESOLUTION_PPR,
-                INTAKE_TOTAL_GEAR_RATIO,
-                INTAKE_MAX_POWER
-        );
 
         Servo gateServo = hardwareMap.get(Servo.class, "gate");
         gateServoController = new ServoTimerController(gateServo, GATE_SERVO_CLOSED);
@@ -171,11 +160,12 @@ public class JetfireRobot extends RobotBase {
         Servo transferServo = hardwareMap.get(Servo.class, "transfer");
         transferServoController = new ServoTimerController(transferServo, TRANSFER_SERVO_DOWN);
 
-        chamberSensor = new GoBildaLaserDistanceSensorDigital(hardwareMap.get(DigitalChannel.class, "laser-digital-input"));
+        DigitalChannel laserDigitalInput = hardwareMap.get(DigitalChannel.class, "laser-digital-input");
+        chamberSensor = new GoBildaLaserDistanceSensorDigital(laserDigitalInput);
 
         Limelight3A limelight3A = hardwareMap.get(Limelight3A.class, "limelight");
         limelightController = new LimelightController(limelight3A, "Limelight");
-        limelightController.init(0);
+        limelightController.init(LIMELIGHT_LOCALIZATION_PIPELINE);
 
         Servo indicator = hardwareMap.get(Servo.class, "indicator");
         indicatorLightController = new RGBIndicatorLightController(indicator, "Indicator");
@@ -200,26 +190,29 @@ public class JetfireRobot extends RobotBase {
 
     @Override
     public void update(long deltaTimeMs, TelemetryManager telemetry) {
-        Pose pinpointPose = follower.getPose();
-        Pose limelightPose = limelightController.hasResult() ? limelightController.getPose() : pinpointPose;
+        Pose rawPose = follower.poseTracker.getRawPose();
+        Pose limelightPose = limelightController.hasResult() ? limelightController.getPose() : rawPose;
 
         // Latency Compensation
         long limelightLatencyMs = (long) limelightController.getLatencyMs();
-        poseHistory.update(pinpointPose);
+        // poseHistory.update(pinpointPose);
 
         // either odo has moved past ll
         // or odo has drifted and ll is correct
-        if (pinpointPose.distanceFrom(limelightPose) > 2) {
-            Pose pinpointPoseAtLimelightCapture = poseHistory.getPoseAt(limelightLatencyMs);
+//        if (pinpointPose.distanceFrom(limelightPose) > 2) {
+//            // Pose pinpointPoseAtLimelightCapture = poseHistory.getPoseAt(limelightLatencyMs);
+//
+//            follower.poseTracker.setXOffset(limelightPose.getX() - pinpointPose.getX());
+//            follower.poseTracker.setYOffset(limelightPose.getY() - pinpointPose.getY());
+//        }
 
-            follower.poseTracker.setXOffset(limelightPose.getX() - pinpointPoseAtLimelightCapture.getX());
-            follower.poseTracker.setYOffset(limelightPose.getY() - pinpointPoseAtLimelightCapture.getY());
-        }
+        follower.poseTracker.setXOffset(limelightPose.getX() - rawPose.getX());
+        follower.poseTracker.setYOffset(limelightPose.getY() - rawPose.getY());
 
         Pose currentPose = follower.getPose();
         Vector velocity = follower.getVelocity();
 
-        double headingDeg = Math.toDegrees(pinpointPose.getHeading());
+        double headingDeg = Math.toDegrees(rawPose.getHeading());
         Angle heading = new Angle(currentPose.getHeading());
 
         Angle relativeTurntableHeading = turret.turntableController().getHeading();
@@ -276,7 +269,7 @@ public class JetfireRobot extends RobotBase {
         Angle hoodAngle = new Angle(interpolatedHoodAngleDeg + hoodRegression, Angle.AngleUnit.DEGREES);
 
         double intakePower = 0.0;
-        if (isIntakeOn && isIntakeCooldownOver) {
+        if (isIntakeOn) {
             intakePower = reverseIntake ? REVERSE_INTAKE_POWER : INTAKE_POWER;
         }
 
@@ -311,9 +304,7 @@ public class JetfireRobot extends RobotBase {
         transferServoController.update();
         gateServoController.update();
 
-        intakeMotorController.setPower(intakePower);
-        intakeMotorController.update();
-
+        intakeMotor.setPower(intakePower);
 
         indicatorLightController.setColor(indicatorColor);
 

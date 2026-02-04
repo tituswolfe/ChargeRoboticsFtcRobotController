@@ -32,8 +32,6 @@ public abstract class MotorController extends HardwareController<DcMotorEx> {
     public MotorController(DcMotorEx device, String name, PIDFCoefficients pidfCoefficients, double ticksPerRevolution, double totalGearRatio, double maxPower) {
         super(device, name);
 
-        // TODO: PID always at 1:1 ratio
-
         pidfController = new PIDFController(pidfCoefficients);
         this.ticksPerRevolution = ticksPerRevolution;
         setTotalGearRatio(totalGearRatio);
@@ -49,7 +47,7 @@ public abstract class MotorController extends HardwareController<DcMotorEx> {
         velocity = (device.getVelocity() * 60) / ticksPerRevolution;
         currentPosition = device.getCurrentPosition();
 
-        double clampedPower = MathUtils.clamp(power, maxPower, -maxPower);
+        double clampedPower = MathUtils.clamp(power, -maxPower, maxPower);
         if (!MathUtil.isWithinRange(clampedPower, lastPower, deltaFilteringThreshold)) {
             device.setPower(clampedPower);
         } else if (clampedPower == 0 && lastPower != 0) {

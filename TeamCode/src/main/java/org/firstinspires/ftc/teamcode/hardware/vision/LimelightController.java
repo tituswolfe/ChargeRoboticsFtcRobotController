@@ -42,11 +42,11 @@ public class LimelightController extends HardwareController<Limelight3A> {
 
         latestResult = device.getLatestResult();
         //device.captureSnapshot("a");
-
-        if (latestResult == null || !latestResult.isValid()) {
-            hasResult = false;
+        hasResult = latestResult != null && latestResult.isValid();
+        if (!hasResult) {
             latencyMs = -1;
             LLPose = new Pose();
+
             return;
         };
 

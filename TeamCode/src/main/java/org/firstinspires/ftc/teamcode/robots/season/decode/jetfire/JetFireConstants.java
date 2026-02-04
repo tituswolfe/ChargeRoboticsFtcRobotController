@@ -37,7 +37,7 @@ public class JetFireConstants {
 
     // INTAKE
     public static final String INTAKE_NAME = "Intake";
-    public static final PIDFCoefficients INTAKE_PIDF_COEFFICIENTS = null;
+    public static final PIDFCoefficients INTAKE_PIDF_COEFFICIENTS = new PIDFCoefficients(0, 0, 0, 0);
     public static final int INTAKE_TOTAL_GEAR_RATIO = 1;
     public static final int INTAKE_MAX_POWER = 1;
 
@@ -62,6 +62,9 @@ public class JetFireConstants {
     public static double FLYWHEEL_VELOCITY_MARGIN_RPM = 60;
     public static double TURNTABLE_HEADING_MARGIN_DEG = 2;
     public static long LEAD_COMPUTING_TRANSFER_DELAY_MS = 80;
+
+    // LIMELIGHT
+    public static final int LIMELIGHT_LOCALIZATION_PIPELINE = 0;
 
     // LUTs
     public static TreeMap<Double, Double> FLYWHEEL_VELOCITY_BY_DISTANCE_MAP = new TreeMap<>();
