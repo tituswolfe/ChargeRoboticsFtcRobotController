@@ -9,7 +9,7 @@ import com.qualcomm.robotcore.hardware.HardwareDevice;
  */
 public abstract class HardwareController<Device extends HardwareDevice> {
     protected final Device device;
-    private final String name;
+    protected final String name;
 
     public HardwareController(Device device, String name) {
         this.device = device;

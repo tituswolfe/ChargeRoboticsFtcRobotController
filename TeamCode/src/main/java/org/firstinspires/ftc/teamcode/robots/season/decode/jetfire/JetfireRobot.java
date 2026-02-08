@@ -108,8 +108,8 @@ public class JetfireRobot extends RobotBase {
         leftFlywheelMotor.setDirection(DcMotorSimple.Direction.REVERSE);
 
         DualMotorVelocityController flywheelController = new DualMotorVelocityController(
-                rightFlywheelMotor,
                 leftFlywheelMotor,
+                rightFlywheelMotor,
                 FLYWHEEL_NAME,
                 FLYWHEEL_PIDF_COEFFICIENTS,
                 HardwareInfo.GOBILDA_5203_YELLOW_JACKET_MOTOR_6000_RPM.ENCODER_RESOLUTION_PPR,
@@ -206,8 +206,8 @@ public class JetfireRobot extends RobotBase {
 //            follower.poseTracker.setYOffset(limelightPose.getY() - pinpointPose.getY());
 //        }
 
-        follower.poseTracker.setXOffset(limelightPose.getX() - rawPose.getX());
-        follower.poseTracker.setYOffset(limelightPose.getY() - rawPose.getY());
+//        follower.poseTracker.setXOffset(limelightPose.getX() - rawPose.getX());
+//        follower.poseTracker.setYOffset(limelightPose.getY() - rawPose.getY());
 
         Pose currentPose = follower.getPose();
         Vector velocity = follower.getVelocity();
@@ -260,7 +260,7 @@ public class JetfireRobot extends RobotBase {
 
         Angle turntableHeading = virtualGoalHeading
                 .minus(heading, Angle.AngleNormalization.NONE)
-                .plus(turntableZoneOffset, Angle.AngleNormalization.NONE);
+                .plus(turntableZoneOffset, Angle.AngleNormalization.BIPOLAR);
 
         double interpolatedHoodAngleDeg = HOOD_ANGLE_BY_DISTANCE.interpolate(virtualDistanceFromGoal);
         // TODO: Regression distance factor, or far and close zone factor

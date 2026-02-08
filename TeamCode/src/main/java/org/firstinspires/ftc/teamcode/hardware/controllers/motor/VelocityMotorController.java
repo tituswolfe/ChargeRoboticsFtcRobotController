@@ -40,6 +40,6 @@ public class VelocityMotorController extends MotorController {
     @Override
     public void addTelemetry(TelemetryManager telemetry) {
         super.addTelemetry(telemetry);
-        telemetry.addData("Target Velocity (RPM)", targetVelocity);
+        telemetry.addData(name + "Target Velocity (RPM)", targetVelocity);
     }
 }

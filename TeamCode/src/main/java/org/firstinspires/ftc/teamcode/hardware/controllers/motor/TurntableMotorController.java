@@ -36,18 +36,20 @@ public class TurntableMotorController extends MotorController {
 
     @Override
     public void update() {
-        currentHeading = new Angle(currentPosition / ticksPerOutputRadian).plus(initialAngle, Angle.AngleNormalization.BIPOLAR);
+        super.update();
+        currentHeading = new Angle(currentPosition / ticksPerOutputRadian).plus(initialAngle, Angle.AngleNormalization.NONE);
 
         double clampedTarget = MathUtil.clamp(
-                targetHeading.getAngle(Angle.AngleUnit.DEGREES, Angle.AngleNormalization.BIPOLAR),
-                minSoftLimit.getAngle(Angle.AngleUnit.DEGREES, Angle.AngleNormalization.BIPOLAR),
-                maxSoftLimit.getAngle(Angle.AngleUnit.DEGREES, Angle.AngleNormalization.BIPOLAR)
+                targetHeading.getAngle(Angle.AngleNormalization.BIPOLAR),
+                minSoftLimit.getAngle(Angle.AngleNormalization.NONE),
+                maxSoftLimit.getAngle(Angle.AngleNormalization.NONE)
         );
 
-        double linearError = clampedTarget - currentHeading.getAngle(Angle.AngleUnit.DEGREES, Angle.AngleNormalization.BIPOLAR);
+        double linearError = clampedTarget - currentHeading.getAngle(Angle.AngleNormalization.BIPOLAR);
+        // 130 - 1
         error = linearError;
 
-        pidfController.updateError(linearError);
+        pidfController.updateError(Math.toDegrees(linearError));
 
         setPowerFromPIDFController();
     }
@@ -85,6 +87,6 @@ public class TurntableMotorController extends MotorController {
     @Override
     public void addTelemetry(TelemetryManager telemetry) {
         super.addTelemetry(telemetry);
-        telemetry.addData("Relative Heading", currentHeading.getAngle(Angle.AngleUnit.DEGREES, Angle.AngleNormalization.NONE));
+        telemetry.addData(name + "Relative Heading", currentHeading.getAngle(Angle.AngleUnit.DEGREES, Angle.AngleNormalization.NONE));
     }
 }
