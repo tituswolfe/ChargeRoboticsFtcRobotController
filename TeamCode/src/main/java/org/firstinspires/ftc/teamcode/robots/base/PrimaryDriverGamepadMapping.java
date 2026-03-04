@@ -19,8 +19,15 @@ public abstract class PrimaryDriverGamepadMapping<Robot extends RobotBase> exten
             return;
         }
 
-        robot.getFollower().setTeleOpDrive(leftY * robot.speedFactor, leftX * robot.speedFactor, rightX * robot.speedFactor, robot.isRobotCentric, (robot.isRobotCentric ? 0 : robot.fieldCentricOffset.getAngle(Angle.AngleNormalization.NONE)));
+
+        robot.getFollower().setTeleOpDrive(smooth(leftY), smooth(leftX), smooth(rightX), robot.isRobotCentric, (robot.isRobotCentric ? 0 : robot.fieldCentricOffset.getAngle(Angle.AngleNormalization.NONE)));
+
+        //robot.getFollower().setTeleOpDrive(leftY * robot.speedFactor, leftX * robot.speedFactor, rightX * robot.speedFactor, robot.isRobotCentric, (robot.isRobotCentric ? 0 : robot.fieldCentricOffset.getAngle(Angle.AngleNormalization.NONE)));
     };
+
+    public static double smooth(double input) {
+        return (0.7 * Math.pow(input, 3)) + (0.3 * input);
+    }
 
     @Override
     public void onLeftStickPressed() {

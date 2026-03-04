@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.robots.season.decode.jetfire;
 
 import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.telemetry.TelemetryManager;
+import com.pedropathing.control.PIDFCoefficients;
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.math.Vector;
@@ -13,16 +14,18 @@ import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
+import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
+import org.firstinspires.ftc.robotcore.external.navigation.CurrentUnit;
 import org.firstinspires.ftc.teamcode.hardware.controllers.digital.GoBildaLaserDistanceSensorDigital;
 import org.firstinspires.ftc.teamcode.hardware.controllers.lights.Prism.Color;
 import org.firstinspires.ftc.teamcode.hardware.controllers.lights.Prism.GoBildaPrismDriver;
 import org.firstinspires.ftc.teamcode.hardware.controllers.lights.Prism.PrismAnimations;
-import org.firstinspires.ftc.teamcode.hardware.controllers.motor.BasicMotorController;
-import org.firstinspires.ftc.teamcode.hardware.controllers.motor.TurntableMotorController;
+import org.firstinspires.ftc.teamcode.hardware.controllers.motor.TurntablePIDFMotorController;
+import org.firstinspires.ftc.teamcode.hardware.controllers.motor.VelocityPIDFMotorController;
 import org.firstinspires.ftc.teamcode.hardware.controllers.servo.AngleServoController;
 import org.firstinspires.ftc.teamcode.hardware.controllers.servo.RGBIndicatorLightController;
 import org.firstinspires.ftc.teamcode.hardware.controllers.servo.ServoTimerController;
-import org.firstinspires.ftc.teamcode.hardware.controllers.motor.DualMotorVelocityController;
+import org.firstinspires.ftc.teamcode.hardware.controllers.motor.DualPIDFMotorVelocityController;
 import org.firstinspires.ftc.teamcode.hardware.controllers.subsystems.Turret;
 import org.firstinspires.ftc.teamcode.hardware.drivetrain.pedroPathing.Constants;
 import org.firstinspires.ftc.teamcode.hardware.vision.LimelightController;
@@ -37,12 +40,11 @@ import static org.firstinspires.ftc.teamcode.robots.base.StaticData.allianceColo
 import static org.firstinspires.ftc.teamcode.robots.season.decode.jetfire.JetFireConstants.*;
 
 import java.util.Optional;
-import java.util.concurrent.TimeUnit;
 
 @Configurable
 public class JetfireRobot extends RobotBase {
-    private Turret<DualMotorVelocityController> turret;
-    DcMotorEx intakeMotor;
+    private Turret<DualPIDFMotorVelocityController> turret;
+    DcMotorEx intake;
 
     private ServoTimerController transferServoController;
     private ServoTimerController gateServoController;
@@ -59,12 +61,20 @@ public class JetfireRobot extends RobotBase {
     private boolean isIntakeOn = false;
     private boolean reverseIntake = false;
 
-    public static double CLOSE_ZONE_TURNTABLE_OFFSET_DEG = 2;
-    public static double FAR_ZONE_TURNTABLE_OFFSET_DEG = -1; // neg toward opp alliance, pos toward your alliance
+    // Positive offset is right
+    // Negative offset is left
+    private static double CLOSE_ZONE_TURNTABLE_START_OFFSET_BLUE = 0;
+    private static double FAR_ZONE_TURNTABLE_START_OFFSET_BLUE = -2;
+    public static double CLOSE_ZONE_TURNTABLE_OFFSET_DEG;
+    public static double FAR_ZONE_TURNTABLE_OFFSET_DEG;
 
     Timer laucnhCooldownTimer = new Timer();
 
     PoseHistory poseHistory = new PoseHistory(5);
+
+    public static Pose humanPlayerReset = new Pose(64.2, -58.08, Math.toRadians(180));
+
+    // TODO: LUTs
 
     // TUNING
     public static boolean TUNING = false;
@@ -73,7 +83,7 @@ public class JetfireRobot extends RobotBase {
     public static double TURNTABLE_OFFSET_DEG = 0;
 
     // RUNTIME
-    public static Pose targetGoal = new Pose(-67, 67); //y for blue: -67
+    public static Pose targetGoal = new Pose(-67, 67);
     private boolean isReadyToShoot = false;
     private boolean isInFarZone = false;
     private boolean isFlywheelReady = false;
@@ -86,28 +96,24 @@ public class JetfireRobot extends RobotBase {
         super.init(hardwareMap, startPose, allianceColor);
 
         if (allianceColor.equals(OpModeBase.AllianceColor.BLUE)) {
-            targetGoal = targetGoal.mirror();
-        }
-//        targetGoal = new Pose(-67, allianceColor == OpModeBase.AllianceColor.RED ? 67 : -67);
+            // .mirror() only works using Pedro's coordinate system
+            targetGoal = targetGoal.withY(-67);
+            humanPlayerReset = humanPlayerReset.withY(58.08);
 
-        // TODO: State machine class
-//        for (int i = 0; i <= 2; i++) {
-//            autoFire.addStep(
-//                    () -> isReadyToShoot,
-//                    this::fire
-//            );
-//        }
+            CLOSE_ZONE_TURNTABLE_OFFSET_DEG = CLOSE_ZONE_TURNTABLE_START_OFFSET_BLUE;
+            FAR_ZONE_TURNTABLE_OFFSET_DEG = FAR_ZONE_TURNTABLE_START_OFFSET_BLUE;
+        }
     }
 
     @Override
     public void initHardware(HardwareMap hardwareMap) {
-        DcMotorEx rightFlywheelMotor = hardwareMap.get(DcMotorEx.class, "right-flywheel");
-        rightFlywheelMotor.setDirection(DcMotorSimple.Direction.FORWARD);
+        DcMotorEx leftFlywheelMotor = hardwareMap.get(DcMotorEx.class, LEFT_FLYWHEEL_MOTOR_DEVICE_NAME);
+        leftFlywheelMotor.setDirection(LEFT_FLYWHEEL_MOTOR_DIRECTION);
 
-        DcMotorEx leftFlywheelMotor = hardwareMap.get(DcMotorEx.class, "left-flywheel");
-        leftFlywheelMotor.setDirection(DcMotorSimple.Direction.REVERSE);
+        DcMotorEx rightFlywheelMotor = hardwareMap.get(DcMotorEx.class, RIGHT_FLYWHEEL_MOTOR_DEVICE_NAME);
+        rightFlywheelMotor.setDirection(RIGHT_FLYWHEEL_MOTOR_DIRECTION);
 
-        DualMotorVelocityController flywheelController = new DualMotorVelocityController(
+        DualPIDFMotorVelocityController flywheelController = new DualPIDFMotorVelocityController(
                 leftFlywheelMotor,
                 rightFlywheelMotor,
                 FLYWHEEL_NAME,
@@ -117,26 +123,25 @@ public class JetfireRobot extends RobotBase {
                 FLYWHEEL_MAX_POWER
         );
 
-        Angle turretStartHeading = Optional.ofNullable(JetfireStaticData.lastTurretHeading)
-                .orElse(new Angle(0));
 
-        DcMotorEx turntableMotor = hardwareMap.get(DcMotorEx.class, "turntable");
+        DcMotorEx turntableMotor = hardwareMap.get(DcMotorEx.class, TURNTABLE_MOTOR_DEVICE_NAME);
+        double turretStartHeading = Optional.of(JetfireStaticData.lastTurretHeading).orElse(0.0);
 
-        TurntableMotorController turntableController = new TurntableMotorController(
+        TurntablePIDFMotorController turntableController = new TurntablePIDFMotorController(
                 turntableMotor,
                 TURNTABLE_NAME,
                 TURNTABLE_PIDF_COEFFICIENTS,
                 HardwareInfo.GOBILDA_5203_YELLOW_JACKET_MOTOR_435_RPM.ENCODER_RESOLUTION_PPR,
                 TURNTABLE_TOTAL_GEAR_RATIO,
                 TURNTABLE_MAX_POWER,
-                new Angle(TURNTABLE_HARD_STOP, Angle.AngleUnit.DEGREES),
-                new Angle(-TURNTABLE_HARD_STOP, Angle.AngleUnit.DEGREES),
-                false,
+                TURNTABLE_MIN_HARD_STOP,
+                TURNTABLE_MAX_HARD_STOP,
+                REVERSE_POWER,
                 turretStartHeading
         );
 
-        Servo hoodServo = hardwareMap.get(Servo.class, "hood");
-        hoodServo.setDirection(Servo.Direction.REVERSE);
+        Servo hoodServo = hardwareMap.get(Servo.class, HOOD_SERVO_DEVICE_NAME);
+        hoodServo.setDirection(HOOD_SERVO_DIRECTION);
 
         AngleServoController hoodController = new AngleServoController(
                 hoodServo,
@@ -149,10 +154,9 @@ public class JetfireRobot extends RobotBase {
 
         turret = new Turret<>(flywheelController, turntableController, hoodController);
 
-
-        intakeMotor = hardwareMap.get(DcMotorEx.class, "intake");
-        intakeMotor.setDirection(DcMotorSimple.Direction.REVERSE);
-
+        intake = hardwareMap.get(DcMotorEx.class, INTAKE_MOTOR_DEVICE_NAME);
+        intake.setDirection(INTAKE_DIRECTION);
+        intake.setCurrentAlert(INTAKE_CURRENT_THRESHOLD_AMPS, CurrentUnit.AMPS);
 
         Servo gateServo = hardwareMap.get(Servo.class, "gate");
         gateServoController = new ServoTimerController(gateServo, GATE_SERVO_CLOSED);
@@ -190,98 +194,72 @@ public class JetfireRobot extends RobotBase {
 
     @Override
     public void update(long deltaTimeMs, TelemetryManager telemetry) {
-        Pose rawPose = follower.poseTracker.getRawPose();
-        Pose limelightPose = limelightController.hasResult() ? limelightController.getPose() : rawPose;
-
-        // Latency Compensation
-        long limelightLatencyMs = (long) limelightController.getLatencyMs();
-        // poseHistory.update(pinpointPose);
-
-        // either odo has moved past ll
-        // or odo has drifted and ll is correct
-//        if (pinpointPose.distanceFrom(limelightPose) > 2) {
-//            // Pose pinpointPoseAtLimelightCapture = poseHistory.getPoseAt(limelightLatencyMs);
-//
-//            follower.poseTracker.setXOffset(limelightPose.getX() - pinpointPose.getX());
-//            follower.poseTracker.setYOffset(limelightPose.getY() - pinpointPose.getY());
-//        }
-
-//        follower.poseTracker.setXOffset(limelightPose.getX() - rawPose.getX());
-//        follower.poseTracker.setYOffset(limelightPose.getY() - rawPose.getY());
-
         Pose currentPose = follower.getPose();
         Vector velocity = follower.getVelocity();
+        double velocityMagnitude = velocity.getMagnitude();
+        double angularVelocity = follower.getAngularVelocity();
 
-        double headingDeg = Math.toDegrees(rawPose.getHeading());
-        Angle heading = new Angle(currentPose.getHeading());
+        double turntableHeading = turret.turntableController().getHeading();
+        double flywheelError = turret.flywheelController().getError();
 
-        Angle relativeTurntableHeading = turret.turntableController().getHeading();
-//        double relativeTurntableHeadingDeg = relativeTurntableHeading.getAngle(Angle.AngleUnit.DEGREES, Angle.AngleNormalization.BIPOLAR);
-//        double relativeTurntableTargetHeadingDeg = turret.turntableController().getTargetHeading().getAngle(Angle.AngleUnit.DEGREES, Angle.AngleNormalization.BIPOLAR);
+        // Lead Computing
+        long totalLaunchDelayMills = LEAD_COMPUTING_TRANSFER_DELAY_MS; // deltaTimeMS
+        double launchDelaySec = totalLaunchDelayMills / 1000.0;
+
+        Pose predictedFuturePose = MathUtil.predictFuturePose(currentPose, velocity, launchDelaySec);
+        double distanceFromGoalAtFuturePose = predictedFuturePose.distanceFrom(targetGoal);
+
+        long timeOfFlightMills = (long) TIME_OF_FLIGHT_BY_DISTANCE.interpolate(distanceFromGoalAtFuturePose);
+        double timeOfFlightSec = timeOfFlightMills / 1000.0;
+
+        Vector virtualGoalVelocity = velocity.times(-1);
+        Pose virtualGoal = MathUtil.predictFuturePose(targetGoal, virtualGoalVelocity, timeOfFlightSec);
+
+        double virtualDistanceFromGoal = predictedFuturePose.distanceFrom(virtualGoal);
+        double virtualGoalHeading = MathUtil.bearingTo(predictedFuturePose, virtualGoal);
+
+        // CONDITIONS
 
         isInFarZone = currentPose.getX() > FAR_ZONE_X_THRESHOLD;
+        isFlywheelReady = Math.abs(flywheelError) <= FLYWHEEL_VELOCITY_MARGIN_RPM && isFlywheelOn;
 
-        double flywheelError = turret.flywheelController().getError();
-        isFlywheelReady = Math.abs(flywheelError) < FLYWHEEL_VELOCITY_MARGIN_RPM && !isFlywheelOn;
+        double turntableErrorDeg = Math.toDegrees(turret.turntableController().getError());
+        boolean isTurntableReady = Math.abs(turntableErrorDeg) < TURNTABLE_HEADING_MARGIN_DEG && autoAimTurntable;
 
-        double turntableErrorDeg = turret.turntableController().getError();
-        boolean isTurntableReady = Math.abs(turntableErrorDeg) < TURNTABLE_HEADING_MARGIN_DEG;
+        double goalHeadingError = Math.abs(AngleUnit.normalizeRadians(virtualGoalHeading - currentPose.getHeading()));
+        boolean isTurntableInRange =  goalHeadingError < Math.toRadians(135);
 
         isArtifactLoaded = chamberSensor.isObjectDetected();
 
         boolean isCooldownOver = laucnhCooldownTimer.getElapsedTime() > LAUNCH_COOLDOWN_MS;
         boolean isIntakeCooldownOver = laucnhCooldownTimer.getElapsedTime() > INTAKE_COOLDOWN_MS;
 
-        isReadyToShoot = isTurntableReady && isArtifactLoaded && isCooldownOver;
+        isReadyToShoot = isCooldownOver && isTurntableInRange;
 
-        // Lead Computing
-        long totalLaunchDelayMills = deltaTimeMs + LEAD_COMPUTING_TRANSFER_DELAY_MS;
-        double launchDelaySec = TimeUnit.MILLISECONDS.convert(totalLaunchDelayMills, TimeUnit.SECONDS);
-
-        Pose predictedFuturePose = MathUtil.predictFuturePose(currentPose, velocity, launchDelaySec);
-        double distanceFromGoalAtFuturePose = predictedFuturePose.distanceFrom(targetGoal);
-
-        long timeOfFlightMills = (long) TIME_OF_FLIGHT_BY_DISTANCE.interpolate(distanceFromGoalAtFuturePose);
-        double timeOfFlightSec = TimeUnit.MILLISECONDS.convert(timeOfFlightMills, TimeUnit.SECONDS);
-
-        Vector virtualGoalVelocity = velocity.times(-1);
-        Pose virtualGoal = MathUtil.predictFuturePose(targetGoal, virtualGoalVelocity, timeOfFlightSec);
-
-        double virtualDistanceFromGoal = predictedFuturePose.distanceFrom(virtualGoal);
-        Angle virtualGoalHeading = new Angle(MathUtil.bearingTo(predictedFuturePose, virtualGoal));
 
         // HARDWARE VARIABLES
         double flywheelSpeed = FLYWHEEL_VELOCITY_BY_DISTANCE.interpolate(virtualDistanceFromGoal);
 
-        // TODO: Better soulution for zone offset and adjustment controls
         double turntableZoneOffsetDeg = isInFarZone ? FAR_ZONE_TURNTABLE_OFFSET_DEG : CLOSE_ZONE_TURNTABLE_OFFSET_DEG;
-        double turntableZoneOffsetByAlliance = (allianceColor == OpModeBase.AllianceColor.BLUE) ? turntableZoneOffsetDeg : -turntableZoneOffsetDeg;
-        Angle turntableZoneOffset = new Angle(turntableZoneOffsetByAlliance, false);
-
-        Angle turntableHeading = virtualGoalHeading
-                .minus(heading, Angle.AngleNormalization.NONE)
-                .plus(turntableZoneOffset, Angle.AngleNormalization.BIPOLAR);
+        double targetTurntableHeading = AngleUnit.normalizeRadians(virtualGoalHeading - currentPose.getHeading()) + Math.toRadians(turntableZoneOffsetDeg);
 
         double interpolatedHoodAngleDeg = HOOD_ANGLE_BY_DISTANCE.interpolate(virtualDistanceFromGoal);
-        // TODO: Regression distance factor, or far and close zone factor
-        // TODO: Only use regression if flywheel dips below certin amount
         double hoodRegression = flywheelError * HOOD_REGRESSION_RATIO;
-        Angle hoodAngle = new Angle(interpolatedHoodAngleDeg + hoodRegression, Angle.AngleUnit.DEGREES);
+        Angle hoodAngle = new Angle(interpolatedHoodAngleDeg - hoodRegression, Angle.AngleUnit.DEGREES);
 
         double intakePower = 0.0;
-        if (isIntakeOn) {
+        if (isIntakeOn && isIntakeCooldownOver && !intake.isOverCurrent()) {
             intakePower = reverseIntake ? REVERSE_INTAKE_POWER : INTAKE_POWER;
         }
+        intake.setPower(intakePower);
 
         RGBIndicatorLightController.Color indicatorColor;
-        if (OpModeBase.getOpModeElapsedTimeSeconds() > 110) {
-            indicatorColor = RGBIndicatorLightController.Color.WHITE;
-        } else if (!isTurntableReady) {
-            indicatorColor = RGBIndicatorLightController.Color.ORANGE;
-        } else if (!isArtifactLoaded) {
-            indicatorColor = RGBIndicatorLightController.Color.RED;
-        } else {
+        if (isReadyToShoot) {
             indicatorColor = RGBIndicatorLightController.Color.GREEN;
+        } else if (!isTurntableInRange) {
+            indicatorColor = RGBIndicatorLightController.Color.ORANGE;
+        } else {
+            indicatorColor = RGBIndicatorLightController.Color.RED;
         }
 
         // - UPDATE HARDWARE -
@@ -290,29 +268,29 @@ public class JetfireRobot extends RobotBase {
         turret.flywheelController().setMotorEngaged(isFlywheelOn);
         turret.turntableController().setMotorEngaged(autoAimTurntable);
 
-        if (!TUNING) {
-            turret.update(flywheelSpeed, turntableHeading, hoodAngle);
-        } else {
-            turret.update(FLYWHEEL_TARGET_VELOCITY, new Angle(TURNTABLE_OFFSET_DEG, Angle.AngleUnit.DEGREES), new Angle(HOOD_ANGLE, Angle.AngleUnit.DEGREES));
-        }
+        turret.update(flywheelSpeed, targetTurntableHeading, hoodAngle);
+        turret.turntableController().setDriveTrainHeadingVelocity(angularVelocity);
 
         chamberSensor.update();
 
-        limelightController.updateRobotHeading(headingDeg);
+        limelightController.updateRobotHeading(Math.toDegrees(currentPose.getHeading()));
         limelightController.update();
 
         transferServoController.update();
         gateServoController.update();
 
-        intakeMotor.setPower(intakePower);
-
         indicatorLightController.setColor(indicatorColor);
 
-        // autoFire.update();
         // UPDATE STATIC
-        JetfireStaticData.lastTurretHeading = relativeTurntableHeading;
+        JetfireStaticData.lastTurretHeading = turntableHeading;
 
         // - TELEMETRY -
+
+        telemetry.addLine("- VARS -");
+        telemetry.addData("flywheel error", flywheelError);
+        telemetry.addData("hood regression (deg)", hoodRegression);
+        telemetry.addLine("");
+
         telemetry.addLine("- CONDITIONS -");
         telemetry.addData("isReadyToShoot", isReadyToShoot);
         telemetry.addData("isArtifactLoaded", isArtifactLoaded);
@@ -324,33 +302,32 @@ public class JetfireRobot extends RobotBase {
         telemetry.addData("isInFarZone", isInFarZone);
         telemetry.addData("Close Turntable Offset", CLOSE_ZONE_TURNTABLE_OFFSET_DEG);
         telemetry.addData("Far Turntable Offset", FAR_ZONE_TURNTABLE_OFFSET_DEG);
+        telemetry.addLine("");
 
-        limelightController.addTelemetry(telemetry);
-        turret.turntableController().addTelemetry(telemetry);
-        turret.flywheelController().addTelemetry(telemetry);
-        turret.hoodServoController().addTelemetry(telemetry);
+        limelightController.updateTelemetry(telemetry);
+        turret.turntableController().updateTelemetry(telemetry);
+        turret.flywheelController().updateTelemetry(telemetry);
+        turret.hoodServoController().updateTelemetry(telemetry);
 
         telemetry.addData("Interpolated Hood Angle (Deg)", interpolatedHoodAngleDeg);
         telemetry.addData("Additive Linear Offset Regression (Deg)", hoodRegression);
+        telemetry.addLine("");
+        telemetry.addLine("- LEAD COMPUTING & LUTs -");
+        telemetry.addData("Future Pose X", predictedFuturePose.getX());
+        telemetry.addData("Future Pose Y", predictedFuturePose.getY());
+        telemetry.addData("Time of Flight (sec)", timeOfFlightSec);
+        telemetry.addLine("");
+
+        double distanceFromGoal = currentPose.distanceFrom(targetGoal);
+
+        telemetry.addLine("");
+        telemetry.addLine("- TUNING DATA -");
+        telemetry.addData("Distance From Goal", distanceFromGoal);
 
         if (TUNING) {
             if (!turret.flywheelController().getPidfController().getCoefficients().equals(FLYWHEEL_PIDF_COEFFICIENTS)) turret.flywheelController().getPidfController().setCoefficients(FLYWHEEL_PIDF_COEFFICIENTS);
             if (!turret.turntableController().getPidfController().getCoefficients().equals(TURNTABLE_PIDF_COEFFICIENTS)) turret.turntableController().getPidfController().setCoefficients(TURNTABLE_PIDF_COEFFICIENTS);
 
-            Angle goalHeading = new Angle(MathUtil.bearingTo(currentPose, targetGoal));
-            double distanceFromGoal = currentPose.distanceFrom(targetGoal);
-            Angle absoluteTurntableHeading = new Angle(relativeTurntableHeading.getAngle(Angle.AngleNormalization.BIPOLAR) + follower.getHeading());
-
-            telemetry.addLine("");
-            telemetry.addLine("- TUNING DATA -");
-            telemetry.addData("Absolute Heading Toward Goal", goalHeading.getAngle(Angle.AngleUnit.DEGREES, Angle.AngleNormalization.BIPOLAR));
-            telemetry.addData("Distance From Goal", distanceFromGoal);
-            telemetry.addLine("");
-
-            telemetry.addLine("- LEAD COMPUTING & LUTs -");
-            telemetry.addData("Future Pose X", predictedFuturePose.getX());
-            telemetry.addData("Future Pose Y", predictedFuturePose.getY());
-            telemetry.addData("Time of Flight (sec)", timeOfFlightSec);
             telemetry.addLine("");
         }
     }

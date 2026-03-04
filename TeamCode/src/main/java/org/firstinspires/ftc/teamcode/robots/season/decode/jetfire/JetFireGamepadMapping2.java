@@ -15,7 +15,7 @@ public class JetFireGamepadMapping2 extends GamepadMapping<JetfireRobot> {
 
     @Override
     public void onYPressed() {
-        robot.getFollower().setHeading(Math.toRadians(-180));
+        robot.getFollower().setPose(JetfireRobot.humanPlayerReset);
         robot.getIndicatorLightController().indicate(RGBIndicatorLightController.Color.VIOLET);
     }
 
@@ -30,7 +30,6 @@ public class JetFireGamepadMapping2 extends GamepadMapping<JetfireRobot> {
 
     @Override
     public void onXPressed() {
-
     }
 
     @Override
@@ -73,23 +72,23 @@ public class JetFireGamepadMapping2 extends GamepadMapping<JetfireRobot> {
 
     }
 
+    double zoneOffsetIncrement = 1;
+
     @Override
     public void onLeftBumperPressed() {
-        double addOffset = StaticData.allianceColor == OpModeBase.AllianceColor.BLUE ? 1 : -1;
         if (robot.isInFarZone()) {
-            JetfireRobot.FAR_ZONE_TURNTABLE_OFFSET_DEG += addOffset;
+            JetfireRobot.FAR_ZONE_TURNTABLE_OFFSET_DEG += zoneOffsetIncrement;
         } else {
-            JetfireRobot.CLOSE_ZONE_TURNTABLE_OFFSET_DEG += addOffset;
+            JetfireRobot.CLOSE_ZONE_TURNTABLE_OFFSET_DEG += zoneOffsetIncrement;
         }
     }
 
     @Override
     public void onRightBumperPressed() {
-        double addOffset = StaticData.allianceColor == OpModeBase.AllianceColor.BLUE ? -1 : 1;
         if (robot.isInFarZone()) {
-            JetfireRobot.FAR_ZONE_TURNTABLE_OFFSET_DEG += addOffset;
+            JetfireRobot.FAR_ZONE_TURNTABLE_OFFSET_DEG -= zoneOffsetIncrement;
         } else {
-            JetfireRobot.CLOSE_ZONE_TURNTABLE_OFFSET_DEG += addOffset;
+            JetfireRobot.CLOSE_ZONE_TURNTABLE_OFFSET_DEG -= zoneOffsetIncrement;
         }
     }
 

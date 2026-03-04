@@ -11,7 +11,6 @@ import org.firstinspires.ftc.teamcode.robots.base.opmodes.BaseAuto;
 import org.firstinspires.ftc.teamcode.robots.season.decode.jetfire.JetfireRobot;
 
 @Autonomous(preselectTeleOp = "Jetfire")
-// @CONFIGRABLE ?
 public class BlueClose extends BaseAuto<JetfireRobot> {
     Pose startPose = new Pose(-57.24, -43.5, Math.toRadians(-127.5));
 
@@ -21,8 +20,8 @@ public class BlueClose extends BaseAuto<JetfireRobot> {
     Pose secondLineFinishPose = new Pose(11.5, -46, Math.toRadians(-90));
 
     Pose gateToShootControlPoint = new Pose(12, -34);
-    Pose preOpenGatePose = new Pose(12, -50, Math.toRadians(-126));
-    Pose openGatePose = new Pose(12, -58.2, Math.toRadians(-126));
+    Pose preOpenGatePose = new Pose(11.5, -55, Math.toRadians(-109));
+    Pose openGatePose = new Pose(11.5, -58, Math.toRadians(-109));
 
     Pose firstLineStartPose = new Pose(-10, -27.5, Math.toRadians(-90));
     Pose firstLineFinishPose = new Pose(-10, -45, Math.toRadians(-90));
@@ -38,53 +37,59 @@ public class BlueClose extends BaseAuto<JetfireRobot> {
 
     int returnPathState = 0;
 
+    public static double endPathTValue = 0.97;
+
     @Override
     public void autonomousPathUpdate(int pathState) {
+        // Backup & shoot preload
+        // Pickup & shoot line #2
+        // Pickup from gate & shoot (2x)
+        //
+
         switch (pathState) {
             case 0:
-                // START
                 robot.getFollower().followPath(shootPreload);
                 robot.toggleSubsystems(true);
                 setPathState(1, true);
                 break;
             case 1:
-                // SHOOT
-                if (actionTimer.getElapsedTime() > 2000) {
+                if (actionTimer.getElapsedTime() > 1700) {
                     returnPathState = 2;
                     setPathState(20, true);
                 }
                 break;
+            // CYCLE LINE 2
             case 2:
-                // CYCLE LINE 2
-                if (!robot.getFollower().isBusy()) {
+                if (robot.getFollower().getCurrentTValue() > 0.98) {
                     robot.getFollower().followPath(cycleLine2);
                     setPathState(3, true);
                 }
                 break;
+            // SHOOT LINE 2
             case 3:
-                // SHOOT
                 if (!robot.getFollower().isBusy()) {
                     returnPathState = 4;
                     setPathState(20, true);
                 }
                 break;
+            // CYCLE GATE
             case 4:
                 returnPathState = 5;
                 setPathState(30, true);
                 break;
+            // CYCLE GATE
             case 5:
-                // CYCLE GATE
                 returnPathState = 6;
                 setPathState(30, true);
                 break;
+            // CYCLE LINE 1 (INSIDE THE LINE)
             case 6:
-                // CYCLE LINE 1
-                robot.getFollower().followPath(cycleLine1); // GOTO Finish pose
+                robot.getFollower().followPath(cycleLine1);
                 setPathState(7, true);
                 break;
             case 7:
                 // SHOOT
-                if (!robot.getFollower().isBusy()) {
+                if (robot.getFollower().atPose(finishPose, 15, 15)) {
                     returnPathState = -1;
                     setPathState(20, true);
                 }
@@ -92,10 +97,8 @@ public class BlueClose extends BaseAuto<JetfireRobot> {
 
 
             case -1:
-                if(!robot.getFollower().isBusy() ){
+                if (!robot.getFollower().isBusy()){
                     robot.toggleSubsystems(false);
-
-                    // robot.getFollower().followPath(finishPath);
                     setPathState(-2, true);
                 }
                 break;
@@ -103,25 +106,36 @@ public class BlueClose extends BaseAuto<JetfireRobot> {
 
             // SHOOT ARTIFACTS
             case 20:
-                if (robot.isReadyToShoot() || actionTimer.getElapsedTime() > 500) {
+                if (robot.isReadyToShoot() || actionTimer.getElapsedTime() > 700) {
                     robot.fire();
                     setPathState(21, true);
                 }
                 break;
             case 21:
-                if (robot.isReadyToShoot() || actionTimer.getElapsedTime() > 500) {
+                if (robot.isReadyToShoot() || actionTimer.getElapsedTime() > 600) {
                     robot.fire();
                     setPathState(22, true);
                 }
                 break;
             case 22:
-                if (robot.isReadyToShoot() || actionTimer.getElapsedTime() > 500) {
+                if (robot.isReadyToShoot() || actionTimer.getElapsedTime() > 600) {
                     robot.fire();
-                    setPathState(23, true);
+                    setPathState(returnPathState, true);
                 }
                 break;
-            case 23:
-                if (actionTimer.getElapsedTime() > 100) {
+//            case 23:
+//                if (actionTimer.getElapsedTime() > 100) {
+//                    setPathState(returnPathState, true);
+//                }
+//                break;
+
+            case 40:
+                robot.setReverseIntake(true);
+                setPathState(41, true);
+                break;
+            case 41:
+                if (actionTimer.getElapsedTime() > 1000) {
+                    robot.setReverseIntake(false);
                     setPathState(returnPathState, true);
                 }
                 break;
@@ -133,7 +147,7 @@ public class BlueClose extends BaseAuto<JetfireRobot> {
                 setPathState(31, true);
                 break;
             case 31:
-                if (!robot.getFollower().isBusy() && actionTimer.getElapsedTime() > 3750 || actionTimer.getElapsedTimeSeconds() > 5000) {
+                if (actionTimer.getElapsedTime() > 3500) {
                     robot.getFollower().followPath(shootFromGatePath);
                     setPathState(32, true);
                 }

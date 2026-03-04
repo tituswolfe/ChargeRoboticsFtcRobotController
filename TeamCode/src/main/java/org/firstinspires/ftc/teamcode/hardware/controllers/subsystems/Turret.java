@@ -1,17 +1,17 @@
 package org.firstinspires.ftc.teamcode.hardware.controllers.subsystems;
 
-import org.firstinspires.ftc.teamcode.hardware.controllers.motor.TurntableMotorController;
-import org.firstinspires.ftc.teamcode.hardware.controllers.motor.VelocityMotorController;
+import org.firstinspires.ftc.teamcode.hardware.controllers.motor.TurntablePIDFMotorController;
+import org.firstinspires.ftc.teamcode.hardware.controllers.motor.VelocityPIDFMotorController;
 import org.firstinspires.ftc.teamcode.hardware.controllers.servo.AngleServoController;
 import org.firstinspires.ftc.teamcode.util.math.Angle;
 
-public record Turret<FlywheelController extends VelocityMotorController>(
-        FlywheelController flywheelController, TurntableMotorController turntableController,
+public record Turret<FlywheelController extends VelocityPIDFMotorController>(
+        FlywheelController flywheelController, TurntablePIDFMotorController turntableController,
         AngleServoController hoodServoController) {
 
-    public void update(double targetVelRPM, Angle targetTurntableHeading, Angle targetHoodAngle) {
+    public void update(double targetVelRPM, double targetHeading, Angle targetHoodAngle) {
         flywheelController.setTargetVelocity(targetVelRPM);
-        turntableController.setTargetHeading(targetTurntableHeading);
+        turntableController.setTargetHeading(targetHeading);
         hoodServoController.setTargetAngle(targetHoodAngle);
 
         flywheelController.update();

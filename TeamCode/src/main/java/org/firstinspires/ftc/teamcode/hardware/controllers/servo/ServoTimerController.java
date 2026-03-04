@@ -7,6 +7,7 @@ public class ServoTimerController {
     private final Servo servo;
     private final Timer actionTimer = new Timer();
 //    private Timer cooldownTimer = new Timer();
+//    private int delay = 0;
     private int transitTimeMills = 0;
     private double resetPosition;
 
@@ -17,6 +18,14 @@ public class ServoTimerController {
     }
 
     public void setPosition(double position, int millsToWait, double resetPosition) {
+        servo.setPosition(position);
+        this.transitTimeMills = millsToWait;
+        this.resetPosition = resetPosition;
+        actionTimer.resetTimer();
+    }
+
+    public void setPosition(int delay, double position, int millsToWait, double resetPosition) {
+//        this.delay = delay;
         servo.setPosition(position);
         this.transitTimeMills = millsToWait;
         this.resetPosition = resetPosition;

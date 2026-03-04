@@ -11,7 +11,7 @@ public class Reset extends OpMode {
 
     @Override
     public void init() {
-        JetfireStaticData.lastTurretHeading = new Angle(0);
+        JetfireStaticData.lastTurretHeading = 0;
         telemetry.addLine("TURNTABLE HAS BEEN ZEROED");
     }
 

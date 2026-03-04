@@ -40,8 +40,8 @@ public class AngleServoController extends ServoController {
     }
 
     @Override
-    public void addTelemetry(TelemetryManager telemetry) {
-        super.addTelemetry(telemetry);
+    public void updateTelemetry(TelemetryManager telemetry) {
+        super.updateTelemetry(telemetry);
         telemetry.addData("Angle", targetAngle.getAngle(Angle.AngleNormalization.NONE));
     }
 }

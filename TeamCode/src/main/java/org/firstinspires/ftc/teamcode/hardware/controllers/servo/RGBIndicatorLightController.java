@@ -22,7 +22,7 @@ public class RGBIndicatorLightController extends HardwareController<Servo> {
     Color color = Color.OFF;
 
     Timer indicateTimer = new Timer();
-    private static final int INDICATE_TIME_MS = 500;
+    private static final int INDICATE_TIME_MS = 350;
     RGBIndicatorLightController.Color indicateColor = RGBIndicatorLightController.Color.OFF;
 
     public RGBIndicatorLightController(Servo device, String name) {

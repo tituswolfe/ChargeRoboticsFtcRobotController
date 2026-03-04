@@ -74,8 +74,8 @@ public class LimelightController extends HardwareController<Limelight3A> {
     }
 
     @Override
-    public void addTelemetry(TelemetryManager telemetry) {
-        super.addTelemetry(telemetry);
+    public void updateTelemetry(TelemetryManager telemetry) {
+        super.updateTelemetry(telemetry);
         telemetry.addData("Connected", device.isConnected());
         telemetry.addData("Has Result", hasResult);
         telemetry.addData("Botpose MT2", LLPose);

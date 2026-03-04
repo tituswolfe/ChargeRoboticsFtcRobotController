@@ -40,8 +40,8 @@ public abstract class ServoController extends HardwareController<Servo> {
     }
 
     @Override
-    public void addTelemetry(TelemetryManager telemetry) {
-        super.addTelemetry(telemetry);
+    public void updateTelemetry(TelemetryManager telemetry) {
+        super.updateTelemetry(telemetry);
         telemetry.addData("Position", device.getPosition());
     }
 }

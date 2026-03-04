@@ -18,7 +18,7 @@ public abstract class HardwareController<Device extends HardwareDevice> {
 
     public abstract void update();
 
-    public void addTelemetry(TelemetryManager telemetry) {
+    public void updateTelemetry(TelemetryManager telemetry) {
         telemetry.addLine("");
         telemetry.addLine("- " + name + " -");
     }

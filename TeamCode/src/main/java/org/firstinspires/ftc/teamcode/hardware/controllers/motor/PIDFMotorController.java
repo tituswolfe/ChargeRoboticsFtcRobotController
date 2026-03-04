@@ -11,7 +11,7 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import org.firstinspires.ftc.teamcode.hardware.controllers.HardwareController;
 import org.firstinspires.ftc.teamcode.util.math.MathUtil;
 
-public abstract class MotorController extends HardwareController<DcMotorEx> {
+public abstract class PIDFMotorController extends HardwareController<DcMotorEx> {
     protected final PIDFController pidfController;
     protected final double ticksPerRevolution;
 
@@ -19,7 +19,7 @@ public abstract class MotorController extends HardwareController<DcMotorEx> {
     protected double ticksPerOutputDegree;
     protected double ticksPerOutputRadian;
 
-    private final double maxPower;
+    protected final double maxPower;
 
     protected double velocity = 0;
     protected double lastPower = 0;
@@ -27,9 +27,10 @@ public abstract class MotorController extends HardwareController<DcMotorEx> {
     protected boolean isMotorEngaged = true;
     protected double currentPosition = 0;
 
-    private double deltaFilteringThreshold = 0.01;
+    protected static double DELTA_FILTERING_THRESHOLD = 0.03;
+    protected static double SLEW_RATE = 0.2;
 
-    public MotorController(DcMotorEx device, String name, PIDFCoefficients pidfCoefficients, double ticksPerRevolution, double totalGearRatio, double maxPower) {
+    public PIDFMotorController(DcMotorEx device, String name, PIDFCoefficients pidfCoefficients, double ticksPerRevolution, double totalGearRatio, double maxPower) {
         super(device, name);
 
         pidfController = new PIDFController(pidfCoefficients);
@@ -48,7 +49,7 @@ public abstract class MotorController extends HardwareController<DcMotorEx> {
         currentPosition = device.getCurrentPosition();
 
         double clampedPower = MathUtils.clamp(power, -maxPower, maxPower);
-        if (!MathUtil.isWithinRange(clampedPower, lastPower, deltaFilteringThreshold)) {
+        if (!MathUtil.isWithinRange(clampedPower, lastPower, DELTA_FILTERING_THRESHOLD)) {
             device.setPower(clampedPower);
         } else if (clampedPower == 0 && lastPower != 0) {
             device.setPower(0);
@@ -89,16 +90,14 @@ public abstract class MotorController extends HardwareController<DcMotorEx> {
     }
 
     public void setDeltaFilteringThreshold(double deltaFilteringThreshold) {
-        this.deltaFilteringThreshold = deltaFilteringThreshold;
+        this.DELTA_FILTERING_THRESHOLD = deltaFilteringThreshold;
     }
 
     @Override
-    public void addTelemetry(TelemetryManager telemetry) {
-        super.addTelemetry(telemetry);
-        telemetry.addData("Velocity (RPM)", velocity);
-        telemetry.addData("isMotorEngaged", isMotorEngaged);
-        telemetry.addData("PIDF Coefficients", pidfController.getCoefficients().toString());
-        telemetry.addData("Total Gear Ratio", totalGearRatio);
-        telemetry.addData("Ticks Per Output Degree", ticksPerOutputDegree);
+    public void updateTelemetry(TelemetryManager telemetry) {
+        super.updateTelemetry(telemetry);
+
+        telemetry.addData(name + " Velocity (RPM)", velocity);
+        telemetry.addData(name + " isMotorEngaged", isMotorEngaged);
     }
 }

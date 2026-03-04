@@ -19,10 +19,10 @@ public class BlueFar extends BaseAuto<JetfireRobot> {
     Pose intakeLine3ControlPoint = new Pose(37, -21);
     Pose intakeLine3Finish = new Pose(33, -53.2, Math.toRadians(-90));
 
-    Pose intakeHumanPlayerLine = new Pose(59.3, -59.1, Math.toRadians(-90));
+    Pose intakeHumanPlayerLine = new Pose(61, -59.1, Math.toRadians(-90));
 
-    Pose intakeFromHumanPlayerStart = new Pose(58, -57, Math.toRadians(-120));
-    Pose intakeFromHumanPlayerFinish = new Pose(28 + 18, -57, Math.toRadians(-120));
+    Pose intakeFromHumanPlayerStart = new Pose(57, -28, Math.toRadians(-90));
+    Pose intakeFromHumanPlayerFinish = new Pose(57, -58, Math.toRadians(-90));
     Pose intakeFromHumanPlayerControlPoint = new Pose(-20, 56.8, Math.toRadians(-135));
 
     Pose endPose = new Pose(60, -35, Math.toRadians(-180));
@@ -40,7 +40,7 @@ public class BlueFar extends BaseAuto<JetfireRobot> {
 
     @Override
     public void autonomousPathUpdate(int pathState) {
-        if (opmodeTimer.getElapsedTimeSeconds() >= 27.5 && pathState > 0) {
+        if (opmodeTimer.getElapsedTimeSeconds() >= 28 && pathState > 0) {
             setPathState(-1, true);
             return;
         }
@@ -102,6 +102,29 @@ public class BlueFar extends BaseAuto<JetfireRobot> {
                 break;
 
 
+//            // CYCLE GATE
+//            case 30:
+//                robot.getFollower().followPath(waitForGate);
+//                setPathState(31, true);
+//                break;
+//            case 31:
+//                if (robot.getFollower().isBusy()) {
+//                    robot.getFollower().followPath(shootFromGate);
+//                    setPathState(33, true);
+//                }
+//                break;
+////            case 32:
+////                if (actionTimer.getElapsedTime() > 1750) {
+////                    setPathState(33, true);
+////                }
+////                break;
+//            case 33:
+//                // SHOOT
+//                if (!robot.getFollower().isBusy()) {
+//                    setPathState(20, true);
+//                }
+//                break;
+
             // CYCLE GATE
             case 30:
                 robot.getFollower().followPath(waitForGate);
@@ -129,19 +152,19 @@ public class BlueFar extends BaseAuto<JetfireRobot> {
 
             // SHOOT ARTIFACTS
             case 20:
-                if (robot.isReadyToShoot() || actionTimer.getElapsedTime() > 500) {
+                if (robot.isReadyToShoot() || actionTimer.getElapsedTime() > 1000) {
                     robot.fire();
                     setPathState(21, true);
                 }
                 break;
             case 21:
-                if (robot.isReadyToShoot() || actionTimer.getElapsedTime() > 500) {
+                if (robot.isReadyToShoot() || actionTimer.getElapsedTime() > 700) {
                     robot.fire();
                     setPathState(22, true);
                 }
                 break;
             case 22:
-                if (robot.isReadyToShoot() || actionTimer.getElapsedTime() > 500) {
+                if (robot.isReadyToShoot() || actionTimer.getElapsedTime() > 700) {
                     robot.fire();
                     setPathState(23, true);
                 }
