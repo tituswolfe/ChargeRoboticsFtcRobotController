@@ -20,11 +20,10 @@ public class RedFar extends BaseAuto<JetfireRobot> {
     Pose line3End = new Pose(33, 43, Math.toRadians(90));
     
     Pose shoot = new Pose(49.7, 16.3, Math.toRadians(90));
-    Pose intakeLoadingZoneEnd = new Pose(59.8, 59.7, Math.toRadians(90));
+    Pose intakeLoadingZoneEnd = new Pose(63, 59.7, Math.toRadians(90));
 
     Pose end = new Pose(60, 35, Math.toRadians(180));
 
-    
     PathChain startToShootPreload;
     PathChain shootPreloadToIntakeLine3;
     PathChain intakeLine3ToShoot;
@@ -37,7 +36,7 @@ public class RedFar extends BaseAuto<JetfireRobot> {
 
     @Override
     public void autonomousPathUpdate(int pathState) {
-        if (opmodeTimer.getElapsedTimeSeconds() >= 29 && pathState > 0) {
+        if (opmodeTimer.getElapsedTimeSeconds() >= 27.5 && pathState > 0) {
             setPathState(-1, true);
             return;
         }
@@ -60,10 +59,6 @@ public class RedFar extends BaseAuto<JetfireRobot> {
                 setPathState(3, true);
                 break;
             case 3:
-//                if (robot.getFollower().getCurrentTValue() >= endPathTValue) {
-//                    robot.getFollower().followPath(intakeLine3ToShoot);
-//                    setPathState(4, true);
-//                }
                 nextPath(intakeLine3ToShoot, 4);
                 break;
             case 4:
@@ -77,10 +72,8 @@ public class RedFar extends BaseAuto<JetfireRobot> {
                 setPathState(6, true);
                 break;
             case 6:
-                returnPathState = -1;
-                nextPath(intakeLoadingZoneToShoot, 20);
+                nextPath(intakeLoadingZoneToShoot, 4);
                 break;
-
 
             case -1:
                 if(!robot.getFollower().isBusy()) {
@@ -90,7 +83,6 @@ public class RedFar extends BaseAuto<JetfireRobot> {
                     setPathState(-2, true);
                 }
                 break;
-
 
             // SHOOT ARTIFACTS
             case 20:
@@ -129,7 +121,8 @@ public class RedFar extends BaseAuto<JetfireRobot> {
         startToShootPreload = follower.pathBuilder()
                 .addPath(new BezierLine(start, shootPreload))
                 .setLinearHeadingInterpolation(start.getHeading(), shootPreload.getHeading())
-                .setBrakingStrength(0.5)
+                .setBrakingStrength(0.1)
+                .setBrakingStart(2)
                 .build();
 
         shootPreloadToIntakeLine3 = follower.pathBuilder()
@@ -140,7 +133,8 @@ public class RedFar extends BaseAuto<JetfireRobot> {
         intakeLine3ToShoot = follower.pathBuilder()
                 .addPath(new BezierLine(line3End, shoot))
                 .setLinearHeadingInterpolation(line3End.getHeading(), shoot.getHeading())
-                .setBrakingStrength(0.5)
+                .setBrakingStrength(0.1)
+                .setBrakingStart(2)
                 .build();
 
         shootToIntakeLoadingZone = follower.pathBuilder()
@@ -151,9 +145,9 @@ public class RedFar extends BaseAuto<JetfireRobot> {
         intakeLoadingZoneToShoot = follower.pathBuilder()
                 .addPath(new BezierLine(intakeLoadingZoneEnd, shoot))
                 .setLinearHeadingInterpolation(intakeLoadingZoneEnd.getHeading(), shoot.getHeading())
-                .setBrakingStrength(0.5)
+                .setBrakingStrength(0.1)
+                .setBrakingStart(2)
                 .build();
-
     }
 
     public void nextPath(PathChain path, int pState) {

@@ -6,6 +6,7 @@ import org.firstinspires.ftc.teamcode.robots.base.GamepadMapping;
 import org.firstinspires.ftc.teamcode.robots.base.opmodes.TeleOpBase;
 
 @com.qualcomm.robotcore.eventloop.opmode.TeleOp(name = "Test Bot", group = "jetfire")
+@Deprecated
 public class TestTeleOp extends TeleOpBase<TestRobot> {
     @Override
     public void buildPaths(Follower follower) {

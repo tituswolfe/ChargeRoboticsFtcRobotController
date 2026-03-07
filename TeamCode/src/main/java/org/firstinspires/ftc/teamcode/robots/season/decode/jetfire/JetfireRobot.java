@@ -63,8 +63,8 @@ public class JetfireRobot extends RobotBase {
 
     // Positive offset is right
     // Negative offset is left
-    private static double CLOSE_ZONE_TURNTABLE_START_OFFSET_BLUE = 0;
-    private static double FAR_ZONE_TURNTABLE_START_OFFSET_BLUE = -2;
+    private static double CLOSE_ZONE_TURNTABLE_START_OFFSET_BLUE = 2;
+    private static double FAR_ZONE_TURNTABLE_START_OFFSET_BLUE = -4;
     public static double CLOSE_ZONE_TURNTABLE_OFFSET_DEG;
     public static double FAR_ZONE_TURNTABLE_OFFSET_DEG;
 
@@ -72,7 +72,7 @@ public class JetfireRobot extends RobotBase {
 
     PoseHistory poseHistory = new PoseHistory(5);
 
-    public static Pose humanPlayerReset = new Pose(64.2, -58.08, Math.toRadians(180));
+    public static Pose humanPlayerReset = new Pose(64.2, -58.08, Math.toRadians(-90));
 
     // TODO: LUTs
 
@@ -98,7 +98,7 @@ public class JetfireRobot extends RobotBase {
         if (allianceColor.equals(OpModeBase.AllianceColor.BLUE)) {
             // .mirror() only works using Pedro's coordinate system
             targetGoal = targetGoal.withY(-67);
-            humanPlayerReset = humanPlayerReset.withY(58.08);
+            humanPlayerReset = humanPlayerReset.withY(58.08).withHeading(Math.toRadians(-90));
 
             CLOSE_ZONE_TURNTABLE_OFFSET_DEG = CLOSE_ZONE_TURNTABLE_START_OFFSET_BLUE;
             FAR_ZONE_TURNTABLE_OFFSET_DEG = FAR_ZONE_TURNTABLE_START_OFFSET_BLUE;
@@ -173,7 +173,8 @@ public class JetfireRobot extends RobotBase {
 
         Servo indicator = hardwareMap.get(Servo.class, "indicator");
         indicatorLightController = new RGBIndicatorLightController(indicator, "Indicator");
-        indicatorLightController.setColor(allianceColor == OpModeBase.AllianceColor.RED ? RGBIndicatorLightController.Color.RED : RGBIndicatorLightController.Color.BLUE);
+        indicatorLightController.setBaseColor(allianceColor == OpModeBase.AllianceColor.RED ? RGBIndicatorLightController.Color.RED : RGBIndicatorLightController.Color.BLUE);
+        indicatorLightController.update();
 
         prism = hardwareMap.get(GoBildaPrismDriver.class,"prism");
         PrismAnimations.DroidScan droidScan = new PrismAnimations.DroidScan();
@@ -279,7 +280,8 @@ public class JetfireRobot extends RobotBase {
         transferServoController.update();
         gateServoController.update();
 
-        indicatorLightController.setColor(indicatorColor);
+        indicatorLightController.setBaseColor(indicatorColor);
+        indicatorLightController.update();
 
         // UPDATE STATIC
         JetfireStaticData.lastTurretHeading = turntableHeading;

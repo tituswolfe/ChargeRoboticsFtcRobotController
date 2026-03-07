@@ -34,13 +34,20 @@ public class RGBIndicatorLightController extends HardwareController<Servo> {
     public void update() {
         if (indicateTimer.getElapsedTime() < INDICATE_TIME_MS) {
             setColor(indicateColor);
+        } else {
+            setColor(color);
         }
     }
 
-    // https://www.gobilda.com/rgb-indicator-light-pwm-controlled/
-    public void setColor(Color color) {
-        if (this.color == color) return;
+    public void setBaseColor(Color color) {
         this.color = color;
+
+    }
+
+    // https://www.gobilda.com/rgb-indicator-light-pwm-controlled/
+    private void setColor(Color color) {
+        //if (this.color == color) return;
+//        this.color = color;
 
         device.setPosition(switch (color) {
             case OFF -> 0;
