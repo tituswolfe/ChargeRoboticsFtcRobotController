@@ -129,7 +129,6 @@ public class JetFireConstants {
     private static final TreeMap<Double, Double> TIME_OF_FLIGHT_BY_DISTANCE_MAP = new TreeMap<>();
     static {
         // INCH, MILLS
-
         TIME_OF_FLIGHT_BY_DISTANCE_MAP.put(30.0, 220.0);
         TIME_OF_FLIGHT_BY_DISTANCE_MAP.put(36.0, 250.0);
         TIME_OF_FLIGHT_BY_DISTANCE_MAP.put(42.0, 330.0);
@@ -137,13 +136,13 @@ public class JetFireConstants {
         TIME_OF_FLIGHT_BY_DISTANCE_MAP.put(66.0, 400.0);
         TIME_OF_FLIGHT_BY_DISTANCE_MAP.put(78.0, 450.0);
         TIME_OF_FLIGHT_BY_DISTANCE_MAP.put(90.0, 500.0);
-        TIME_OF_FLIGHT_BY_DISTANCE_MAP.put(96.0, 520.0); // half
+        TIME_OF_FLIGHT_BY_DISTANCE_MAP.put(96.0, 520.0); //
         TIME_OF_FLIGHT_BY_DISTANCE_MAP.put(102.0, 600.0);
-        TIME_OF_FLIGHT_BY_DISTANCE_MAP.put(108.0, 600.0); // half
+        TIME_OF_FLIGHT_BY_DISTANCE_MAP.put(108.0, 600.0); //
         TIME_OF_FLIGHT_BY_DISTANCE_MAP.put(114.0, 600.0);
-        TIME_OF_FLIGHT_BY_DISTANCE_MAP.put(120.0, 600.0); // half
+        TIME_OF_FLIGHT_BY_DISTANCE_MAP.put(120.0, 600.0); //
         TIME_OF_FLIGHT_BY_DISTANCE_MAP.put(126.0, 600.0);
-        TIME_OF_FLIGHT_BY_DISTANCE_MAP.put(132.0, 600.0); // half
+        TIME_OF_FLIGHT_BY_DISTANCE_MAP.put(132.0, 600.0); //
         TIME_OF_FLIGHT_BY_DISTANCE_MAP.put(140.0, 600.0);
         TIME_OF_FLIGHT_BY_DISTANCE_MAP.put(150.0, 600.0);
     }

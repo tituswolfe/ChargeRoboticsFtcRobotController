@@ -204,14 +204,14 @@ public class JetfireRobot extends RobotBase {
         double flywheelError = turret.flywheelController().getError();
 
         // Lead Computing
-        long totalLaunchDelayMills = LEAD_COMPUTING_TRANSFER_DELAY_MS; // deltaTimeMS
-        double launchDelaySec = totalLaunchDelayMills / 1000.0;
+        long totalLaunchDelayMS = LEAD_COMPUTING_TRANSFER_DELAY_MS;
+        double launchDelaySec = totalLaunchDelayMS / 1000.0;
 
         Pose predictedFuturePose = MathUtil.predictFuturePose(currentPose, velocity, launchDelaySec);
         double distanceFromGoalAtFuturePose = predictedFuturePose.distanceFrom(targetGoal);
 
-        long timeOfFlightMills = (long) TIME_OF_FLIGHT_BY_DISTANCE.interpolate(distanceFromGoalAtFuturePose);
-        double timeOfFlightSec = timeOfFlightMills / 1000.0;
+        long timeOfFlightMS = (long) TIME_OF_FLIGHT_BY_DISTANCE.interpolate(distanceFromGoalAtFuturePose);
+        double timeOfFlightSec = timeOfFlightMS / 1000.0;
 
         Vector virtualGoalVelocity = velocity.times(-1);
         Pose virtualGoal = MathUtil.predictFuturePose(targetGoal, virtualGoalVelocity, timeOfFlightSec);
