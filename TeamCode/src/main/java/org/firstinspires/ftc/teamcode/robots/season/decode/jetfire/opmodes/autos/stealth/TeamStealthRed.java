@@ -75,16 +75,19 @@ public class TeamStealthRed extends BaseAuto<JetfireRobot> {
                 setPathState(6, true);
                 break;
             case 6:
+                nextPath(intakeLoadingZoneToShoot, 7);
+                break;
+            case 7:
                 if (robot.getFollower().getCurrentTValue() >= endPathTValue) {
-                    returnPathState = 7;
+                    returnPathState = 8;
                     setPathState(20, true);
                 }
                 break;
-            case 7:
-                robot.getFollower().followPath(shootToIntakeTunnel);
-                setPathState(6, true);
-                break;
             case 8:
+                robot.getFollower().followPath(shootToIntakeTunnel);
+                setPathState(9, true);
+                break;
+            case 9:
                 nextPath(intakeTunnelToShoot, 4);
                 break;
 
