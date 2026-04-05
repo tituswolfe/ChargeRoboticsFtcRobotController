@@ -54,6 +54,7 @@ public class TurntablePIDFMotorController extends PIDFMotorController {
     public void setTargetHeading(double targetHeading) {
         this.targetHeading = targetHeading;
     }
+
     public void setDriveTrainHeadingVelocity(double driveTrainHeadingVelocity) {
         this.driveTrainHeadingVelocity = driveTrainHeadingVelocity;
     }

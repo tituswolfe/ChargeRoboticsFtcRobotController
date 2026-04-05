@@ -14,7 +14,9 @@ public class TestMapping extends PrimaryDriverGamepadMapping<TestRobot> {
 
     @Override
     public void onYPressed() {
-        robot.setFieldCentricOffset(StaticData.allianceColor == OpModeBase.AllianceColor.BLUE ? OpModeBase.AllianceColor.RED : OpModeBase.AllianceColor.BLUE);
+        OpModeBase.AllianceColor allianceColor = StaticData.allianceColor == OpModeBase.AllianceColor.BLUE ? OpModeBase.AllianceColor.RED : OpModeBase.AllianceColor.BLUE;
+        StaticData.allianceColor = allianceColor;
+        robot.setFieldCentricOffset(allianceColor);
     }
 
     @Override

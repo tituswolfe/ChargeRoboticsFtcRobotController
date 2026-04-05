@@ -22,7 +22,7 @@ public class TestRobot extends RobotBase {
 
     @Override
     protected FieldType instantiateFieldType() {
-        return instantiateFieldType();
+        return FieldType.SQUARE_INVERTED_ALLIANCE;
     }
 
     @Override

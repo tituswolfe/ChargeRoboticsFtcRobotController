@@ -36,7 +36,7 @@ public class BlueFar extends BaseAuto<JetfireRobot> {
 
     @Override
     public void autonomousPathUpdate(int pathState) {
-        if (opmodeTimer.getElapsedTimeSeconds() >= 27.5 && pathState > 0) {
+        if (opmodeTimer.getElapsedTimeSeconds() >= 27 && pathState > 0) {
             setPathState(-1, true);
             return;
         }

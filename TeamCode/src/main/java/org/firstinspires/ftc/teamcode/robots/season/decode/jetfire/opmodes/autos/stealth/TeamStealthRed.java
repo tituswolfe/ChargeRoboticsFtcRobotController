@@ -39,7 +39,7 @@ public class TeamStealthRed extends BaseAuto<JetfireRobot> {
 
     @Override
     public void autonomousPathUpdate(int pathState) {
-        if (opmodeTimer.getElapsedTimeSeconds() >= 27.5 && pathState > 0) {
+        if (opmodeTimer.getElapsedTimeSeconds() >= 27 && pathState > 0) {
             setPathState(-1, true);
             return;
         }
@@ -107,7 +107,7 @@ public class TeamStealthRed extends BaseAuto<JetfireRobot> {
                     break;
                 }
 
-                if (robot.isReadyToShoot() && actionTimer.getElapsedTime() > 100) {
+                if (robot.isReadyToShoot() && actionTimer.getElapsedTime() > 250) {
                     robot.fire();
                     setPathState(21, true);
                 }

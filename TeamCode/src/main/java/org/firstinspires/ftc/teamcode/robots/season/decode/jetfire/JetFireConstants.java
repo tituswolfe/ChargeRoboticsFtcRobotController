@@ -65,8 +65,8 @@ public class JetFireConstants {
     public static int TRANSFER_SERVO_TIME_MS = 150;
 
     // GATE
-    public static double GATE_SERVO_OPEN = 0.6;
-    public static double GATE_SERVO_CLOSED = 0.8;
+    public static double GATE_SERVO_OPEN = 0.55;
+    public static double GATE_SERVO_CLOSED = 0.75;
     public static int GATE_SERVO_TIME_MS = 200;
 
     // COOLDOWN
@@ -118,11 +118,11 @@ public class JetFireConstants {
         HOOD_ANGLE_BY_DISTANCE_MAP.put(102.0, 49.0);
         HOOD_ANGLE_BY_DISTANCE_MAP.put(108.0, 49.0); // half
         HOOD_ANGLE_BY_DISTANCE_MAP.put(114.0, 49.0);
-        HOOD_ANGLE_BY_DISTANCE_MAP.put(120.0, 48.0); // half
-        HOOD_ANGLE_BY_DISTANCE_MAP.put(126.0, 48.0);
-        HOOD_ANGLE_BY_DISTANCE_MAP.put(132.0, 48.5); // half
-        HOOD_ANGLE_BY_DISTANCE_MAP.put(140.0, 48.5);
-        HOOD_ANGLE_BY_DISTANCE_MAP.put(150.0, 48.5);
+        HOOD_ANGLE_BY_DISTANCE_MAP.put(120.0, 49.0); // half
+        HOOD_ANGLE_BY_DISTANCE_MAP.put(126.0, 49.0);
+        HOOD_ANGLE_BY_DISTANCE_MAP.put(132.0, 49.0); // half
+        HOOD_ANGLE_BY_DISTANCE_MAP.put(140.0, 49.0);
+        HOOD_ANGLE_BY_DISTANCE_MAP.put(150.0, 49.0);
     }
     public static LinearInterpolator HOOD_ANGLE_BY_DISTANCE = new LinearInterpolator(HOOD_ANGLE_BY_DISTANCE_MAP);
 
@@ -136,15 +136,15 @@ public class JetFireConstants {
         TIME_OF_FLIGHT_BY_DISTANCE_MAP.put(66.0, 400.0);
         TIME_OF_FLIGHT_BY_DISTANCE_MAP.put(78.0, 450.0);
         TIME_OF_FLIGHT_BY_DISTANCE_MAP.put(90.0, 500.0);
-        TIME_OF_FLIGHT_BY_DISTANCE_MAP.put(96.0, 520.0); //
-        TIME_OF_FLIGHT_BY_DISTANCE_MAP.put(102.0, 600.0);
-        TIME_OF_FLIGHT_BY_DISTANCE_MAP.put(108.0, 600.0); //
-        TIME_OF_FLIGHT_BY_DISTANCE_MAP.put(114.0, 600.0);
-        TIME_OF_FLIGHT_BY_DISTANCE_MAP.put(120.0, 600.0); //
-        TIME_OF_FLIGHT_BY_DISTANCE_MAP.put(126.0, 600.0);
-        TIME_OF_FLIGHT_BY_DISTANCE_MAP.put(132.0, 600.0); //
-        TIME_OF_FLIGHT_BY_DISTANCE_MAP.put(140.0, 600.0);
-        TIME_OF_FLIGHT_BY_DISTANCE_MAP.put(150.0, 600.0);
+        TIME_OF_FLIGHT_BY_DISTANCE_MAP.put(96.0, 500.0); //
+        TIME_OF_FLIGHT_BY_DISTANCE_MAP.put(102.0, 500.0);
+        TIME_OF_FLIGHT_BY_DISTANCE_MAP.put(108.0, 500.0); //
+        TIME_OF_FLIGHT_BY_DISTANCE_MAP.put(114.0, 500.0);
+        TIME_OF_FLIGHT_BY_DISTANCE_MAP.put(120.0, 500.0); //
+        TIME_OF_FLIGHT_BY_DISTANCE_MAP.put(126.0, 500.0);
+        TIME_OF_FLIGHT_BY_DISTANCE_MAP.put(132.0, 500.0); //
+        TIME_OF_FLIGHT_BY_DISTANCE_MAP.put(140.0, 500.0);
+        TIME_OF_FLIGHT_BY_DISTANCE_MAP.put(150.0, 500.0);
     }
     public static LinearInterpolator TIME_OF_FLIGHT_BY_DISTANCE = new LinearInterpolator(TIME_OF_FLIGHT_BY_DISTANCE_MAP);
 

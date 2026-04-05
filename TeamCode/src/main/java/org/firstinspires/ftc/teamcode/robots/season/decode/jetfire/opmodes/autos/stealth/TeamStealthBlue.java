@@ -19,10 +19,11 @@ public class TeamStealthBlue extends BaseAuto<JetfireRobot> {
     Pose line3End = new Pose(33, -43, Math.toRadians(-90));
 
     Pose shoot = new Pose(49.7, -16.3, Math.toRadians(-90));
-    Pose intakeLoadingZoneEnd = new Pose(63, -59.7, Math.toRadians(-90));
-    Pose intakeTunnelEnd = new Pose(63 - 16, -59.7, Math.toRadians(-90));
+    Pose intakeLoadingZoneBetween = new Pose(63, -20, Math.toRadians(-90));
+    Pose intakeLoadingZoneEnd = new Pose(63, -57, Math.toRadians(-90));
+    Pose intakeTunnelEnd = new Pose(63 - 16, -57, Math.toRadians(-90));
 
-    Pose end = new Pose(60, -35, Math.toRadians(-180));
+    Pose end = new Pose(47, -18, Math.toRadians(-135));
 
     PathChain startToShootPreload;
     PathChain shootPreloadToIntakeLine3;
@@ -39,7 +40,7 @@ public class TeamStealthBlue extends BaseAuto<JetfireRobot> {
 
     @Override
     public void autonomousPathUpdate(int pathState) {
-        if (opmodeTimer.getElapsedTimeSeconds() >= 27.5 && pathState > 0) {
+        if (opmodeTimer.getElapsedTimeSeconds() >= 28 && pathState > 0) {
             setPathState(-1, true);
             return;
         }
@@ -107,7 +108,7 @@ public class TeamStealthBlue extends BaseAuto<JetfireRobot> {
                     break;
                 }
 
-                if (robot.isReadyToShoot() && actionTimer.getElapsedTime() > 100) {
+                if (robot.isReadyToShoot() && actionTimer.getElapsedTime() > 500) {
                     robot.fire();
                     setPathState(21, true);
                 }
@@ -125,7 +126,7 @@ public class TeamStealthBlue extends BaseAuto<JetfireRobot> {
                 }
                 break;
             case 23:
-                if (actionTimer.getElapsedTime() > 100) {
+                if (actionTimer.getElapsedTime() > 300) {
                     setPathState(returnPathState, true);
                 }
                 break;
@@ -154,8 +155,10 @@ public class TeamStealthBlue extends BaseAuto<JetfireRobot> {
                 .build();
 
         shootToIntakeLoadingZone = follower.pathBuilder()
-                .addPath(new BezierLine(shoot, intakeLoadingZoneEnd))
-                .setLinearHeadingInterpolation(shoot.getHeading(), intakeLoadingZoneEnd.getHeading())
+                .addPath(new BezierLine(shoot, intakeLoadingZoneBetween))
+                .setLinearHeadingInterpolation(shoot.getHeading(), intakeLoadingZoneBetween.getHeading())
+                .addPath(new BezierLine(intakeLoadingZoneBetween, intakeLoadingZoneEnd))
+                .setLinearHeadingInterpolation(intakeLoadingZoneBetween.getHeading(), intakeLoadingZoneEnd.getHeading())
                 .build();
 
         intakeLoadingZoneToShoot = follower.pathBuilder()
@@ -179,7 +182,7 @@ public class TeamStealthBlue extends BaseAuto<JetfireRobot> {
     }
 
     public void nextPath(PathChain path, int pState) {
-        if (robot.getFollower().getCurrentTValue() > endPathTValue) {
+        if (robot.getFollower().getCurrentTValue() > endPathTValue && robot.getFollower().getCurrentPathNumber() + 1 >= robot.getFollower().getCurrentPathChain().size()) {
             robot.getFollower().followPath(path);
             setPathState(pState, true);
         }

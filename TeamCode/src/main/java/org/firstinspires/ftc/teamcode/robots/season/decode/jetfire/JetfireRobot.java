@@ -35,6 +35,7 @@ import org.firstinspires.ftc.teamcode.util.PoseHistory;
 import org.firstinspires.ftc.teamcode.util.info.HardwareInfo;
 import org.firstinspires.ftc.teamcode.util.math.Angle;
 import org.firstinspires.ftc.teamcode.util.math.MathUtil;
+import org.firstinspires.ftc.teamcode.util.math.RollingAverage;
 
 import static org.firstinspires.ftc.teamcode.robots.base.StaticData.allianceColor;
 import static org.firstinspires.ftc.teamcode.robots.season.decode.jetfire.JetFireConstants.*;
@@ -61,10 +62,10 @@ public class JetfireRobot extends RobotBase {
     private boolean isIntakeOn = false;
     private boolean reverseIntake = false;
 
-    // Positive offset is right
-    // Negative offset is left
+    // Positive offset is left
+    // Negative offset is right
     private static double CLOSE_ZONE_TURNTABLE_START_OFFSET_BLUE = 2;
-    private static double FAR_ZONE_TURNTABLE_START_OFFSET_BLUE = -4;
+    private static double FAR_ZONE_TURNTABLE_START_OFFSET_BLUE = 0;
     public static double CLOSE_ZONE_TURNTABLE_OFFSET_DEG;
     public static double FAR_ZONE_TURNTABLE_OFFSET_DEG;
 
@@ -91,6 +92,8 @@ public class JetfireRobot extends RobotBase {
 
 //    private final StateMachine autoFire = new StateMachine();
 
+    RollingAverage velocitySmoothing = new RollingAverage(7);
+
     @Override
     public void init(HardwareMap hardwareMap, Pose startPose, OpModeBase.AllianceColor allianceColor) {
         super.init(hardwareMap, startPose, allianceColor);
@@ -102,6 +105,9 @@ public class JetfireRobot extends RobotBase {
 
             CLOSE_ZONE_TURNTABLE_OFFSET_DEG = CLOSE_ZONE_TURNTABLE_START_OFFSET_BLUE;
             FAR_ZONE_TURNTABLE_OFFSET_DEG = FAR_ZONE_TURNTABLE_START_OFFSET_BLUE;
+        } else {
+            CLOSE_ZONE_TURNTABLE_OFFSET_DEG = -CLOSE_ZONE_TURNTABLE_START_OFFSET_BLUE;
+            FAR_ZONE_TURNTABLE_OFFSET_DEG = -FAR_ZONE_TURNTABLE_START_OFFSET_BLUE;
         }
     }
 
@@ -196,9 +202,16 @@ public class JetfireRobot extends RobotBase {
     @Override
     public void update(long deltaTimeMs, TelemetryManager telemetry) {
         Pose currentPose = follower.getPose();
+
         Vector velocity = follower.getVelocity();
-        double velocityMagnitude = velocity.getMagnitude();
+        double velocityMagnitude = follower.getVelocity().getMagnitude();
         double angularVelocity = follower.getAngularVelocity();
+
+//        RollingAverage velocityAverage = new RollingAverage(5);
+//        velocityAverage.update(velocityMagnitude);
+
+        velocitySmoothing.update(velocityMagnitude);
+        velocity = velocity.times(velocityMagnitude / velocitySmoothing.getAverage()); // ??
 
         double turntableHeading = turret.turntableController().getHeading();
         double flywheelError = turret.flywheelController().getError();
@@ -288,7 +301,12 @@ public class JetfireRobot extends RobotBase {
 
         // - TELEMETRY -
 
+
         telemetry.addLine("- VARS -");
+        telemetry.addData("Virtual goal heading", Math.toDegrees(virtualGoalHeading));
+        telemetry.addData("Goal heading", Math.toDegrees(MathUtil.bearingTo(currentPose, targetGoal)));
+        telemetry.addData("isShooting", !isCooldownOver);
+
         telemetry.addData("flywheel error", flywheelError);
         telemetry.addData("hood regression (deg)", hoodRegression);
         telemetry.addLine("");
