@@ -6,11 +6,13 @@ import org.firstinspires.ftc.teamcode.util.math.Angle;
 
 public abstract class GamepadMapping<Robot extends RobotBase> {
     protected final Robot robot;
+    protected final Gamepad gamepad;
     boolean wasLeftTriggerPressed = false;
     boolean wasRightTriggerPressed = false;
 
-    public GamepadMapping(Robot robot) {
+    public GamepadMapping(Robot robot, Gamepad gamepad) {
         this.robot = robot;
+        this.gamepad = gamepad;
     }
 
     // Buttons
@@ -26,25 +28,10 @@ public abstract class GamepadMapping<Robot extends RobotBase> {
     public abstract void leftJoystick(float x, float y);
     public abstract void rightJoystick(float x, float y);
 
-    public void joysticks(float leftX, float leftY, float rightX, float rightY) {
-        if (robot.getFollower() == null) return;
-        if (!robot.getFollower().isTeleopDrive()) return;
+    public abstract void joysticks(float leftX, float leftY, float rightX, float rightY);
 
-        robot.getFollower().setTeleOpDrive(leftY * robot.speedFactor, leftX * robot.speedFactor, rightX * robot.speedFactor, robot.isRobotCentric, (robot.isRobotCentric ? 0 : robot.fieldCentricOffset.getAngle(Angle.AngleSystem.SIGNED)));
-    };
-
-    public void onLeftStickPressed() {
-        robot.isRobotCentric = !robot.isRobotCentric;
-    }
-
-    public void onRightStickPressed() {
-        robot.isSlowMode = !robot.isSlowMode;
-        if (robot.isSlowMode) {
-            robot.speedFactor = RobotBase.slowSpeedFactor;
-        } else {
-            robot.speedFactor = 1;
-        }
-    }
+    public abstract void onLeftStickPressed();
+    public abstract void onRightStickPressed();
 
     // Triggers
     public abstract void leftTrigger(float val);

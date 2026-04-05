@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.util;
 
+import org.firstinspires.ftc.teamcode.util.math.MathUtil;
+
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -39,17 +41,6 @@ public class LinearInterpolator {
 
         double t = (x - x1) / (x2 - x1);
 
-        return lerp(y1, y2, t);
-    }
-
-    /**
-     * Calculates the linear interpolation (lerp) between two values.
-     * @param v0 The starting value (y1).
-     * @param v1 The ending value (y2).
-     * @param t The interpolation factor, typically between 0 and 1.
-     * @return The interpolated value.
-     */
-    private static double lerp(double v0, double v1, double t) {
-        return v0 + t * (v1 - v0);
+        return MathUtil.lerp(y1, y2, t);
     }
 }

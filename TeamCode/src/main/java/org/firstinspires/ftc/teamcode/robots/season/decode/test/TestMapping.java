@@ -1,16 +1,22 @@
-package org.firstinspires.ftc.teamcode.robots.season.decode.jetfire;
+package org.firstinspires.ftc.teamcode.robots.season.decode.test;
 
 import com.qualcomm.robotcore.hardware.Gamepad;
-import org.firstinspires.ftc.teamcode.robots.base.PrimaryDriverGamepadMapping;
 
-public class JetfireGamepadMapping extends PrimaryDriverGamepadMapping<JetfireRobot> {
-    public JetfireGamepadMapping(JetfireRobot jetfireRobot, Gamepad gamepad) {
-        super(jetfireRobot, gamepad);
+import org.firstinspires.ftc.teamcode.robots.base.PrimaryDriverGamepadMapping;
+import org.firstinspires.ftc.teamcode.robots.base.StaticData;
+import org.firstinspires.ftc.teamcode.robots.base.opmodes.OpModeBase;
+
+public class TestMapping extends PrimaryDriverGamepadMapping<TestRobot> {
+
+    public TestMapping(TestRobot testRobot, Gamepad gamepad) {
+        super(testRobot, gamepad);
     }
 
     @Override
     public void onYPressed() {
-        robot.setFlywheelOn(!robot.isFlywheelOn());
+        OpModeBase.AllianceColor allianceColor = StaticData.allianceColor == OpModeBase.AllianceColor.BLUE ? OpModeBase.AllianceColor.RED : OpModeBase.AllianceColor.BLUE;
+        StaticData.allianceColor = allianceColor;
+        robot.setFieldCentricOffset(allianceColor);
     }
 
     @Override
@@ -20,7 +26,7 @@ public class JetfireGamepadMapping extends PrimaryDriverGamepadMapping<JetfireRo
 
     @Override
     public void onAPressed() {
-        robot.toggleSubsystems(!robot.isFlywheelOn());
+
     }
 
     @Override
@@ -40,15 +46,12 @@ public class JetfireGamepadMapping extends PrimaryDriverGamepadMapping<JetfireRo
 
     @Override
     public void leftTrigger(float val) {
-        robot.setReverseIntake(val > 0.05 ? true : false);
+
     }
 
     @Override
     public void rightTrigger(float val) {
-         if (val > 0.05 && robot.isReadyToShoot()){
-             robot.fire();
-             gamepad.rumble(200);
-         }
+
     }
 
     @Override
@@ -73,12 +76,12 @@ public class JetfireGamepadMapping extends PrimaryDriverGamepadMapping<JetfireRo
 
     @Override
     public void onLeftBumperPressed() {
-        robot.setIntakeOn(!robot.isIntakeOn());
+
     }
 
     @Override
     public void onRightBumperPressed() {
-        robot.setAutoAimTurntable(!robot.isAutoAimTurntable());
+
     }
 
     @Override

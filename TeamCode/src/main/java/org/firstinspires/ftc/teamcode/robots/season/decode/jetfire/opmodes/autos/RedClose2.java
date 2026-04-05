@@ -12,24 +12,24 @@ import org.firstinspires.ftc.teamcode.robots.base.opmodes.BaseAuto;
 import org.firstinspires.ftc.teamcode.robots.season.decode.jetfire.JetfireRobot;
 
 @Autonomous(preselectTeleOp = "Jetfire")
-public class BlueClose extends BaseAuto<JetfireRobot> {
-    Pose startPose = new Pose(-57.24, -43.5, Math.toRadians(-127.5));
+public class RedClose2 extends BaseAuto<JetfireRobot> {
+    Pose startPose = new Pose(-57.24, 43.5, Math.toRadians(127.5));
 
-    Pose shootPreloadPose = new Pose(-16.57, -22, Math.toRadians(-45));
-    Pose line2Control = new Pose(16, -24);
-    Pose line2End = new Pose(9.5, -43, Math.toRadians(-90));
+    Pose shootPreloadPose = new Pose(-16.57, 22, Math.toRadians(45));
+    Pose line2Control = new Pose(16, 24);
+    Pose line2End = new Pose(9.5, 43, Math.toRadians(90));
 
-    Pose gateControlPoint = new Pose(15, -40);
-    Pose openGatePose = new Pose(11.1, -54.73, Math.toRadians(-118.6));
+    Pose gateControlPoint = new Pose(15, 40);
+    Pose openGatePose = new Pose(11.1, 54.73, Math.toRadians(118.6));
 
-    Pose tunnelIntake = new Pose(11.1 + 5, -54.73, Math.toRadians(-118.6));
+    Pose tunnelIntake = new Pose(11.1 + 5, 54.73, Math.toRadians(118.6));
 
-    Pose shootBeforeLine1 = new Pose(-16.57, -22, Math.toRadians(-90));
+    Pose shootBeforeLine1 = new Pose(-16.57, 22, Math.toRadians(90));
 
-    Pose line1End = new Pose(-10, -43, Math.toRadians(-90));
-    Pose line1Shoot = new Pose(-14, -21, Math.toRadians(-90));
+    Pose line1End = new Pose(-10, 43, Math.toRadians(90));
+    Pose line1Shoot = new Pose(-14, 21, Math.toRadians(90));
 
-    Pose endPose = new Pose(4.2, -42, Math.toRadians(-90));
+    Pose endPose = new Pose(4.2, 42, Math.toRadians(90));
 
     PathChain shootPreload;
 
@@ -230,7 +230,7 @@ public class BlueClose extends BaseAuto<JetfireRobot> {
                 .setLinearHeadingInterpolation(openGatePose.getHeading(), tunnelIntake.getHeading())
                 .build();
 
-        shootGate = follower.pathBuilder()
+         shootGate = follower.pathBuilder()
                 .addPath(new BezierCurve(tunnelIntake, gateControlPoint, shootBeforeLine1))
                 .setLinearHeadingInterpolation(tunnelIntake.getHeading(), shootBeforeLine1.getHeading())
                 .setBrakingStrength(0.25)
@@ -266,6 +266,6 @@ public class BlueClose extends BaseAuto<JetfireRobot> {
 
     @Override
     protected AllianceColor instantiateAllianceColor() {
-        return AllianceColor.BLUE;
+        return AllianceColor.RED;
     }
 }

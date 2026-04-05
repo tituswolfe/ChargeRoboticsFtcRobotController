@@ -1,35 +1,47 @@
 package org.firstinspires.ftc.teamcode.hardware.controllers.servo;
 
+import com.bylazar.telemetry.TelemetryManager;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.util.math.Angle;
 import org.firstinspires.ftc.teamcode.util.math.MathUtil;
 
 public class AngleServoController extends ServoController {
-    public final Angle offset;
-    public final Angle maxLimit;
-    public final Angle minLimit; // TODO: RENAME
+//    public final Angle initialOffset;
 
+    public final Angle minSoftLimit;
+    public final Angle maxSoftLimit;
 
+    private Angle targetAngle;
 
-    public AngleServoController(Servo servo, Servo.Direction direction, Angle totalRotation, double totalGearRatio, Angle offset, Angle maxLimit, Angle minLimit) {
-        super(servo, direction, totalRotation, totalGearRatio);
-        this.offset = offset;
-        this.maxLimit = maxLimit;
-        this.minLimit = minLimit;
+    public AngleServoController(Servo device, String name, Angle totalRotation, double totalGearRatio, Angle minSoftLimit, Angle maxSoftLimit) {
+        super(device, name, totalRotation, totalGearRatio);
+        this.minSoftLimit = minSoftLimit;
+        this.maxSoftLimit = maxSoftLimit;
     }
 
     public void setTargetAngle(Angle angle) {
-        Angle targetAngle = new Angle(MathUtil.clamp(
-                angle.getAngle(Angle.AngleSystem.SIGNED),
-                minLimit.getAngle(Angle.AngleSystem.SIGNED),
-                maxLimit.getAngle(Angle.AngleSystem.SIGNED)
+        targetAngle = new Angle(MathUtil.clamp(
+                angle.getAngle(Angle.AngleNormalization.NONE),
+                minSoftLimit.getAngle(Angle.AngleNormalization.NONE),
+                maxSoftLimit.getAngle(Angle.AngleNormalization.NONE)
         ));
 
-        servo.setPosition(targetAngle.minus(offset, Angle.AngleSystem.SIGNED).getAngle(Angle.AngleSystem.SIGNED) * percentagePerOutputRadian);
+        device.setPosition(targetAngle.minus(minSoftLimit, Angle.AngleNormalization.NONE).getAngle(Angle.AngleNormalization.NONE) * percentagePerOutputRadian);
     }
 
     public Angle getTargetAngle() {
-        return new Angle(servo.getPosition() / percentagePerOutputRadian).plus(offset, Angle.AngleSystem.SIGNED);
+        return new Angle(device.getPosition() / percentagePerOutputRadian).plus(minSoftLimit, Angle.AngleNormalization.NONE);
+    }
+
+    @Override
+    public void update() {
+
+    }
+
+    @Override
+    public void updateTelemetry(TelemetryManager telemetry) {
+        super.updateTelemetry(telemetry);
+        telemetry.addData("Angle", targetAngle.getAngle(Angle.AngleNormalization.NONE));
     }
 }

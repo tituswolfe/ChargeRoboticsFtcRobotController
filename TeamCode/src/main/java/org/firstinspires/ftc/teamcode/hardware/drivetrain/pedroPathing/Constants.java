@@ -17,6 +17,7 @@ import org.firstinspires.ftc.robotcore.external.navigation.DistanceUnit;
 
 @Configurable
 public class Constants {
+    public static double jetfireMassKg = 14.6;
     public static PIDFCoefficients jetfireTranslationalPIDFCoefficients = new PIDFCoefficients(0.1, 0, 0.01, 0.02);
     public static PIDFCoefficients jetfireHeadingPIDFCoefficients = new PIDFCoefficients(4, 0, 0.1, 0.02);
 
@@ -89,7 +90,7 @@ public class Constants {
     public static Follower createJetfireFollower(HardwareMap hardwareMap) {
         return new FollowerBuilder(
                 new FollowerConstants()
-                        .mass(14.6)
+                        .mass(jetfireMassKg)
                         .forwardZeroPowerAcceleration(-35.92)
                         .lateralZeroPowerAcceleration(-64.54)
                         .translationalPIDFCoefficients(jetfireTranslationalPIDFCoefficients)

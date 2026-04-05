@@ -22,11 +22,11 @@ public class TeleOp extends TeleOpBase<JetfireRobot> {
 
     @Override
     protected GamepadMapping<JetfireRobot> instantiateGamepadMapping1() {
-        return new JetfireGamepadMapping(robot);
+        return new JetfireGamepadMapping(robot, gamepad1);
     }
 
     @Override
     protected GamepadMapping<JetfireRobot> instantiateGamepadMapping2() {
-        return new JetFireGamepadMapping2(robot);
+        return new JetFireGamepadMapping2(robot, gamepad2);
     }
 }

@@ -1,9 +1,8 @@
-package org.firstinspires.ftc.teamcode.robots.season.decode.jetfire.opmodes.autos;
+package org.firstinspires.ftc.teamcode.robots.season.decode.jetfire.opmodes.autos.stealth;
 
 import com.pedropathing.follower.Follower;
 import com.pedropathing.geometry.BezierCurve;
 import com.pedropathing.geometry.BezierLine;
-import com.pedropathing.geometry.BezierPoint;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.paths.PathChain;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
@@ -12,17 +11,18 @@ import org.firstinspires.ftc.teamcode.robots.base.opmodes.BaseAuto;
 import org.firstinspires.ftc.teamcode.robots.season.decode.jetfire.JetfireRobot;
 
 @Autonomous(preselectTeleOp = "Jetfire")
-public class BlueFar extends BaseAuto<JetfireRobot> {
-    Pose start = new Pose(63, -14.1, Math.toRadians(-180));
-    Pose shootPreload = new Pose(53, -17, Math.toRadians(-159.1));
+public class TeamStealthRed extends BaseAuto<JetfireRobot> {
+    Pose start = new Pose(63, 14.1, Math.toRadians(-180));
+    Pose shootPreload = new Pose(53, 17, Math.toRadians(159.1));
 
-    Pose line3Control = new Pose(37, -21);
-    Pose line3End = new Pose(33, -43, Math.toRadians(-90));
+    Pose line3Control = new Pose(37, 21);
+    Pose line3End = new Pose(33, 43, Math.toRadians(90));
 
-    Pose shoot = new Pose(49.7, -16.3, Math.toRadians(-90));
-    Pose intakeLoadingZoneEnd = new Pose(63, -59.7, Math.toRadians(-90));
+    Pose shoot = new Pose(49.7, 16.3, Math.toRadians(90));
+    Pose intakeLoadingZoneEnd = new Pose(63, 59.7, Math.toRadians(90));
+    Pose intakeTunnelEnd = new Pose(63 - 16, 59.7, Math.toRadians(90));
 
-    Pose end = new Pose(60, -35, Math.toRadians(-180));
+    Pose end = new Pose(60, 35, Math.toRadians(-180));
 
     PathChain startToShootPreload;
     PathChain shootPreloadToIntakeLine3;
@@ -30,6 +30,9 @@ public class BlueFar extends BaseAuto<JetfireRobot> {
 
     PathChain shootToIntakeLoadingZone;
     PathChain intakeLoadingZoneToShoot;
+
+    PathChain shootToIntakeTunnel;
+    PathChain intakeTunnelToShoot;
 
     int returnPathState = 0;
     public static double endPathTValue = 0.97;
@@ -72,7 +75,20 @@ public class BlueFar extends BaseAuto<JetfireRobot> {
                 setPathState(6, true);
                 break;
             case 6:
-                nextPath(intakeLoadingZoneToShoot, 4);
+                nextPath(intakeLoadingZoneToShoot, 7);
+                break;
+            case 7:
+                if (robot.getFollower().getCurrentTValue() >= endPathTValue) {
+                    returnPathState = 8;
+                    setPathState(20, true);
+                }
+                break;
+            case 8:
+                robot.getFollower().followPath(shootToIntakeTunnel);
+                setPathState(9, true);
+                break;
+            case 9:
+                nextPath(intakeTunnelToShoot, 4);
                 break;
 
             case -1:
@@ -91,7 +107,7 @@ public class BlueFar extends BaseAuto<JetfireRobot> {
                     break;
                 }
 
-                if (robot.isReadyToShoot() && actionTimer.getElapsedTime() > 100) {
+                if (robot.isReadyToShoot() && actionTimer.getElapsedTime() > 250) {
                     robot.fire();
                     setPathState(21, true);
                 }
@@ -148,6 +164,18 @@ public class BlueFar extends BaseAuto<JetfireRobot> {
                 .setBrakingStrength(0.1)
                 .setBrakingStart(2)
                 .build();
+
+        shootToIntakeTunnel = follower.pathBuilder()
+                .addPath(new BezierLine(shoot, intakeTunnelEnd))
+                .setLinearHeadingInterpolation(shoot.getHeading(), intakeTunnelEnd.getHeading())
+                .build();
+
+        intakeTunnelToShoot = follower.pathBuilder()
+                .addPath(new BezierLine(intakeTunnelEnd, shoot))
+                .setLinearHeadingInterpolation(intakeTunnelEnd.getHeading(), shoot.getHeading())
+                .setBrakingStrength(0.1)
+                .setBrakingStart(2)
+                .build();
     }
 
     public void nextPath(PathChain path, int pState) {
@@ -169,6 +197,6 @@ public class BlueFar extends BaseAuto<JetfireRobot> {
 
     @Override
     protected AllianceColor instantiateAllianceColor() {
-        return AllianceColor.BLUE;
+        return AllianceColor.RED;
     }
 }

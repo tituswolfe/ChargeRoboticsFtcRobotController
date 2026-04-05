@@ -114,7 +114,7 @@ public class GoBildaPrismExample extends LinearOpMode {
                  * specific layer height without overwriting it completely.
                  */
                 prism.insertAndUpdateAnimation(LayerHeight.LAYER_0, solid);
-                prism.insertAndUpdateAnimation(LayerHeight.LAYER_1,rainbowSnakes);
+                prism.insertAndUpdateAnimation(LayerHeight.LAYER_1, rainbowSnakes);
             }
 
             if(gamepad1.xWasPressed()){

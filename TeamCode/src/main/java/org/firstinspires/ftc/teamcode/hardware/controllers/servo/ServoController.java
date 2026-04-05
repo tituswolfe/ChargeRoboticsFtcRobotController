@@ -1,34 +1,47 @@
 package org.firstinspires.ftc.teamcode.hardware.controllers.servo;
 
+import com.bylazar.telemetry.TelemetryManager;
 import com.qualcomm.robotcore.hardware.Servo;
 
+import org.firstinspires.ftc.teamcode.hardware.controllers.HardwareController;
 import org.firstinspires.ftc.teamcode.util.math.Angle;
 
-public class ServoController {
-    protected final Servo servo;
+public abstract class ServoController extends HardwareController<Servo> {
     protected final Angle totalRotation;
-    protected double totalGearRatio;
-    protected double percentagePerOutputDegree;
-    protected double percentagePerOutputRadian;
 
-    public ServoController(Servo servo, Servo.Direction direction, Angle totalRotation, double totalGearRatio) {
-        this.servo = servo;
-        this.servo.setDirection(direction);
+    protected final double totalGearRatio;
+    protected final double percentagePerOutputDegree;
+    protected final double percentagePerOutputRadian;
+
+    public ServoController(Servo device, String name, Angle totalRotation, double totalGearRatio) {
+        super(device, name);
+
         this.totalRotation = totalRotation;
-        setTotalGearRatio(totalGearRatio);
+        this.totalGearRatio = totalGearRatio;
+        // TODO: Simplify
+        this.percentagePerOutputDegree = (1.0 / totalRotation.getAngle(Angle.AngleUnit.DEGREES, Angle.AngleNormalization.NONE)) * totalGearRatio;
+        this.percentagePerOutputRadian = (1.0 / totalRotation.getAngle(Angle.AngleUnit.RADIANS, Angle.AngleNormalization.NONE)) * totalGearRatio;
+    }
+
+    public Angle getTotalRotation() {
+        return totalRotation;
     }
 
     public double getTotalGearRatio() {
         return totalGearRatio;
     }
 
-    public void setTotalGearRatio(double totalGearRatio) {
-        this.totalGearRatio = totalGearRatio;
-        this.percentagePerOutputDegree = (1.0 / totalRotation.getAngle(Angle.AngleUnit.DEGREES, Angle.AngleSystem.SIGNED)) * totalGearRatio;
-        this.percentagePerOutputRadian = (1.0 / totalRotation.getAngle(Angle.AngleUnit.RADIANS, Angle.AngleSystem.SIGNED)) * totalGearRatio;
+    public double getPercentagePerOutputDegree() {
+        return percentagePerOutputDegree;
     }
 
-    public Servo getServo() {
-        return servo;
+    public double getPercentagePerOutputRadian() {
+        return percentagePerOutputRadian;
+    }
+
+    @Override
+    public void updateTelemetry(TelemetryManager telemetry) {
+        super.updateTelemetry(telemetry);
+        telemetry.addData("Position", device.getPosition());
     }
 }
