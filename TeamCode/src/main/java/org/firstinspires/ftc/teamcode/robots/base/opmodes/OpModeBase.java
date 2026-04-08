@@ -108,6 +108,7 @@ public abstract class OpModeBase<Robot extends RobotBase> extends OpMode {
         long currentNanoTime = System.nanoTime();
         long deltaTimeNs = currentNanoTime - lastNanoTime;
         long deltaTimeMs = TimeUnit.NANOSECONDS.toMillis(deltaTimeNs);
+        lastNanoTime = currentNanoTime;
 
         rollingAverage.update(deltaTimeMs);
 
