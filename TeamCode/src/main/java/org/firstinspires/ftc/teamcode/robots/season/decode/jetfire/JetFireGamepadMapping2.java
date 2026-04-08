@@ -1,31 +1,39 @@
 package org.firstinspires.ftc.teamcode.robots.season.decode.jetfire;
 
+import static org.firstinspires.ftc.teamcode.robots.base.StaticData.allianceColor;
+
 import com.qualcomm.robotcore.hardware.Gamepad;
 
 import org.firstinspires.ftc.teamcode.hardware.controllers.servo.RGBIndicatorLightController;
 import org.firstinspires.ftc.teamcode.robots.base.GamepadMapping;
-import org.firstinspires.ftc.teamcode.robots.base.StaticData;
 import org.firstinspires.ftc.teamcode.robots.base.opmodes.OpModeBase;
-import org.firstinspires.ftc.teamcode.util.math.Angle;
 
 public class JetFireGamepadMapping2 extends GamepadMapping<JetfireRobot> {
+    double zoneOffsetIncrement = 1;
+
     public JetFireGamepadMapping2(JetfireRobot jetfireRobot, Gamepad gamepad) {
         super(jetfireRobot, gamepad);
     }
 
     @Override
     public void onYPressed() {
-        robot.getFollower().setPose(JetfireRobot.humanPlayerReset);
-        robot.getIndicatorLightController().indicate(RGBIndicatorLightController.Color.VIOLET);
+        robot.humanPlayerPoseReset();
     }
 
     @Override
     public void onBPressed() {
+        robot.getTurret().turntableController().setInitialAngle(0);
     }
 
     @Override
     public void onAPressed() {
-
+        if (allianceColor.equals(OpModeBase.AllianceColor.BLUE)) {
+            robot.closeTurntableOffsetDeg = JetfireRobot.CLOSE_ZONE_TURNTABLE_START_OFFSET_BLUE;
+            robot.farTurntableOffsetDeg = JetfireRobot.FAR_ZONE_TURNTABLE_START_OFFSET_BLUE;
+        } else {
+            robot.closeTurntableOffsetDeg = JetfireRobot.CLOSE_ZONE_TURNTABLE_START_OFFSET_RED;
+            robot.farTurntableOffsetDeg = JetfireRobot.FAR_ZONE_TURNTABLE_START_OFFSET_RED;
+        }
     }
 
     @Override
@@ -72,23 +80,21 @@ public class JetFireGamepadMapping2 extends GamepadMapping<JetfireRobot> {
 
     }
 
-    double zoneOffsetIncrement = 1;
-
     @Override
     public void onLeftBumperPressed() {
         if (robot.isInFarZone()) {
-            JetfireRobot.FAR_ZONE_TURNTABLE_OFFSET_DEG += zoneOffsetIncrement;
+            robot.farTurntableOffsetDeg += zoneOffsetIncrement;
         } else {
-            JetfireRobot.CLOSE_ZONE_TURNTABLE_OFFSET_DEG += zoneOffsetIncrement;
+            robot.closeTurntableOffsetDeg += zoneOffsetIncrement;
         }
     }
 
     @Override
     public void onRightBumperPressed() {
         if (robot.isInFarZone()) {
-            JetfireRobot.FAR_ZONE_TURNTABLE_OFFSET_DEG -= zoneOffsetIncrement;
+            robot.farTurntableOffsetDeg -= zoneOffsetIncrement;
         } else {
-            JetfireRobot.CLOSE_ZONE_TURNTABLE_OFFSET_DEG -= zoneOffsetIncrement;
+            robot.closeTurntableOffsetDeg -= zoneOffsetIncrement;
         }
     }
 

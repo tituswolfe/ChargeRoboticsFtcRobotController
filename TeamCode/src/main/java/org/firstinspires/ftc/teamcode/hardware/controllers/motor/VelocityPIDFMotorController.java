@@ -1,95 +1,44 @@
 package org.firstinspires.ftc.teamcode.hardware.controllers.motor;
 
-import androidx.core.math.MathUtils;
-
 import com.bylazar.telemetry.TelemetryManager;
 import com.pedropathing.control.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
-import com.qualcomm.robotcore.util.Range;
 
-import org.firstinspires.ftc.teamcode.util.math.MathUtil;
+import org.firstinspires.ftc.teamcode.util.info.MotorInfo;
 
+/**
+ * {@link VelocityPIDFMotorController} can be used to control a motor by velocity.
+ * This class was made specifically for controlling flywheels.
+ *
+ * @author Titus Wolfe
+ */
 public class VelocityPIDFMotorController extends PIDFMotorController {
-    private double targetVelocity = 0;
+    private double targetOutputVelocity = 0;
     private double error;
 
-    public VelocityPIDFMotorController(DcMotorEx device, String name, PIDFCoefficients pidfCoefficients, double ticksPerRevolution, double totalGearRatio, double maxPower) {
-        super(device, name, pidfCoefficients, ticksPerRevolution, totalGearRatio, maxPower);
+    public VelocityPIDFMotorController(DcMotorEx device, String name, MotorInfo motorInfo, double totalGearRatio, double maxPower, PIDFCoefficients pidfCoefficients) {
+        super(device, name, motorInfo, totalGearRatio, maxPower, pidfCoefficients);
         device.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
     }
 
     @Override
-    public void update() {
-        // 1. Update sensor data
-        velocity = (device.getVelocity() * 60) / ticksPerRevolution;
-        currentPosition = device.getCurrentPosition();
+    public void update(long deltaTimeNS) {
+        super.update(deltaTimeNS);
 
-        // 2. Calculate the NEW power first
-        error = targetVelocity - velocity;
+        double clampedTargetVelocity = Math.min(targetOutputVelocity, maxOutputSpeedRPM);
+        error = clampedTargetVelocity - outputVelocity;
         pidfController.updateError(error);
-        pidfController.updateFeedForwardInput(targetVelocity);
-        setPowerFromPIDFController(); // This sets the 'power' variable
-
-        // 3. Apply safety and Slew Rate to the NEW power
-        double clampedPower = MathUtils.clamp(power, -maxPower, maxPower);
-        double slewRatePower = Range.clip(clampedPower, lastPower - SLEW_RATE, lastPower + SLEW_RATE);
-
-        // 4. Hardware Write
-        if (!isMotorEngaged) {
-            device.setPower(0);
-        } else if (clampedPower == 0 && lastPower != 0) {
-            device.setPower(0);
-        } else if (!MathUtil.isWithinRange(slewRatePower, lastPower, DELTA_FILTERING_THRESHOLD)) {
-            device.setPower(slewRatePower);
-        }
-
-        lastPower = device.getPower(); // Use actual applied power for next loop
+        pidfController.updateFeedForwardInput(targetOutputVelocity);
+        targetPower = pidfController.run();
     }
 
-//    @Override
-//    public void update() {
-//        velocity = (device.getVelocity() * 60) / ticksPerRevolution;
-//        currentPosition = device.getCurrentPosition();
-//
-//        double clampedPower = MathUtils.clamp(power, -maxPower, maxPower);
-//        double slewRatePower = Range.clip(clampedPower, lastPower - SLEW_RATE, lastPower + SLEW_RATE);
-//        if (isMotorEngaged) {
-//            device.setPower(0);
-//        }
-//        else if (!MathUtil.isWithinRange(slewRatePower, lastPower, DELTA_FILTERING_THRESHOLD)) {
-//            device.setPower(slewRatePower);
-//        } else if (clampedPower == 0 && lastPower != 0) {
-//            device.setPower(0);
-//        }
-//
-//        lastPower = clampedPower;
-//
-//
-//        error = targetVelocity - velocity;
-//        pidfController.updateError(error);
-//        pidfController.updateFeedForwardInput(targetVelocity);
-//
-//        setPowerFromPIDFController();
-//    }
-
-//    @Override
-//    public void update() {
-//        super.update();
-//
-//        error = targetVelocity - velocity;
-//        pidfController.updateError(error);
-//        pidfController.updateFeedForwardInput(targetVelocity);
-//
-//        setPowerFromPIDFController();
-//    }
-
-    public void setTargetVelocity(double targetVelocityRPM) {
-        this.targetVelocity = targetVelocityRPM;
+    public void setTargetOutputVelocity(double targetVelocityRPM) {
+        this.targetOutputVelocity = targetVelocityRPM;
     }
 
-    public double getTargetVelocity() {
-        return targetVelocity;
+    public double getTargetOutputVelocity() {
+        return targetOutputVelocity;
     }
 
     public double getError() {
@@ -99,6 +48,7 @@ public class VelocityPIDFMotorController extends PIDFMotorController {
     @Override
     public void updateTelemetry(TelemetryManager telemetry) {
         super.updateTelemetry(telemetry);
-        telemetry.addData(name + "Target Velocity (RPM)", targetVelocity);
+        telemetry.addData(name + " target velocity (RPM)", targetOutputVelocity);
+        telemetry.addData(name + " error", error);
     }
 }

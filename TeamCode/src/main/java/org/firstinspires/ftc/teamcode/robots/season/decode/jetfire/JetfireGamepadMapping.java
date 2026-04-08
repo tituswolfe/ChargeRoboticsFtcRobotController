@@ -46,7 +46,7 @@ public class JetfireGamepadMapping extends PrimaryDriverGamepadMapping<JetfireRo
     @Override
     public void rightTrigger(float val) {
          if (val > 0.05 && robot.isReadyToShoot()){
-             robot.fire();
+             robot.rapidFire();
              gamepad.rumble(200);
          }
     }

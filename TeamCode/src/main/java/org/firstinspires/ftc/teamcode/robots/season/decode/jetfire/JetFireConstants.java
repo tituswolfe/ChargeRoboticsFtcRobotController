@@ -32,9 +32,9 @@ public class JetFireConstants {
     public static PIDFCoefficients TURNTABLE_PIDF_COEFFICIENTS = new PIDFCoefficients(0.025, 0, 0.001, -0.002); // i 0.000006
     public static final double TURNTABLE_TOTAL_GEAR_RATIO = 64.0 / 16.0;
     public static final double TURNTABLE_MAX_POWER = 0.75;
-    public static final double TURNTABLE_MIN_HARD_STOP = Math.toRadians(-130);
-    public static final double TURNTABLE_MAX_HARD_STOP = Math.toRadians(130);
-    public static final boolean REVERSE_POWER = false;
+    public static final double TURNTABLE_MIN_HARD_STOP = Math.toRadians(-140);
+    public static final double TURNTABLE_MAX_HARD_STOP = Math.toRadians(140);
+    public static final boolean TURNTABLE_REVERSE_POWER = false;
 
     // HOOD
     public static final String HOOD_SERVO_DEVICE_NAME = "hood";
@@ -57,7 +57,7 @@ public class JetFireConstants {
     public static final double INTAKE_CURRENT_THRESHOLD_AMPS = 5.0;
 
     public static final double INTAKE_POWER = 1.0;
-    public static final double REVERSE_INTAKE_POWER = -0.7;
+    public static final double REVERSE_INTAKE_POWER = 0.5;
 
     // TRANSFER
     public static double TRANSFER_SERVO_UP = 0.43; // 0.3

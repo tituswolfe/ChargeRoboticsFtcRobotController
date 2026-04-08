@@ -22,6 +22,7 @@ import org.firstinspires.ftc.teamcode.robots.base.StaticData;
 import org.firstinspires.ftc.teamcode.util.math.RollingAverage;
 
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 /**
  * {@link OpModeBase} is an abstract subclass of the SDK's {@link OpMode}.
@@ -47,7 +48,8 @@ public abstract class OpModeBase<Robot extends RobotBase> extends OpMode {
 
     private static final int DELTA_TIME_SAMPLE_SIZE = 50;
     RollingAverage rollingAverage = new RollingAverage(DELTA_TIME_SAMPLE_SIZE);
-    private final Timer deltaTimer = new Timer();
+
+    long lastNanoTime;
 
     /**
      * Initiates and instantiates hardware & handlers.
@@ -57,9 +59,9 @@ public abstract class OpModeBase<Robot extends RobotBase> extends OpMode {
         // TODO: Make sure gamepads driing don't interfer with each other
         // TODO: Single static instance of robot and opmode
 
-        telemetry.addLine("Charger Robotics");
-        telemetry.addLine("Please wait . . .");
-        telemetry.update();
+        telemetryManager.addLine("Charger Robotics");
+        telemetryManager.addLine("Please wait . . .");
+        telemetryManager.update();
 
         robot = instantiateRobot();
         gamepadMapping1 = instantiateGamepadMapping1();
@@ -83,13 +85,14 @@ public abstract class OpModeBase<Robot extends RobotBase> extends OpMode {
 
         opModeTypeSpecificInit();
 
-        telemetry.addLine("READY");
-        telemetry.update();
+        telemetryManager.addLine("READY");
+        telemetryManager.update();
     }
 
     @Override
     public void init_loop() {
         //super.init_loop();
+        // TODO: MENU SELECT
     }
 
     public abstract void opModeTypeSpecificInit();
@@ -102,23 +105,24 @@ public abstract class OpModeBase<Robot extends RobotBase> extends OpMode {
 
     @Override
     public void loop() {
-        long deltaTimeMs = deltaTimer.getElapsedTime();
-        deltaTimer.resetTimer();
+        long currentNanoTime = System.nanoTime();
+        long deltaTimeNs = currentNanoTime - lastNanoTime;
+        long deltaTimeMs = TimeUnit.NANOSECONDS.toMillis(deltaTimeNs);
 
         rollingAverage.update(deltaTimeMs);
 
         telemetryManager.addLine("- OpMode info -");
-        telemetryManager.addData("Alliance Color", StaticData.allianceColor);
-        telemetryManager.addData("Delta Time (MS)", deltaTimeMs);
-        telemetryManager.addData("Avrg. Delta Time (MS)", rollingAverage.getAverage());
+        telemetryManager.addData("Alliance", StaticData.allianceColor);
+        telemetryManager.addData("Loop Time (MS)", deltaTimeMs);
+        telemetryManager.addData("Avrg. Loop Time (MS)", rollingAverage.getAverage());
 
         telemetryManager.addData("Elapsed time (sec)", opmodeTimer.getElapsedTimeSeconds());
         telemetryManager.addData("isEndgame", isEndgame);
 
-        robot.update(deltaTimeMs, telemetryManager);
+        robot.update(deltaTimeNs, telemetryManager);
 
         telemetryManager.addLine("");
-        telemetryManager.addLine("- Charger Robotics -");
+        telemetryManager.addLine("- CHARGER ROBOTICS 9808 -");
         telemetryManager.addLine("- DON'T TOUCH THAT RYAN! -");
 
         telemetryManager.update(this.telemetry);
@@ -136,8 +140,6 @@ public abstract class OpModeBase<Robot extends RobotBase> extends OpMode {
     public static double getOpModeElapsedTimeSeconds() {
         return opmodeTimer.getElapsedTimeSeconds();
     }
-
-
 
     protected abstract Robot instantiateRobot();
     protected abstract Pose instantiateStartPose();

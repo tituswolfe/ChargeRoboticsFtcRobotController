@@ -6,59 +6,60 @@ import com.qualcomm.robotcore.hardware.DcMotor;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.util.Range;
 
+import org.firstinspires.ftc.teamcode.util.info.MotorInfo;
+
 public class TurntablePIDFMotorController extends PIDFMotorController {
     private final double minAngleLimit;
     private final double maxAngleLimit;
-
-    private final boolean reversePower;
 
     private double initialAngle = 0;
 
     private double heading = 0;
     private double targetHeading = 0;
     private double error = 0;
-    private double driveTrainHeadingVelocity = 0;
+    private double robotHeadingVelocity = 0;
 
-    public TurntablePIDFMotorController(DcMotorEx device, String name, PIDFCoefficients pidfCoefficients, double ticksPerRevolution, double totalGearRatio, double maxPower, double minAngleLimit, double maxAngleLimit, boolean reversePower, double initialAngle) {
-        super(device, name, pidfCoefficients, ticksPerRevolution, totalGearRatio, maxPower);
+    public TurntablePIDFMotorController(DcMotorEx device, String name, MotorInfo motorInfo, double totalGearRatio, double maxPower, PIDFCoefficients pidfCoefficients, double minAngleLimit, double maxAngleLimit) {
+        super(device, name, motorInfo, totalGearRatio, maxPower, pidfCoefficients);
 
         this.minAngleLimit = minAngleLimit;
         this.maxAngleLimit = maxAngleLimit;
 
-        this.reversePower = reversePower;
-
-        this.initialAngle = initialAngle;
-
         device.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
     }
 
+
     @Override
-    public void update() {
-        super.update();
+    public void update(long deltaTimeNS) {
+        super.update(deltaTimeNS);
 
         heading = (currentPosition / ticksPerOutputRadian) + initialAngle;
         double clippedTargetHeading = Range.clip(targetHeading, minAngleLimit, maxAngleLimit);
 
-        error = clippedTargetHeading - heading; // linear error
+        error = clippedTargetHeading - heading;
         pidfController.updateError(Math.toDegrees(error));
-        pidfController.updateFeedForwardInput(Math.toDegrees(driveTrainHeadingVelocity));
-
-        setPowerFromPIDFController();
+        pidfController.updateFeedForwardInput(Math.toDegrees(robotHeadingVelocity));
     }
 
-    @Override
-    public void setPower(double power) {
-        super.setPower(reversePower ? -power : power);
+    public double getTargetHeading() {
+        return targetHeading;
     }
 
     public void setTargetHeading(double targetHeading) {
         this.targetHeading = targetHeading;
     }
 
-    public void setDriveTrainHeadingVelocity(double driveTrainHeadingVelocity) {
-        this.driveTrainHeadingVelocity = driveTrainHeadingVelocity;
+    public void updateRobotHeadingVelocity(double robotHeadingVelocity) {
+        this.robotHeadingVelocity = robotHeadingVelocity;
     }
 
+    public double getInitialAngle() {
+        return initialAngle;
+    }
+
+    public void setInitialAngle(double initialAngle) {
+        this.initialAngle = initialAngle;
+    }
 
     public double getMinAngleLimit() {
         return minAngleLimit;
@@ -68,20 +69,8 @@ public class TurntablePIDFMotorController extends PIDFMotorController {
         return maxAngleLimit;
     }
 
-    public boolean isReversePower() {
-        return reversePower;
-    }
-
-    public double getInitialAngle() {
-        return initialAngle;
-    }
-
     public double getHeading() {
         return heading;
-    }
-
-    public double getTargetHeading() {
-        return targetHeading;
     }
 
     public double getError() {
