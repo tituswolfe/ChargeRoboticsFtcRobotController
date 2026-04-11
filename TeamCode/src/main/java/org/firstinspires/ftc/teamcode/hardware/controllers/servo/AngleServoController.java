@@ -35,7 +35,7 @@ public class AngleServoController extends ServoController {
     }
 
     @Override
-    public void update() {
+    public void update(long deltaTimeNS) {
 
     }
 

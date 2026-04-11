@@ -6,23 +6,30 @@ import org.firstinspires.ftc.teamcode.hardware.controllers.HardwareController;
 import org.firstinspires.ftc.teamcode.hardware.controllers.lights.Prism.Color;
 import org.firstinspires.ftc.teamcode.hardware.controllers.lights.Prism.GoBildaPrismDriver;
 import org.firstinspires.ftc.teamcode.hardware.controllers.lights.Prism.PrismAnimations;
+import org.firstinspires.ftc.teamcode.util.actionsequence.Action;
+import org.firstinspires.ftc.teamcode.util.actionsequence.ActionSequence;
+import org.firstinspires.ftc.teamcode.util.actionsequence.InstantAction;
+import org.firstinspires.ftc.teamcode.util.actionsequence.WaitAction;
 
 public class GoBildaPrismController extends HardwareController<GoBildaPrismDriver> {
+    private PrismAnimations.AnimationBase prismAnimation;
     private Color indicateColor = Color.TRANSPARENT;
     private int indicateTimeMills = 0;
-    boolean doneIndicating = true;
-    private final Timer indicateTimer = new Timer();
+
+    Action[] indicateActions = new Action[] {
+            new InstantAction(() -> device.insertAndUpdateAnimation(GoBildaPrismDriver.LayerHeight.LAYER_0, new PrismAnimations.Solid(indicateColor))),
+            new WaitAction(indicateTimeMills),
+            new InstantAction(() -> device.insertAndUpdateAnimation(GoBildaPrismDriver.LayerHeight.LAYER_0, prismAnimation))
+
+    };
+    ActionSequence indicateSequence = new ActionSequence(indicateActions);
 
     public GoBildaPrismController(GoBildaPrismDriver device, String name) {
         super(device, name);
     }
 
     @Override
-    public void update() {
-        if (indicateTimer.getElapsedTime() > indicateTimeMills && !doneIndicating) {
-            device.insertAndUpdateAnimation(GoBildaPrismDriver.LayerHeight.LAYER_0, new PrismAnimations.Solid(indicateColor));
-            doneIndicating = true;
-        }
+    public void update(long deltaTimeNS) {
     }
 
     public void indicate(Color indicateColor) {
@@ -33,7 +40,6 @@ public class GoBildaPrismController extends HardwareController<GoBildaPrismDrive
         this.indicateColor = indicateColor;
         this.indicateTimeMills = indicateTimeMills;
 
-        doneIndicating = false;
-        indicateTimer.resetTimer();
+        indicateSequence.start();
     }
 }

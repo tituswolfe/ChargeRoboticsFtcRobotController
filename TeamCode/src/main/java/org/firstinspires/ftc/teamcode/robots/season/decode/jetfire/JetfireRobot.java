@@ -6,7 +6,6 @@ import com.pedropathing.follower.Follower;
 import com.pedropathing.ftc.FTCCoordinates;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.math.Vector;
-import com.pedropathing.util.Timer;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
@@ -30,8 +29,12 @@ import org.firstinspires.ftc.teamcode.hardware.drivetrain.pedroPathing.Constants
 import org.firstinspires.ftc.teamcode.hardware.vision.LimelightController;
 import org.firstinspires.ftc.teamcode.robots.base.RobotBase;
 import org.firstinspires.ftc.teamcode.robots.base.opmodes.OpModeBase;
+import org.firstinspires.ftc.teamcode.util.actionsequence.Action;
+import org.firstinspires.ftc.teamcode.util.actionsequence.ActionSequence;
+import org.firstinspires.ftc.teamcode.util.actionsequence.InstantAction;
+import org.firstinspires.ftc.teamcode.util.actionsequence.TimedAction;
+import org.firstinspires.ftc.teamcode.util.actionsequence.WaitAction;
 import org.firstinspires.ftc.teamcode.util.info.HardwareInfo;
-import org.firstinspires.ftc.teamcode.util.info.MotorInfo;
 import org.firstinspires.ftc.teamcode.util.math.Angle;
 import org.firstinspires.ftc.teamcode.util.math.MathUtil;
 import org.firstinspires.ftc.teamcode.util.math.RollingAverage;
@@ -40,13 +43,13 @@ import static org.firstinspires.ftc.teamcode.robots.base.StaticData.allianceColo
 import static org.firstinspires.ftc.teamcode.robots.season.decode.jetfire.JetFireConstants.*;
 
 import java.util.Optional;
+import java.util.concurrent.TimeUnit;
 
 @Configurable
 public class JetfireRobot extends RobotBase {
     private Turret<DualPIDFMotorVelocityController> turret;
     BasicMotorController intakeController;
 
-    private ServoTimerController transferServoController;
     private ServoTimerController gateServoController;
 
     private GoBildaLaserDistanceSensorDigital chamberSensor;
@@ -71,8 +74,8 @@ public class JetfireRobot extends RobotBase {
 
     public double closeTurntableOffsetDeg = 0; // getter setter
     public double farTurntableOffsetDeg = 0;
-
-    Timer laucnhCooldownTimer = new Timer();
+//
+//    Timer launchCooldownTimer = new Timer();
 
     private final static Pose HUMAN_PLAYER_ZONE_RESET_BLUE = new Pose(64.2, 58.08, Math.toRadians(90), FTCCoordinates.INSTANCE);
     private Pose humanPlayerReset;
@@ -92,9 +95,20 @@ public class JetfireRobot extends RobotBase {
     private boolean isFlywheelReady = false;
     private boolean isArtifactLoaded = false;
 
-//    private final StateMachine autoFire = new StateMachine();
+    private final Action[] rapidFireActions = new Action[] {
+//            new InstantAction(() -> intakeController.setReversePower(false)),
+//            new TimedAction(() -> intakeController.setTargetPower(-1), 100),
+//            new InstantAction(() -> intakeController.setTargetPower(1)),
+            new InstantAction(() -> gateServoController.setPosition(GATE_SERVO_OPEN, GATE_SERVO_TIME_MS, GATE_SERVO_CLOSED)),
+            new WaitAction(100)
+    };
+    private final ActionSequence rapidFireActionSequence = new ActionSequence(rapidFireActions);
+
 
     RollingAverage velocitySmoothing = new RollingAverage(7);
+
+    // TODO: Posses 3 artifacts
+    // TODO: Reverse then forward
 
     @Override
     public void init(HardwareMap hardwareMap, Pose startPose, OpModeBase.AllianceColor allianceColor) {
@@ -177,9 +191,6 @@ public class JetfireRobot extends RobotBase {
         Servo gateServo = hardwareMap.get(Servo.class, "gate");
         gateServoController = new ServoTimerController(gateServo, GATE_SERVO_CLOSED);
 
-        Servo transferServo = hardwareMap.get(Servo.class, "transfer");
-        transferServoController = new ServoTimerController(transferServo, TRANSFER_SERVO_DOWN);
-
         DigitalChannel laserDigitalInput = hardwareMap.get(DigitalChannel.class, "laser-digital-input");
         chamberSensor = new GoBildaLaserDistanceSensorDigital(laserDigitalInput);
 
@@ -190,7 +201,7 @@ public class JetfireRobot extends RobotBase {
         Servo indicator = hardwareMap.get(Servo.class, "indicator");
         indicatorLightController = new RGBIndicatorLightController(indicator, "Indicator");
         indicatorLightController.setBaseColor(allianceColor == OpModeBase.AllianceColor.RED ? RGBIndicatorLightController.Color.RED : RGBIndicatorLightController.Color.BLUE);
-        indicatorLightController.update();
+        indicatorLightController.update(0);
 
         prism = hardwareMap.get(GoBildaPrismDriver.class,"prism");
         PrismAnimations.DroidScan droidScan = new PrismAnimations.DroidScan();
@@ -212,10 +223,10 @@ public class JetfireRobot extends RobotBase {
     }
 
     @Override
-    public void update(long deltaTimeMs, TelemetryManager telemetry) {
+    public void update(long deltaTimeNs, TelemetryManager telemetry) {
         Pose currentPose = follower.getPose();
-
         Vector velocity = follower.getVelocity();
+
         double velocityMagnitude = follower.getVelocity().getMagnitude();
         double angularVelocity = follower.getAngularVelocity();
 
@@ -227,13 +238,13 @@ public class JetfireRobot extends RobotBase {
 
         // Lead Computing
         long totalLaunchDelayMS = LEAD_COMPUTING_TRANSFER_DELAY_MS;
-        double launchDelaySec = totalLaunchDelayMS / 1000.0;
+        double launchDelaySec = TimeUnit.MILLISECONDS.toSeconds(totalLaunchDelayMS);
 
         Pose predictedFuturePose = MathUtil.predictFuturePose(currentPose, velocity, launchDelaySec);
         double distanceFromGoalAtFuturePose = predictedFuturePose.distanceFrom(targetGoal);
 
         long timeOfFlightMS = (long) TIME_OF_FLIGHT_BY_DISTANCE.interpolate(distanceFromGoalAtFuturePose);
-        double timeOfFlightSec = timeOfFlightMS / 1000.0;
+        double timeOfFlightSec = TimeUnit.MILLISECONDS.toSeconds(timeOfFlightMS);
 
         Vector virtualGoalVelocity = velocity.times(-1);
         Pose virtualGoal = MathUtil.predictFuturePose(targetGoal, virtualGoalVelocity, timeOfFlightSec);
@@ -245,18 +256,14 @@ public class JetfireRobot extends RobotBase {
         isInFarZone = currentPose.getX() > FAR_ZONE_X_THRESHOLD;
         isFlywheelReady = Math.abs(flywheelError) <= FLYWHEEL_VELOCITY_MARGIN_RPM && isFlywheelOn;
 
-        double turntableErrorDeg = Math.toDegrees(turret.turntableController().getError());
-        boolean isTurntableReady = Math.abs(turntableErrorDeg) < TURNTABLE_HEADING_MARGIN_DEG && autoAimTurntable;
-
+        //double turntableErrorDeg = Math.toDegrees(turret.turntableController().getError());
+        //boolean isTurntableReady = Math.abs(turntableErrorDeg) < TURNTABLE_HEADING_MARGIN_DEG && autoAimTurntable;
         double goalHeadingError = Math.abs(AngleUnit.normalizeRadians(virtualGoalHeading - currentPose.getHeading()));
-        boolean isTurntableInRange =  goalHeadingError < Math.toRadians(135);
+        boolean isTurntableInRange =  goalHeadingError < Math.toRadians(TURNTABLE_MAX_HARD_STOP);
 
         isArtifactLoaded = chamberSensor.isObjectDetected();
 
-        boolean isCooldownOver = laucnhCooldownTimer.getElapsedTime() > LAUNCH_COOLDOWN_MS;
-        boolean isIntakeCooldownOver = laucnhCooldownTimer.getElapsedTime() > INTAKE_COOLDOWN_MS;
-
-        isReadyToShoot = isCooldownOver && isTurntableInRange;
+        isReadyToShoot = !getRapidFireActionSequence().isRunning() && isTurntableInRange;
 
         // HARDWARE VARIABLES
         double flywheelSpeed = FLYWHEEL_VELOCITY_BY_DISTANCE.interpolate(virtualDistanceFromGoal);
@@ -266,17 +273,14 @@ public class JetfireRobot extends RobotBase {
 
         double interpolatedHoodAngleDeg = HOOD_ANGLE_BY_DISTANCE.interpolate(virtualDistanceFromGoal);
         double hoodRegression = flywheelError * HOOD_REGRESSION_RATIO;
-        // Quadratic
-        //
+        // HOOD REGRESION UPDATES
         Angle hoodAngle = new Angle(interpolatedHoodAngleDeg - hoodRegression, Angle.AngleUnit.DEGREES);
 
-//        double intakePower = 0.0;
-//        if (isIntakeOn && isIntakeCooldownOver && !intake.isOverCurrent()) {
-//            intakePower = reverseIntake ? REVERSE_INTAKE_POWER : INTAKE_POWER;
-//        }
-        intakeController.setTargetPower(reverseIntake ? REVERSE_INTAKE_POWER : INTAKE_POWER);
-        intakeController.setReversePower(reverseIntake);
-        // intake.setPower(intakePower);
+        // stall current
+        if (!rapidFireActionSequence.isRunning()) {
+            intakeController.setTargetPower(reverseIntake ? REVERSE_INTAKE_POWER : INTAKE_POWER);
+            intakeController.setReversePower(reverseIntake);
+        }
 
         RGBIndicatorLightController.Color indicatorColor;
         if (isReadyToShoot) {
@@ -287,46 +291,37 @@ public class JetfireRobot extends RobotBase {
             indicatorColor = RGBIndicatorLightController.Color.RED;
         }
 
-        // - UPDATE HARDWARE -
-        super.update(deltaTimeMs, telemetry);
+        // UPDATE HARDWARE CONTROLLERS
+        super.update(deltaTimeNs, telemetry);
 
         turret.flywheelController().setMotorEngaged(isFlywheelOn);
         turret.turntableController().setMotorEngaged(autoAimTurntable);
-
-        turret.update(flywheelSpeed, targetTurntableHeading, hoodAngle);
         turret.turntableController().updateRobotHeadingVelocity(angularVelocity);
+        turret.update(flywheelSpeed, targetTurntableHeading, hoodAngle, deltaTimeNs);
+
+        limelightController.updateRobotHeading(Math.toDegrees(currentPose.getHeading()));
+        limelightController.update(deltaTimeNs);
+
+        indicatorLightController.setBaseColor(indicatorColor);
+        indicatorLightController.update(deltaTimeNs);
+
+        gateServoController.update();
 
         chamberSensor.update();
 
-        limelightController.updateRobotHeading(Math.toDegrees(currentPose.getHeading()));
-        limelightController.update();
+        // UPDATE ACTION SEQUENCES
+        rapidFireActionSequence.update();
 
-        transferServoController.update();
-        gateServoController.update();
-
-        indicatorLightController.setBaseColor(indicatorColor);
-        indicatorLightController.update();
-
-        // UPDATE STATIC
+        // UPDATE STATIC VARS
         JetfireStaticData.lastTurretHeading = turntableHeading;
 
-        // - TELEMETRY -
+        // TUNING & TELEMETRY
+        if (TUNING) {
+            double distanceFromGoal = currentPose.distanceFrom(targetGoal);
 
-        if (false) {
-            telemetry.addLine("- VARS -");
-            telemetry.addData("Virtual goal heading", Math.toDegrees(virtualGoalHeading));
-            telemetry.addData("Goal heading", Math.toDegrees(MathUtil.bearingTo(currentPose, targetGoal)));
-            telemetry.addData("isShooting", !isCooldownOver);
-
-            telemetry.addData("flywheel error", flywheelError);
-            telemetry.addData("hood regression (deg)", hoodRegression);
-            telemetry.addLine("");
-
-            telemetry.addLine("- CONDITIONS -");
-            telemetry.addData("isReadyToShoot", isReadyToShoot);
-            telemetry.addData("isArtifactLoaded", isArtifactLoaded);
-            telemetry.addData("isTurntableReady", isTurntableReady);
-            telemetry.addData("isFlywheelReady", isFlywheelReady);
+            // Variable Telemetry
+            telemetry.addLine("- MISC. VARS -");
+            telemetry.addData("Rapid Fire Status", rapidFireActionSequence.isRunning() ? 1 : 0);
             telemetry.addLine("");
 
             telemetry.addLine("- OFFSETS -");
@@ -335,28 +330,37 @@ public class JetfireRobot extends RobotBase {
             telemetry.addData("Far Turntable Offset", farTurntableOffsetDeg);
             telemetry.addLine("");
 
+            telemetry.addLine("- GOAL -");
+            telemetry.addData("Distance From Goal", distanceFromGoal);
+            telemetry.addData("Heading to Goal", Math.toDegrees(MathUtil.bearingTo(currentPose, targetGoal)));
+            telemetry.addLine("");
+
+            telemetry.addLine("- TURRET -");
+            telemetry.addData("Flywheel Velocity Error", flywheelError);
+            telemetry.addData("Hood Regression (deg)", hoodRegression);
+            telemetry.addLine("");
+
+            telemetry.addLine("- LEAD COMPUTING - ");
+            telemetry.addData("Future Pose X", predictedFuturePose.getX());
+            telemetry.addData("Future Pose Y", predictedFuturePose.getY());
+            telemetry.addData("Time of Flight (sec)", timeOfFlightSec);
+            telemetry.addData("Heading to Virtual Goal", Math.toDegrees(virtualGoalHeading));
+            telemetry.addLine("");
+
+            telemetry.addLine("- CONDITIONS -");
+            telemetry.addData("isReadyToShoot", isReadyToShoot);
+            telemetry.addData("isArtifactLoaded", isArtifactLoaded);
+            telemetry.addData("isFlywheelReady", isFlywheelReady);
+            telemetry.addLine("");
+
+            // Hardware Telemetry
             limelightController.updateTelemetry(telemetry);
             turret.turntableController().updateTelemetry(telemetry);
             turret.flywheelController().updateTelemetry(telemetry);
             turret.hoodServoController().updateTelemetry(telemetry);
 
-            telemetry.addData("Interpolated Hood Angle (Deg)", interpolatedHoodAngleDeg);
-            telemetry.addData("Additive Linear Offset Regression (Deg)", hoodRegression);
-            telemetry.addLine("");
-            telemetry.addLine("- LEAD COMPUTING & LUTs -");
-            telemetry.addData("Future Pose X", predictedFuturePose.getX());
-            telemetry.addData("Future Pose Y", predictedFuturePose.getY());
-            telemetry.addData("Time of Flight (sec)", timeOfFlightSec);
-            telemetry.addLine("");
+            // Update PIDFs
 
-            double distanceFromGoal = currentPose.distanceFrom(targetGoal);
-
-            telemetry.addLine("");
-            telemetry.addLine("- TUNING DATA -");
-            telemetry.addData("Distance From Goal", distanceFromGoal);
-        }
-
-        if (TUNING) {
             turret.flywheelController().setPIDFCoefficients(FLYWHEEL_PIDF_COEFFICIENTS);
             turret.turntableController().setPIDFCoefficients(TURNTABLE_PIDF_COEFFICIENTS);
             telemetry.addLine("");
@@ -364,15 +368,9 @@ public class JetfireRobot extends RobotBase {
     }
 
     public void fire() {
-        gateServoController.setPosition(GATE_SERVO_OPEN, GATE_SERVO_TIME_MS, GATE_SERVO_CLOSED);
-        transferServoController.setPosition(TRANSFER_SERVO_UP, TRANSFER_SERVO_TIME_MS, TRANSFER_SERVO_DOWN);
-
-        laucnhCooldownTimer.resetTimer();
-    }
-
-    public void rapidFire() {
-        gateServoController.setPosition(GATE_SERVO_OPEN, GATE_SERVO_TIME_MS, GATE_SERVO_CLOSED);
-        laucnhCooldownTimer.resetTimer();
+        if (!rapidFireActionSequence.isRunning()) {
+            rapidFireActionSequence.start();
+        }
     }
 
     public void humanPlayerPoseReset() {
@@ -448,6 +446,10 @@ public class JetfireRobot extends RobotBase {
 
     public RGBIndicatorLightController getIndicatorLightController() {
         return indicatorLightController;
+    }
+
+    public ActionSequence getRapidFireActionSequence() {
+        return rapidFireActionSequence;
     }
 
     @Override

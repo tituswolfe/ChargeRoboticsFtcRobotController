@@ -122,7 +122,7 @@ public abstract class RobotBase {
     /**
      * Update hardware states and telemetry. Do not {@link TelemetryManager#update()} in this method. Robot uses auto caching. do not get sensor data twice.
      */
-    public void update(long deltaTimeMs, TelemetryManager telemetry) {
+    public void update(long deltaTimeNs, TelemetryManager telemetry) {
         for (LynxModule hub : lynxModules) {
             hub.clearBulkCache();
         }

@@ -63,9 +63,6 @@ public abstract class MotorController extends HardwareController<DcMotorEx> {
 
         if (!isMotorEngaged) {
             if (lastPower != 0) {
-//                device.setPower(0);
-//                lastPower = 0;
-
                 sendPowerToMotor(0);
             }
             return;
@@ -79,8 +76,6 @@ public abstract class MotorController extends HardwareController<DcMotorEx> {
         boolean isWithinDeltaFilteringThreshold = MathUtil.isWithinRange(clampedPower, lastPower, DELTA_FILTERING_THRESHOLD);
 
         if (!isWithinDeltaFilteringThreshold) {
-//            device.setPower(reversePower ? -clampedPower : clampedPower);
-//            lastPower = clampedPower;
             sendPowerToMotor(reversePower ? -clampedPower : clampedPower);
         }
     }

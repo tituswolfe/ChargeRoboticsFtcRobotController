@@ -25,17 +25,8 @@ public class LimelightController extends HardwareController<Limelight3A> {
         super(device, name);
     }
 
-    public void init(int pipeline) {
-        device.pipelineSwitch(pipeline);
-        device.start();
-    }
-
-    public void updateRobotHeading(double headingDeg) {
-        device.updateRobotOrientation(headingDeg);
-    }
-
     @Override
-    public void update() {
+    public void update(long deltaTimeNS) {
         if (!device.isRunning()) {
             device.start();
         }
@@ -60,6 +51,17 @@ public class LimelightController extends HardwareController<Limelight3A> {
 
         LLPose = new Pose(xInches, yInches, heading);
     }
+
+    public void init(int pipeline) {
+        device.pipelineSwitch(pipeline);
+        device.start();
+    }
+
+    public void updateRobotHeading(double headingDeg) {
+        device.updateRobotOrientation(headingDeg);
+    }
+
+   
 
     public boolean hasResult() {
         return hasResult;

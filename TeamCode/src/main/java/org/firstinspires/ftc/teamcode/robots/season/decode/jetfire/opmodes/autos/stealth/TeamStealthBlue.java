@@ -9,6 +9,10 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 
 import org.firstinspires.ftc.teamcode.robots.base.opmodes.BaseAuto;
 import org.firstinspires.ftc.teamcode.robots.season.decode.jetfire.JetfireRobot;
+import org.firstinspires.ftc.teamcode.util.actionsequence.Action;
+import org.firstinspires.ftc.teamcode.util.actionsequence.ActionSequence;
+import org.firstinspires.ftc.teamcode.util.actionsequence.InstantAction;
+import org.firstinspires.ftc.teamcode.util.actionsequence.WaitForConditionAction;
 
 @Autonomous(preselectTeleOp = "Jetfire")
 public class TeamStealthBlue extends BaseAuto<JetfireRobot> {
@@ -36,7 +40,18 @@ public class TeamStealthBlue extends BaseAuto<JetfireRobot> {
     PathChain intakeTunnelToShoot;
 
     int returnPathState = 0;
-    public static double endPathTValue = 0.97;
+
+    Action[] autoActions = new Action[] {
+            new InstantAction(() -> robot.toggleSubsystems(true)),
+            new InstantAction(() -> robot.getFollower().followPath(startToShootPreload)),
+            new WaitForConditionAction(() -> robot.isFlywheelReady()),
+            new InstantAction(() -> robot.getRapidFireActionSequence().start()),
+            new WaitForConditionAction(() -> !robot.getRapidFireActionSequence().isRunning()),
+            new InstantAction(() -> robot.getFollower().followPath(shootPreloadToIntakeLine3))
+    };
+    ActionSequence stealthBlueAuto = new ActionSequence(autoActions);
+
+    // Action before or after
 
     @Override
     public void autonomousPathUpdate(int pathState) {
@@ -52,39 +67,43 @@ public class TeamStealthBlue extends BaseAuto<JetfireRobot> {
                 setPathState(1, true);
                 break;
             case 1:
-                // SHOOT
-                if (actionTimer.getElapsedTime() > 800 && robot.isFlywheelReady()) {
-                    returnPathState = 2;
+                if (robot.isFlywheelReady()) {
+                    robot.getRapidFireActionSequence().start();
                     setPathState(20, true);
                 }
                 break;
             case 2:
-                robot.getFollower().followPath(shootPreloadToIntakeLine3);
-                setPathState(3, true);
+                if (!robot.getRapidFireActionSequence().isRunning()) {
+                    robot.getFollower().followPath(shootPreloadToIntakeLine3);
+                    setPathState(3, true);
+                }
                 break;
             case 3:
                 nextPath(intakeLine3ToShoot, 4);
                 break;
             case 4:
-                if (robot.getFollower().getCurrentTValue() >= endPathTValue) {
-                    returnPathState = 5;
-                    setPathState(20, true);
+                if (isAtEndOfPathChain()) {
+                    robot.getRapidFireActionSequence().start();
+                    setPathState(5, true);
                 }
                 break;
             case 5:
-                robot.getFollower().followPath(shootToIntakeLoadingZone);
-                setPathState(6, true);
+                if (!robot.getRapidFireActionSequence().isRunning()) {
+                    robot.getFollower().followPath(shootToIntakeLoadingZone);
+                    setPathState(6, true);
+                }
                 break;
             case 6:
                 nextPath(intakeLoadingZoneToShoot, 7);
                 break;
             case 7:
-                if (robot.getFollower().getCurrentTValue() >= endPathTValue) {
-                    returnPathState = 8;
-                    setPathState(20, true);
+                if (isAtEndOfPathChain()) {
+                    robot.getRapidFireActionSequence().start();
+                    setPathState(8, true);
                 }
                 break;
             case 8:
+
                 robot.getFollower().followPath(shootToIntakeTunnel);
                 setPathState(9, true);
                 break;
@@ -98,36 +117,6 @@ public class TeamStealthBlue extends BaseAuto<JetfireRobot> {
 
                     robot.getFollower().holdPoint(end);
                     setPathState(-2, true);
-                }
-                break;
-
-            // SHOOT ARTIFACTS
-            case 20:
-                if (!robot.isArtifactLoaded()) {
-                    setPathState(returnPathState, true);
-                    break;
-                }
-
-                if (robot.isReadyToShoot() && actionTimer.getElapsedTime() > 500) {
-                    robot.fire();
-                    setPathState(21, true);
-                }
-                break;
-            case 21:
-                if (robot.isReadyToShoot()) {
-                    robot.fire();
-                    setPathState(22, true);
-                }
-                break;
-            case 22:
-                if (robot.isReadyToShoot()) {
-                    robot.fire();
-                    setPathState(23, true);
-                }
-                break;
-            case 23:
-                if (actionTimer.getElapsedTime() > 300) {
-                    setPathState(returnPathState, true);
                 }
                 break;
         }
@@ -179,13 +168,6 @@ public class TeamStealthBlue extends BaseAuto<JetfireRobot> {
                 .setBrakingStrength(0.1)
                 .setBrakingStart(2)
                 .build();
-    }
-
-    public void nextPath(PathChain path, int pState) {
-        if (robot.getFollower().getCurrentTValue() > endPathTValue && robot.getFollower().getCurrentPathNumber() + 1 >= robot.getFollower().getCurrentPathChain().size()) {
-            robot.getFollower().followPath(path);
-            setPathState(pState, true);
-        }
     }
 
     @Override

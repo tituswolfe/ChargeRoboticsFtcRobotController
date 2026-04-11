@@ -1,6 +1,7 @@
 package org.firstinspires.ftc.teamcode.robots.base.opmodes;
 
 import com.bylazar.telemetry.TelemetryManager;
+import com.pedropathing.paths.PathChain;
 import com.pedropathing.util.Timer;
 
 import org.firstinspires.ftc.teamcode.robots.base.GamepadMapping;
@@ -11,6 +12,8 @@ public abstract class BaseAuto<Robot extends RobotBase> extends OpModeBase<Robot
     protected Timer pathTimer = new Timer();
     protected Timer actionTimer = new Timer();
     private int pathState = 0;
+
+    public static double END_OF_PATH_T_VALUE = 0.97;
 
     /**
      * See <a href="https://pedropathing.com/docs/pathing/examples/auto">Example Auto (Pedro Pathing)</a>
@@ -46,6 +49,17 @@ public abstract class BaseAuto<Robot extends RobotBase> extends OpModeBase<Robot
         telemetryManager.addLine("");
 
         super.loop();
+    }
+
+    public void nextPath(PathChain path, int pState) {
+        if (isAtEndOfPathChain()) {
+            robot.getFollower().followPath(path);
+            setPathState(pState, true);
+        }
+    }
+
+    public boolean isAtEndOfPathChain() {
+        return robot.getFollower().getCurrentTValue() > END_OF_PATH_T_VALUE && robot.getFollower().getCurrentPathNumber() + 1 >= robot.getFollower().getCurrentPathChain().size();
     }
 
     public void setPathState(int pState, boolean resetActionTimer) {
