@@ -39,6 +39,7 @@ public class TurntablePIDFMotorController extends PIDFMotorController {
         error = clippedTargetHeading - heading;
         pidfController.updateError(Math.toDegrees(error));
         pidfController.updateFeedForwardInput(Math.toDegrees(robotHeadingVelocity));
+        targetPower = pidfController.run();
     }
 
     public double getTargetHeading() {

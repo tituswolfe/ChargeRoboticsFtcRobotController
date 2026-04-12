@@ -32,7 +32,7 @@ public abstract class MotorController extends HardwareController<DcMotorEx> {
     protected boolean reversePower = false;
 
     public static double MAX_DELTA_TIME_FOR_SLEW_RATE = 0.1;
-    public static double SLEW_RATE = 0.5; // power / seconds
+    public static double SLEW_RATE = 1; // power / seconds
     public static double DELTA_FILTERING_THRESHOLD = 0.03;
 
     public MotorController(DcMotorEx device, String name, MotorInfo motorInfo, double totalGearRatio, double maxPower) {
@@ -68,8 +68,8 @@ public abstract class MotorController extends HardwareController<DcMotorEx> {
             return;
         }
 
-        double deltaTimeSec = Math.min(TimeUnit.NANOSECONDS.toSeconds(deltaTimeNS), MAX_DELTA_TIME_FOR_SLEW_RATE);
-        double maxChange = SLEW_RATE * deltaTimeSec;
+        //double deltaTimeSec = Math.min(TimeUnit.NANOSECONDS.toSeconds(deltaTimeNS), MAX_DELTA_TIME_FOR_SLEW_RATE);
+        double maxChange = SLEW_RATE * 1;
 
         double slewedPower = Range.clip(targetPower, lastPower - maxChange, lastPower + maxChange);
         double clampedPower = Range.clip(slewedPower, -maxPower, maxPower);
@@ -107,7 +107,7 @@ public abstract class MotorController extends HardwareController<DcMotorEx> {
 
         telemetry.addData(name + " velocity", outputVelocity);
         telemetry.addData(name + " power", targetPower);
-        telemetry.addData(name + "isEngaged", isMotorEngaged);
+        telemetry.addData(name + " isEngaged", isMotorEngaged);
         telemetry.addData(name + " position", currentPosition);
     }
 }

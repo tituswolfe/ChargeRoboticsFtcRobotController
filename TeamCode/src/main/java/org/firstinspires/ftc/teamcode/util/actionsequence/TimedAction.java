@@ -3,20 +3,30 @@ package org.firstinspires.ftc.teamcode.util.actionsequence;
 import com.pedropathing.util.Timer;
 
 public class TimedAction extends Action {
-    private final Timer actionTimer;
-
-    private TimedAction(Runnable function, double durationMs, Timer actionTimer) {
-        super(function, () -> actionTimer.getElapsedTime() > durationMs);
-        this.actionTimer = actionTimer;
-    }
+    private final double durationMs;
+    private long startTime = -1;
 
     public TimedAction(Runnable function, double durationMs) {
-        this(function, durationMs, new Timer());
+        super(function, () -> false);
+        this.durationMs = durationMs;
+    }
+
+    @Override
+    public void reset() {
+        startTime = -1;
     }
 
     @Override
     public void run() {
-        actionTimer.resetTimer();
-        super.run();
+        if (startTime == -1) {
+            startTime = System.currentTimeMillis();
+            super.run(); // Run the actual task
+        }
+    }
+
+    @Override
+    public boolean isFinished() {
+        if (startTime == -1) return false;
+        return (System.currentTimeMillis() - startTime) >= durationMs;
     }
 }

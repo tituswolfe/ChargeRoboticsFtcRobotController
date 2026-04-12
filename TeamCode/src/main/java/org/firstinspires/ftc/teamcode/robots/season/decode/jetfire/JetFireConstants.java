@@ -14,10 +14,11 @@ import java.util.TreeMap;
 @Configurable
 public class JetFireConstants {
     // FLYWHEEL
-    public static final String LEFT_FLYWHEEL_MOTOR_DEVICE_NAME = "left-flywheel";
-    public static final DcMotorSimple.Direction LEFT_FLYWHEEL_MOTOR_DIRECTION = DcMotorSimple.Direction.REVERSE;
-    public static final String RIGHT_FLYWHEEL_MOTOR_DEVICE_NAME = "right-flywheel";
-    public static final DcMotorSimple.Direction RIGHT_FLYWHEEL_MOTOR_DIRECTION = DcMotorSimple.Direction.FORWARD;
+    public static final String BOTTOM_FLYWHEEL_MOTOR_DEVICE_NAME = "bottom-flywheel";
+    public static final DcMotorSimple.Direction BOTTOM_FLYWHEEL_MOTOR_DIRECTION = DcMotorSimple.Direction.FORWARD;
+
+    public static final String TOP_FLYWHEEL_MOTOR_DEVICE_NAME = "top-flywheel";
+    public static final DcMotorSimple.Direction TOP_FLYWHEEL_MOTOR_DIRECTION = DcMotorSimple.Direction.FORWARD;
 
     public static final String FLYWHEEL_NAME = "Flywheel";
     public static PIDFCoefficients FLYWHEEL_PIDF_COEFFICIENTS = new PIDFCoefficients(0.01, 0, 0, 0.00027);
@@ -59,14 +60,10 @@ public class JetFireConstants {
     public static final double INTAKE_POWER = 1.0;
     public static final double REVERSE_INTAKE_POWER = 0.5;
 
-    // TRANSFER
-    public static double TRANSFER_SERVO_UP = 0.43; // 0.3
-    public static double TRANSFER_SERVO_DOWN = 0.69;
-    public static int TRANSFER_SERVO_TIME_MS = 150;
 
     // GATE
-    public static double GATE_SERVO_OPEN = 0.55;
-    public static double GATE_SERVO_CLOSED = 0.75;
+    public static double GATE_SERVO_OPEN = 0.9;
+    public static double GATE_SERVO_CLOSED = 0.73;
     public static int GATE_SERVO_TIME_MS = 200;
 
     // COOLDOWN

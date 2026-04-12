@@ -18,4 +18,6 @@ public class Action {
     public void run() {
         function.run();
     }
+
+    public void reset() {}
 }

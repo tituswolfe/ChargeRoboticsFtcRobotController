@@ -128,10 +128,10 @@ public class BlueClose extends BaseAuto<JetfireRobot> {
 
             // SHOOT ARTIFACTS
             case 20:
-                if (!robot.isArtifactLoaded()) {
-                    setPathState(returnPathState, true);
-                    break;
-                }
+//                if (!robot.isArtifactLoaded()) {
+//                    setPathState(returnPathState, true);
+//                    break;
+//                }
 
                 if (robot.isReadyToShoot() && actionTimer.getElapsedTime() > 100) {
                     robot.fire();

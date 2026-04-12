@@ -12,35 +12,47 @@ public class ActionSequence {
         this.actions = actions;
     }
 
+//    public void start() {
+//        if (actions.length > 0) {
+//            currentAction = 0;
+//            currentWaitTime = 0;
+//            timer.resetTimer();
+//        }
+//    }
+
     public void start() {
         if (actions.length > 0) {
             currentAction = 0;
-            currentWaitTime = 0;
-            timer.resetTimer();
+            // Reset the first action so it initializes its timer correctly
+            actions[0].reset();
+            //timer.resetTimer();
         }
     }
+
 
     public void update() {
         if (!isRunning()) return;
 
         Action activeAction = actions[currentAction];
-
-        if (timer.getElapsedTime() == 0) {
-            activeAction.run();
-        }
+        activeAction.run();
 
         if (activeAction.isFinished()) {
             currentAction++;
-            timer.resetTimer();
+
+            // Check if there is a next action to reset
+            if (currentAction < actions.length) {
+                actions[currentAction].reset();
+            }
         }
+    }
+
+    public boolean isRunning() {
+        // CurrentAction must be less than length to be a valid index
+        return currentAction != -1 && currentAction < actions.length;
     }
 
     public void stop() {
         currentAction = -1;
         currentWaitTime = 0;
-    }
-
-    public boolean isRunning() {
-        return currentAction != -1 && currentAction <= actions.length;
     }
 }
