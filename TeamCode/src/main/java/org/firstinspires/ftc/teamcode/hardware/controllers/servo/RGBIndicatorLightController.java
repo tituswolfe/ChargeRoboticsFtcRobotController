@@ -31,6 +31,11 @@ public class RGBIndicatorLightController extends HardwareController<Servo> {
     }
 
     @Override
+    public void start() {
+
+    }
+
+    @Override
     public void update(long deltaTimeNS) {
         if (indicateTimer.getElapsedTime() < INDICATE_TIME_MS) {
             setColor(indicateColor);

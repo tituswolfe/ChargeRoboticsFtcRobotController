@@ -9,7 +9,7 @@ public record Turret<FlywheelController extends VelocityPIDFMotorController>(
         FlywheelController flywheelController, TurntablePIDFMotorController turntableController,
         AngleServoController hoodServoController) {
 
-    public void update(double targetVelRPM, double targetHeading, Angle targetHoodAngle, long deltaTimeNs) {
+    public void update(double targetVelRPM, double targetHeading, double targetHoodAngle, long deltaTimeNs) {
         flywheelController.setTargetOutputVelocity(targetVelRPM);
         turntableController.setTargetHeading(targetHeading);
         hoodServoController.setTargetAngle(targetHoodAngle);

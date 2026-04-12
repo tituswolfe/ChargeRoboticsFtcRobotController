@@ -12,6 +12,7 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
+import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.hardware.controllers.digital.GoBildaLaserDistanceSensorDigital;
@@ -21,9 +22,10 @@ import org.firstinspires.ftc.teamcode.hardware.controllers.lights.Prism.PrismAni
 import org.firstinspires.ftc.teamcode.hardware.controllers.motor.ThrottleMotorController;
 import org.firstinspires.ftc.teamcode.hardware.controllers.motor.TurntablePIDFMotorController;
 import org.firstinspires.ftc.teamcode.hardware.controllers.servo.AngleServoController;
+import org.firstinspires.ftc.teamcode.hardware.controllers.servo.PositionServoController;
 import org.firstinspires.ftc.teamcode.hardware.controllers.servo.RGBIndicatorLightController;
-import org.firstinspires.ftc.teamcode.hardware.controllers.servo.ServoTimerController;
 import org.firstinspires.ftc.teamcode.hardware.controllers.motor.DualPIDFMotorVelocityController;
+import org.firstinspires.ftc.teamcode.hardware.controllers.servo.ServoController;
 import org.firstinspires.ftc.teamcode.hardware.controllers.subsystems.Turret;
 import org.firstinspires.ftc.teamcode.hardware.drivetrain.pedroPathing.Constants;
 import org.firstinspires.ftc.teamcode.hardware.vision.LimelightController;
@@ -49,8 +51,7 @@ public class JetfireRobot extends RobotBase {
     private Turret<DualPIDFMotorVelocityController> turret;
     ThrottleMotorController intakeController;
 
-    private Servo gateServo;
-    //private ServoTimerController gateServoController;
+    PositionServoController gateServoController;
 
     private GoBildaLaserDistanceSensorDigital chamberSensor;
 
@@ -98,20 +99,16 @@ public class JetfireRobot extends RobotBase {
     private boolean wasArtifactDetected = false;
     private boolean atFullArtifactCapacity = false;
 
-    // TODO: Change to just controller
     private final Action[] rapidFireActions = new Action[] {
-//            new InstantAction(() -> intakeController.setReversePower(false)),
-//            new TimedAction(() -> intakeController.setTargetPower(-1), 100),
-//            new InstantAction(() -> intakeController.setTargetPower(1)),
             new InstantAction(() -> {
-                gateServo.setPosition(GATE_SERVO_OPEN);
+                gateServoController.setPosition(GATE_SERVO_OPEN);
                 intakeController.setMotorEngaged(true);
-                intakeController.setTargetPower(-0.5);
+                intakeController.setTargetPower(-0.25);
             }),
-            new WaitAction(1),
+            //new WaitAction(1),
             new InstantAction(() -> intakeController.setTargetPower(1.0)),
-            new WaitAction(500),
-            new InstantAction(() -> gateServo.setPosition(GATE_SERVO_CLOSED))
+            new WaitAction(200),
+            new InstantAction(() -> gateServoController.setPosition(GATE_SERVO_CLOSED))
     };
     private final ActionSequence rapidFireActionSequence = new ActionSequence(rapidFireActions);
 
@@ -119,7 +116,6 @@ public class JetfireRobot extends RobotBase {
     RollingAverage velocitySmoothing = new RollingAverage(7);
 
     // TODO: Posses 3 artifacts
-    // TODO: Reverse then forward
 
     @Override
     public void init(HardwareMap hardwareMap, Pose startPose, OpModeBase.AllianceColor allianceColor) {
@@ -192,15 +188,19 @@ public class JetfireRobot extends RobotBase {
         intake.setDirection(INTAKE_DIRECTION);
         intakeController = new ThrottleMotorController(
                 intake,
-                "Intake",
+                INTAKE_NAME,
                 HardwareInfo.GOBILDA_5203_YELLOW_JACKET_MOTOR_1150_RPM,
-                1,
-                1
+                INTAKE_GEAR_RATIO,
+                INTAKE_MAX_POWER
         );
 
-        gateServo = hardwareMap.get(Servo.class, "gate");
-        gateServo.getController().pwmDisable();
-        //gateServoController = new ServoTimerController(gateServo, GATE_SERVO_CLOSED);
+        Servo gateServo = hardwareMap.get(Servo.class, "gate");
+        gateServoController = new PositionServoController(
+                gateServo,
+                "gate",
+                360, // ?
+                1
+        );
 
         DigitalChannel laserDigitalInput = hardwareMap.get(DigitalChannel.class, "laser-digital-input");
         chamberSensor = new GoBildaLaserDistanceSensorDigital(laserDigitalInput);
@@ -228,8 +228,9 @@ public class JetfireRobot extends RobotBase {
 
     @Override
     public void startConfiguration() {
-        gateServo.getController().pwmEnable();
-        gateServo.setPosition(GATE_SERVO_CLOSED);
+        gateServoController.start(GATE_SERVO_CLOSED);
+        intakeController.start();
+        turret.turntableController().start(); // start all
         // TODO: Init servo pos here
     }
 
@@ -278,11 +279,6 @@ public class JetfireRobot extends RobotBase {
         if (isArtifactDetected && !wasArtifactDetected) {
             artifactDetectedTimer.resetTimer();
         }
-//
-//        // 2. Detect Falling Edge: Object was removed
-//        if (!isArtifactDetected && wasArtifactDetected) {
-//            artifactDetectedTimer.stopTimer(); // Or however you wish to clear it
-//        }
 
         // 3. Update Status
         atFullArtifactCapacity = isArtifactDetected && (artifactDetectedTimer.getElapsedTime() > 2000);
@@ -298,15 +294,8 @@ public class JetfireRobot extends RobotBase {
 
         double interpolatedHoodAngleDeg = HOOD_ANGLE_BY_DISTANCE.interpolate(virtualDistanceFromGoal);
         double hoodRegression = flywheelError * HOOD_REGRESSION_RATIO;
-        // TODO: HOOD REGRESION UPDATES
-        Angle hoodAngle = new Angle(interpolatedHoodAngleDeg - hoodRegression, Angle.AngleUnit.DEGREES);
+        double hoodAngle = Range.clip(interpolatedHoodAngleDeg - hoodRegression, 45, MAX_HOOD_ANGLE);
 
-        // stall current
-        if (!rapidFireActionSequence.isRunning()) {
-
-        }
-
-        //intakeController.setReversePower(reverseIntake);
         if (!rapidFireActionSequence.isRunning()) {
 
             if (reverseIntake) {
@@ -330,6 +319,8 @@ public class JetfireRobot extends RobotBase {
 
 
         // TODO: Reverse intake anytime
+        // TODO: Indicaate 3 artifacts
+        // TODO: Tuning mode again
 
         RGBIndicatorLightController.Color indicatorColor;
         if (isReadyToShoot) {

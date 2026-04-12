@@ -48,6 +48,11 @@ public abstract class MotorController extends HardwareController<DcMotorEx> {
         device.setMode(DcMotor.RunMode.STOP_AND_RESET_ENCODER);
     }
 
+    public void start() {
+        device.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        isMotorEngaged = true;
+    }
+
     public void setTotalGearRatio(double totalGearRatio, double encoderResolutionPPR) {
         this.totalGearRatio = totalGearRatio;
         this.ticksPerOutputRevolution = encoderResolutionPPR * totalGearRatio;

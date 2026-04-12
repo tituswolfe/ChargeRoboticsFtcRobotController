@@ -29,6 +29,11 @@ public class GoBildaPrismController extends HardwareController<GoBildaPrismDrive
     }
 
     @Override
+    public void start() {
+
+    }
+
+    @Override
     public void update(long deltaTimeNS) {
     }
 

@@ -26,6 +26,11 @@ public class LimelightController extends HardwareController<Limelight3A> {
     }
 
     @Override
+    public void start() {
+
+    }
+
+    @Override
     public void update(long deltaTimeNS) {
         if (!device.isRunning()) {
             device.start();
@@ -61,7 +66,7 @@ public class LimelightController extends HardwareController<Limelight3A> {
         device.updateRobotOrientation(headingDeg);
     }
 
-   
+
 
     public boolean hasResult() {
         return hasResult;

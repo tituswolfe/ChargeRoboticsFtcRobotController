@@ -22,7 +22,7 @@ public class JetFireConstants {
 
     public static final String FLYWHEEL_NAME = "Flywheel";
     public static PIDFCoefficients FLYWHEEL_PIDF_COEFFICIENTS = new PIDFCoefficients(0.01, 0, 0, 0.00027);
-    public static final double FLYWHEEL_GEAR_RATIO = 1;
+    public static final double FLYWHEEL_GEAR_RATIO = 1.5;
     public static final double FLYWHEEL_MAX_POWER = 1;
 
     // TURNTABLE
@@ -42,20 +42,20 @@ public class JetFireConstants {
     public static final Servo.Direction HOOD_SERVO_DIRECTION = Servo.Direction.FORWARD;
 
     public static final String HOOD_NAME = "Hood";
-    public static final Angle HOOD_TOTAL_ROTATION = new Angle(300, Angle.AngleUnit.DEGREES);
+    public static final double HOOD_TOTAL_ROTATION = Math.toRadians(300);
     public static final double HOOD_TOTAL_GEAR_RATIO = (48.0 / 40.0) * (225.0 / 22.0);
-    public static final Angle MIN_HOOD_ANGLE = new Angle(26, Angle.AngleUnit.DEGREES);
-    public static final Angle MAX_HOOD_ANGLE = new Angle(50, Angle.AngleUnit.DEGREES);
+    public static final double MIN_HOOD_ANGLE = Math.toRadians(26);
+    public static final double MAX_HOOD_ANGLE = Math.toRadians(50);
 
     // Regression (Deg) : Error (RPM)
-    // 0.01 : 1
-    // 1 : 100
     public static double HOOD_REGRESSION_RATIO = 0.035;
 
     // INTAKE
+    public static final String INTAKE_NAME = "Intake";
     public static final String INTAKE_MOTOR_DEVICE_NAME = "intake";
     public static final DcMotorSimple.Direction INTAKE_DIRECTION = DcMotorSimple.Direction.REVERSE;
-    public static final double INTAKE_CURRENT_THRESHOLD_AMPS = 5.0;
+    public static final double INTAKE_GEAR_RATIO = 1;
+    public static final double INTAKE_MAX_POWER = 1;
 
     public static final double INTAKE_POWER = 1.0;
     public static final double REVERSE_INTAKE_POWER = 0.5;
