@@ -52,8 +52,6 @@ import java.util.concurrent.TimeUnit;
  */
 
 @TeleOp(name="Prism Configurator", group="Linear OpMode")
-@Disabled
-
 public class GoBildaPrismConfigurator extends LinearOpMode {
 
     GoBildaPrismDriver prism;

@@ -30,10 +30,7 @@ public class RGBIndicatorLightController extends HardwareController<Servo> {
         device.setPosition(0);
     }
 
-    @Override
-    public void start() {
 
-    }
 
     @Override
     public void update(long deltaTimeNS) {

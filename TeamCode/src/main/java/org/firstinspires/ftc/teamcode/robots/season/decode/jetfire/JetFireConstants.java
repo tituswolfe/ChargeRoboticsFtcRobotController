@@ -58,17 +58,18 @@ public class JetFireConstants {
     public static final double INTAKE_MAX_POWER = 1;
 
     public static final double INTAKE_POWER = 1.0;
-    public static final double REVERSE_INTAKE_POWER = 0.5;
+    public static final double REVERSE_INTAKE_POWER = -0.5;
 
+    public static final int INTAKE_TIMEOUT_MS = 2000;
 
     // GATE
     public static double GATE_SERVO_OPEN = 0.9;
     public static double GATE_SERVO_CLOSED = 0.73;
     public static int GATE_SERVO_TIME_MS = 200;
 
-    // COOLDOWN
-    public static int LAUNCH_COOLDOWN_MS = 450;
-    public static int INTAKE_COOLDOWN_MS = 0;
+
+    // OTHER
+    public static final int MUZZLE_FLASH_DURATION_MS = 300;
 
     // MARGINS & DELAYS
     public static double FLYWHEEL_VELOCITY_MARGIN_RPM = 200;

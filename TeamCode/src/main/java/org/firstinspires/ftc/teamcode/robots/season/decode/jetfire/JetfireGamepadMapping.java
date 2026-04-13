@@ -56,6 +56,7 @@ public class JetfireGamepadMapping extends PrimaryDriverGamepadMapping<JetfireRo
     @Override
     public void onRightTriggerPressed() {
         robot.fire();
+
     }
 
     @Override

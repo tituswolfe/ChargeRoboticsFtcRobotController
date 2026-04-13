@@ -38,6 +38,7 @@ public class JetFireGamepadMapping2 extends GamepadMapping<JetfireRobot> {
 
     @Override
     public void onXPressed() {
+        robot.toggleMuzzleFlash();
     }
 
     @Override

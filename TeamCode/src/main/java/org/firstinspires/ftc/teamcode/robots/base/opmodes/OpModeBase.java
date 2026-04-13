@@ -59,9 +59,8 @@ public abstract class OpModeBase<Robot extends RobotBase> extends OpMode {
         // TODO: Make sure gamepads driing don't interfer with each other
         // TODO: Single static instance of robot and opmode
 
-        telemetryManager.addLine("Charger Robotics");
-        telemetryManager.addLine("Please wait . . .");
-        telemetryManager.update();
+        telemetryManager.addLine("INITIALIZING: Charger Robotics 9808");
+        updateTelemetry();
 
         robot = instantiateRobot();
         gamepadMapping1 = instantiateGamepadMapping1();
@@ -85,8 +84,8 @@ public abstract class OpModeBase<Robot extends RobotBase> extends OpMode {
 
         opModeTypeSpecificInit();
 
-        telemetryManager.addLine("READY");
-        telemetryManager.update();
+        telemetryManager.addLine("READY - Press PLAY to start");
+        updateTelemetry();
     }
 
     @Override
@@ -125,10 +124,18 @@ public abstract class OpModeBase<Robot extends RobotBase> extends OpMode {
         telemetryManager.addLine("");
         telemetryManager.addLine("- CHARGER ROBOTICS 9808 -");
         telemetryManager.addLine("- DON'T TOUCH THAT RYAN! -");
+        updateTelemetry();
+    }
 
+    private void updateTelemetry() {
         telemetryManager.update(this.telemetry);
     }
 
+    @Override
+    public void stop() {
+        robot.stop();
+        super.stop();
+    }
 
     public boolean isEndgame() {
         return isEndgame;

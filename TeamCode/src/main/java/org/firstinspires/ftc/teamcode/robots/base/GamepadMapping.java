@@ -59,8 +59,8 @@ public abstract class GamepadMapping<Robot extends RobotBase> {
 
         // Buttons
         if (gamepad.yWasPressed()) onYPressed();
-        if (gamepad.bWasPressed()) onBPressed();
-        if (gamepad.aWasPressed()) onAPressed();
+        if (gamepad.bWasPressed() && !gamepad.start) onBPressed();
+        if (gamepad.aWasPressed() && !gamepad.start) onAPressed();
         if (gamepad.xWasPressed()) onXPressed();
 
         // Joysticks

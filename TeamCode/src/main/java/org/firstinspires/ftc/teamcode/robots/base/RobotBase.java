@@ -150,6 +150,10 @@ public abstract class RobotBase {
         }
     }
 
+    public void stop() {
+
+    }
+
 
     protected abstract FieldType instantiateFieldType();
 

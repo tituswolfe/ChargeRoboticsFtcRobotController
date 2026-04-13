@@ -25,10 +25,6 @@ public class LimelightController extends HardwareController<Limelight3A> {
         super(device, name);
     }
 
-    @Override
-    public void start() {
-
-    }
 
     @Override
     public void update(long deltaTimeNS) {

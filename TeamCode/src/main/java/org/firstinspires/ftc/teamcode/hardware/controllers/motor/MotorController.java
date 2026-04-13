@@ -28,11 +28,11 @@ public abstract class MotorController extends HardwareController<DcMotorEx> {
     protected double targetPower = 0;
     protected double lastPower = 0;
     protected double currentPosition = 0;
-    protected boolean isMotorEngaged = true;
+    protected boolean isMotorEngaged = false;
     protected boolean reversePower = false;
 
     public static double MAX_DELTA_TIME_FOR_SLEW_RATE = 0.1;
-    public static double SLEW_RATE = 1; // power / seconds
+    public static double SLEW_RATE = 2; // power / seconds
     public static double DELTA_FILTERING_THRESHOLD = 0.03;
 
     public MotorController(DcMotorEx device, String name, MotorInfo motorInfo, double totalGearRatio, double maxPower) {
@@ -73,7 +73,7 @@ public abstract class MotorController extends HardwareController<DcMotorEx> {
             return;
         }
 
-        //double deltaTimeSec = Math.min(TimeUnit.NANOSECONDS.toSeconds(deltaTimeNS), MAX_DELTA_TIME_FOR_SLEW_RATE);
+        //double deltaTimeSec = Math.min(deltaTimeNS / 1_000_000_000.0, MAX_DELTA_TIME_FOR_SLEW_RATE);
         double maxChange = SLEW_RATE * 1;
 
         double slewedPower = Range.clip(targetPower, lastPower - maxChange, lastPower + maxChange);

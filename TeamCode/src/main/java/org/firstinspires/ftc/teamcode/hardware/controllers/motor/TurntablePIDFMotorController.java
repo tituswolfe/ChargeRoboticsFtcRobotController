@@ -24,8 +24,6 @@ public class TurntablePIDFMotorController extends PIDFMotorController {
 
         this.minAngleLimit = minAngleLimit;
         this.maxAngleLimit = maxAngleLimit;
-
-        device.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
     }
 
 

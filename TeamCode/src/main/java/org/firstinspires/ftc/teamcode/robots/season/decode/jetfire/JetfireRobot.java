@@ -16,16 +16,14 @@ import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.hardware.controllers.digital.GoBildaLaserDistanceSensorDigital;
-import org.firstinspires.ftc.teamcode.hardware.controllers.lights.Prism.Color;
+import org.firstinspires.ftc.teamcode.hardware.controllers.lights.GoBildaPrismController;
 import org.firstinspires.ftc.teamcode.hardware.controllers.lights.Prism.GoBildaPrismDriver;
-import org.firstinspires.ftc.teamcode.hardware.controllers.lights.Prism.PrismAnimations;
 import org.firstinspires.ftc.teamcode.hardware.controllers.motor.ThrottleMotorController;
 import org.firstinspires.ftc.teamcode.hardware.controllers.motor.TurntablePIDFMotorController;
 import org.firstinspires.ftc.teamcode.hardware.controllers.servo.AngleServoController;
 import org.firstinspires.ftc.teamcode.hardware.controllers.servo.PositionServoController;
 import org.firstinspires.ftc.teamcode.hardware.controllers.servo.RGBIndicatorLightController;
 import org.firstinspires.ftc.teamcode.hardware.controllers.motor.DualPIDFMotorVelocityController;
-import org.firstinspires.ftc.teamcode.hardware.controllers.servo.ServoController;
 import org.firstinspires.ftc.teamcode.hardware.controllers.subsystems.Turret;
 import org.firstinspires.ftc.teamcode.hardware.drivetrain.pedroPathing.Constants;
 import org.firstinspires.ftc.teamcode.hardware.vision.LimelightController;
@@ -36,7 +34,6 @@ import org.firstinspires.ftc.teamcode.util.actionsequence.ActionSequence;
 import org.firstinspires.ftc.teamcode.util.actionsequence.InstantAction;
 import org.firstinspires.ftc.teamcode.util.actionsequence.WaitAction;
 import org.firstinspires.ftc.teamcode.util.info.HardwareInfo;
-import org.firstinspires.ftc.teamcode.util.math.Angle;
 import org.firstinspires.ftc.teamcode.util.math.MathUtil;
 import org.firstinspires.ftc.teamcode.util.math.RollingAverage;
 
@@ -49,14 +46,14 @@ import java.util.concurrent.TimeUnit;
 @Configurable
 public class JetfireRobot extends RobotBase {
     private Turret<DualPIDFMotorVelocityController> turret;
+
     ThrottleMotorController intakeController;
+    private GoBildaLaserDistanceSensorDigital intakeSensor;
 
     PositionServoController gateServoController;
 
-    private GoBildaLaserDistanceSensorDigital chamberSensor;
-
     private RGBIndicatorLightController indicatorLightController;
-    private GoBildaPrismDriver prism;
+    private GoBildaPrismController prismController;
 
     private LimelightController limelightController;
 
@@ -64,6 +61,8 @@ public class JetfireRobot extends RobotBase {
     private boolean isFlywheelOn = false;
     private boolean isIntakeOn = false;
     private boolean reverseIntake = false;
+
+    private boolean useMuzzleFlash = false;
 
     // Positive offset is left
     // Negative offset is right
@@ -75,8 +74,6 @@ public class JetfireRobot extends RobotBase {
 
     public double closeTurntableOffsetDeg = 0; // getter setter
     public double farTurntableOffsetDeg = 0;
-//
-//    Timer launchCooldownTimer = new Timer();
 
     private final static Pose HUMAN_PLAYER_ZONE_RESET_BLUE = new Pose(64.2, 58.08, Math.toRadians(90), FTCCoordinates.INSTANCE);
     private Pose humanPlayerReset;
@@ -85,7 +82,14 @@ public class JetfireRobot extends RobotBase {
     public static Pose targetGoal;
 
     // TUNING
-    public static boolean TUNING = false;
+    enum TuningMode {
+        OFF,
+        FLYWHEEL,
+        HOOD,
+        TURNTABLE
+    }
+    public static TuningMode tuningMode = TuningMode.OFF;
+    public static boolean DISPLAY_TELEMETRY = false;
     public static double FLYWHEEL_TARGET_VELOCITY = 0;
     public static double HOOD_ANGLE = 16;
     public static double TURNTABLE_OFFSET_DEG = 0;
@@ -103,11 +107,11 @@ public class JetfireRobot extends RobotBase {
             new InstantAction(() -> {
                 gateServoController.setPosition(GATE_SERVO_OPEN);
                 intakeController.setMotorEngaged(true);
-                intakeController.setTargetPower(-0.25);
+                intakeController.setTargetPower(-0.5);
             }),
-            //new WaitAction(1),
+            new WaitAction(1),
             new InstantAction(() -> intakeController.setTargetPower(1.0)),
-            new WaitAction(200),
+            new WaitAction(300),
             new InstantAction(() -> gateServoController.setPosition(GATE_SERVO_CLOSED))
     };
     private final ActionSequence rapidFireActionSequence = new ActionSequence(rapidFireActions);
@@ -122,18 +126,26 @@ public class JetfireRobot extends RobotBase {
         super.init(hardwareMap, startPose, allianceColor);
 
         if (allianceColor.equals(OpModeBase.AllianceColor.BLUE)) {
+            prismController.loadArtboard(GoBildaPrismDriver.Artboard.ARTBOARD_1);
             targetGoal = TARGET_GOAL_BLUE;
             humanPlayerReset = HUMAN_PLAYER_ZONE_RESET_BLUE;
 
             closeTurntableOffsetDeg = CLOSE_ZONE_TURNTABLE_START_OFFSET_BLUE;
             farTurntableOffsetDeg = FAR_ZONE_TURNTABLE_START_OFFSET_BLUE;
         } else {
+            prismController.loadArtboard(GoBildaPrismDriver.Artboard.ARTBOARD_2);
             targetGoal = TARGET_GOAL_BLUE.mirror();
             humanPlayerReset = HUMAN_PLAYER_ZONE_RESET_BLUE.mirror();
 
             closeTurntableOffsetDeg = CLOSE_ZONE_TURNTABLE_START_OFFSET_RED;
             farTurntableOffsetDeg = FAR_ZONE_TURNTABLE_START_OFFSET_RED;
         }
+    }
+
+    @Override
+    public void stop() {
+        prismController.loadArtboard(GoBildaPrismDriver.Artboard.ARTBOARD_0);
+        super.stop();
     }
 
     @Override
@@ -198,12 +210,12 @@ public class JetfireRobot extends RobotBase {
         gateServoController = new PositionServoController(
                 gateServo,
                 "gate",
-                360, // ?
+                300, // TODO: Only controller?
                 1
         );
 
         DigitalChannel laserDigitalInput = hardwareMap.get(DigitalChannel.class, "laser-digital-input");
-        chamberSensor = new GoBildaLaserDistanceSensorDigital(laserDigitalInput);
+        intakeSensor = new GoBildaLaserDistanceSensorDigital(laserDigitalInput);
 
         Limelight3A limelight3A = hardwareMap.get(Limelight3A.class, "limelight");
         limelightController = new LimelightController(limelight3A, "Limelight");
@@ -214,24 +226,17 @@ public class JetfireRobot extends RobotBase {
         indicatorLightController.setBaseColor(allianceColor == OpModeBase.AllianceColor.RED ? RGBIndicatorLightController.Color.RED : RGBIndicatorLightController.Color.BLUE);
         indicatorLightController.update(0);
 
-        prism = hardwareMap.get(GoBildaPrismDriver.class,"prism");
-        PrismAnimations.DroidScan droidScan = new PrismAnimations.DroidScan();
-        droidScan.setPrimaryColor(allianceColor == OpModeBase.AllianceColor.RED ? Color.RED : Color.BLUE);
-        droidScan.setSpeed(0.05f);
-        droidScan.setEyeWidth(4);
-
-        droidScan.setIndexes(1, 17);
-        prism.insertAndUpdateAnimation(GoBildaPrismDriver.LayerHeight.LAYER_0, droidScan);
-        droidScan.setIndexes(18, 36);
-        prism.insertAndUpdateAnimation(GoBildaPrismDriver.LayerHeight.LAYER_1, droidScan);
+        GoBildaPrismDriver prism = hardwareMap.get(GoBildaPrismDriver.class,"prism");
+        prismController = new GoBildaPrismController(prism, "Prism");
     }
 
     @Override
     public void startConfiguration() {
         gateServoController.start(GATE_SERVO_CLOSED);
         intakeController.start();
-        turret.turntableController().start(); // start all
-        // TODO: Init servo pos here
+        turret.turntableController().start();
+        turret.flywheelController().start();
+        turret.hoodServoController().start(0); // TODO: Get from data table
     }
 
     @Override
@@ -273,18 +278,15 @@ public class JetfireRobot extends RobotBase {
         double goalHeadingError = Math.abs(AngleUnit.normalizeRadians(virtualGoalHeading - currentPose.getHeading()));
         boolean isTurntableInRange =  goalHeadingError < Math.toRadians(TURNTABLE_MAX_HARD_STOP);
 
-        boolean isArtifactDetected = chamberSensor.isObjectDetected();
-
-        // 1. Detect Rising Edge: Object just appeared
+        boolean isArtifactDetected = intakeSensor.isObjectDetected();
         if (isArtifactDetected && !wasArtifactDetected) {
             artifactDetectedTimer.resetTimer();
         }
 
-        // 3. Update Status
-        atFullArtifactCapacity = isArtifactDetected && (artifactDetectedTimer.getElapsedTime() > 2000);
+        atFullArtifactCapacity = isArtifactDetected && (artifactDetectedTimer.getElapsedTime() > INTAKE_TIMEOUT_MS);
         wasArtifactDetected = isArtifactDetected;
 
-        isReadyToShoot = !getRapidFireActionSequence().isRunning() && isTurntableInRange;
+        isReadyToShoot = !getRapidFireActionSequence().isRunning() && isTurntableInRange; // flywheel ready
 
         // HARDWARE VARIABLES
         double flywheelSpeed = FLYWHEEL_VELOCITY_BY_DISTANCE.interpolate(virtualDistanceFromGoal);
@@ -297,29 +299,20 @@ public class JetfireRobot extends RobotBase {
         double hoodAngle = Range.clip(interpolatedHoodAngleDeg - hoodRegression, 45, MAX_HOOD_ANGLE);
 
         if (!rapidFireActionSequence.isRunning()) {
-
             if (reverseIntake) {
                 intakeController.setMotorEngaged(true);
                 intakeController.setTargetPower(REVERSE_INTAKE_POWER);
-            }
-//            else if (atFullArtifactCapacity) {
-//                intakeController.setMotorEngaged(false);
-//            }
-            else if (isIntakeOn) {
+            } else if (atFullArtifactCapacity) {
+                intakeController.setMotorEngaged(false);
+                prismController.indicate(GoBildaPrismDriver.Artboard.ARTBOARD_3);
+            } else if (isIntakeOn) {
                 intakeController.setMotorEngaged(true);
                 intakeController.setTargetPower(INTAKE_POWER);
-
-            }
-            else {
+            } else {
                 intakeController.setMotorEngaged(false);
-
             }
-
         }
 
-
-        // TODO: Reverse intake anytime
-        // TODO: Indicaate 3 artifacts
         // TODO: Tuning mode again
 
         RGBIndicatorLightController.Color indicatorColor;
@@ -348,8 +341,9 @@ public class JetfireRobot extends RobotBase {
         //gateServoController.update();
 
         intakeController.update(deltaTimeNs);
+        prismController.update(0);
 
-        chamberSensor.update();
+        intakeSensor.update();
 
         // UPDATE ACTION SEQUENCES
         rapidFireActionSequence.update();
@@ -357,8 +351,20 @@ public class JetfireRobot extends RobotBase {
         // UPDATE STATIC VARS
         JetfireStaticData.lastTurretHeading = turntableHeading;
 
-        // TUNING & TELEMETRY
-        if (TUNING) {
+        switch (tuningMode) {
+            case FLYWHEEL:
+                turret.flywheelController().setPIDFCoefficients(FLYWHEEL_PIDF_COEFFICIENTS);
+                break;
+            case HOOD:
+                break;
+            case TURNTABLE:
+                turret.turntableController().setPIDFCoefficients(TURNTABLE_PIDF_COEFFICIENTS);
+                break;
+            default:
+                break;
+        }
+
+        if (DISPLAY_TELEMETRY) {
             double distanceFromGoal = currentPose.distanceFrom(targetGoal);
 
             // Variable Telemetry
@@ -400,19 +406,22 @@ public class JetfireRobot extends RobotBase {
             turret.flywheelController().updateTelemetry(telemetry);
             turret.hoodServoController().updateTelemetry(telemetry);
 
-            // Update PIDFs
-
-            turret.flywheelController().setPIDFCoefficients(FLYWHEEL_PIDF_COEFFICIENTS);
-            turret.turntableController().setPIDFCoefficients(TURNTABLE_PIDF_COEFFICIENTS);
             telemetry.addLine("");
         }
     }
 
+
     public void fire() {
-        //gateServoController.setPosition(GATE_SERVO_OPEN, GATE_SERVO_TIME_MS, GATE_SERVO_CLOSED);
         if (!rapidFireActionSequence.isRunning()) {
             rapidFireActionSequence.start();
+            if (useMuzzleFlash) {
+                prismController.indicate(GoBildaPrismDriver.Artboard.ARTBOARD_4, MUZZLE_FLASH_DURATION_MS);
+            }
         }
+    }
+
+    public void toggleMuzzleFlash() {
+        useMuzzleFlash = !useMuzzleFlash;
     }
 
     public void humanPlayerPoseReset() {
@@ -424,6 +433,10 @@ public class JetfireRobot extends RobotBase {
         setFlywheelOn(on);
         setIntakeOn(on);
         setAutoAimTurntable(on);
+    }
+
+    public GoBildaPrismController getPrismController() {
+        return prismController;
     }
 
     public void setIntakeOn(boolean isIntakeOn) {

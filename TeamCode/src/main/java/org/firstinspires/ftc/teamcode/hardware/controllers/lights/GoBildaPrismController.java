@@ -12,38 +12,51 @@ import org.firstinspires.ftc.teamcode.util.actionsequence.InstantAction;
 import org.firstinspires.ftc.teamcode.util.actionsequence.WaitAction;
 
 public class GoBildaPrismController extends HardwareController<GoBildaPrismDriver> {
-    private PrismAnimations.AnimationBase prismAnimation;
-    private Color indicateColor = Color.TRANSPARENT;
-    private int indicateTimeMills = 0;
+    private GoBildaPrismDriver.Artboard currentArtboard;
+    //private GoBildaPrismDriver.Artboard indicateArtboard;
+    //private int indicateTimeMills;
 
-    Action[] indicateActions = new Action[] {
-            new InstantAction(() -> device.insertAndUpdateAnimation(GoBildaPrismDriver.LayerHeight.LAYER_0, new PrismAnimations.Solid(indicateColor))),
-            new WaitAction(indicateTimeMills),
-            new InstantAction(() -> device.insertAndUpdateAnimation(GoBildaPrismDriver.LayerHeight.LAYER_0, prismAnimation))
-
-    };
-    ActionSequence indicateSequence = new ActionSequence(indicateActions);
+    ActionSequence indicateSequence;
 
     public GoBildaPrismController(GoBildaPrismDriver device, String name) {
         super(device, name);
     }
 
-    @Override
-    public void start() {
-
+    public void loadArtboard(GoBildaPrismDriver.Artboard artboard) {
+        device.loadAnimationsFromArtboard(artboard);
+        currentArtboard = artboard;
     }
 
     @Override
     public void update(long deltaTimeNS) {
+        if (indicateSequence != null) {
+            indicateSequence.update();
+        }
     }
 
-    public void indicate(Color indicateColor) {
-        indicate(indicateColor, 300);
+    public void indicate(GoBildaPrismDriver.Artboard artboard) {
+        indicate(artboard, 200);
     }
 
-    public void indicate(Color indicateColor, int indicateTimeMills) {
-        this.indicateColor = indicateColor;
-        this.indicateTimeMills = indicateTimeMills;
+    public void indicate(GoBildaPrismDriver.Artboard artboard, int indicateTimeMills) {
+        if (indicateSequence != null) {
+            if (indicateSequence.isRunning()) {
+                return;
+            }
+        }
+
+
+
+        Action[] indicateActions = new Action[] {
+                new InstantAction(() -> device.loadAnimationsFromArtboard(artboard)),
+                new WaitAction(indicateTimeMills),
+                new InstantAction(() -> device.loadAnimationsFromArtboard(currentArtboard))
+
+        };
+        indicateSequence = new ActionSequence(indicateActions);
+//
+//        this.indicateArtboard = artboard;
+//        this.indicateTimeMills = indicateTimeMills;
 
         indicateSequence.start();
     }

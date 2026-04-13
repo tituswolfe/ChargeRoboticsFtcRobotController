@@ -19,7 +19,6 @@ public class VelocityPIDFMotorController extends PIDFMotorController {
 
     public VelocityPIDFMotorController(DcMotorEx device, String name, MotorInfo motorInfo, double totalGearRatio, double maxPower, PIDFCoefficients pidfCoefficients) {
         super(device, name, motorInfo, totalGearRatio, maxPower, pidfCoefficients);
-        device.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
     }
 
     @Override
