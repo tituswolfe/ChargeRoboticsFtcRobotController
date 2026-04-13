@@ -12,7 +12,7 @@ import org.firstinspires.ftc.teamcode.robots.season.decode.jetfire.JetfireRobot;
 import org.firstinspires.ftc.teamcode.util.actionsequence.Action;
 import org.firstinspires.ftc.teamcode.util.actionsequence.ActionSequence;
 import org.firstinspires.ftc.teamcode.util.actionsequence.InstantAction;
-import org.firstinspires.ftc.teamcode.util.actionsequence.WaitForConditionAction;
+import org.firstinspires.ftc.teamcode.util.actionsequence.WaitForCondition;
 
 @Autonomous(preselectTeleOp = "Jetfire")
 public class TeamStealthBlue extends BaseAuto<JetfireRobot> {
@@ -44,9 +44,9 @@ public class TeamStealthBlue extends BaseAuto<JetfireRobot> {
     Action[] autoActions = new Action[] {
             new InstantAction(() -> robot.toggleSubsystems(true)),
             new InstantAction(() -> robot.getFollower().followPath(startToShootPreload)),
-            new WaitForConditionAction(() -> robot.isFlywheelReady()),
+            new WaitForCondition(() -> robot.isFlywheelReady()),
             new InstantAction(() -> robot.getRapidFireActionSequence().start()),
-            new WaitForConditionAction(() -> !robot.getRapidFireActionSequence().isRunning()),
+            new WaitForCondition(() -> !robot.getRapidFireActionSequence().isRunning()),
             new InstantAction(() -> robot.getFollower().followPath(shootPreloadToIntakeLine3))
     };
     ActionSequence stealthBlueAuto = new ActionSequence(autoActions);

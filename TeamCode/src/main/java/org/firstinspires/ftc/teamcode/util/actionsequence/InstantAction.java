@@ -5,6 +5,11 @@ import java.util.function.BooleanSupplier;
 public class InstantAction extends Action {
 
     public InstantAction(Runnable function) {
-        super(function, () -> true);
+        super(function);
+    }
+
+    @Override
+    public boolean isFinished() {
+        return true;
     }
 }

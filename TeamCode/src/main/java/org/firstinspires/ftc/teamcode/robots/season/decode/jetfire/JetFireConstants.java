@@ -5,9 +5,7 @@ import com.pedropathing.control.PIDFCoefficients;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 
-import org.firstinspires.ftc.teamcode.hardware.controllers.lights.Prism.Direction;
 import org.firstinspires.ftc.teamcode.util.LinearInterpolator;
-import org.firstinspires.ftc.teamcode.util.math.Angle;
 
 import java.util.TreeMap;
 
@@ -37,6 +35,13 @@ public class JetFireConstants {
     public static final double TURNTABLE_MAX_HARD_STOP = Math.toRadians(140);
     public static final boolean TURNTABLE_REVERSE_POWER = false;
 
+    // LEFT (positive+), RIGHT (negative-)
+    public final static double CLOSE_ZONE_TURNTABLE_START_OFFSET_BLUE = 2;
+    public final static double FAR_ZONE_TURNTABLE_START_OFFSET_BLUE = 0;
+
+    public final static double CLOSE_ZONE_TURNTABLE_START_OFFSET_RED = -2;
+    public final static double FAR_ZONE_TURNTABLE_START_OFFSET_RED = 0;
+
     // HOOD
     public static final String HOOD_SERVO_DEVICE_NAME = "hood";
     public static final Servo.Direction HOOD_SERVO_DIRECTION = Servo.Direction.FORWARD;
@@ -48,7 +53,10 @@ public class JetFireConstants {
     public static final double MAX_HOOD_ANGLE = Math.toRadians(50);
 
     // Regression (Deg) : Error (RPM)
-    public static double HOOD_REGRESSION_RATIO = 0.035;
+    //hoodCompensation
+    public static double REGRESSION_COMPENSATION_RATIO = 0.035;
+    public static double FLYWHEEL_ERROR_COMPENSATION_THRESHOLD = 100;
+    public static double HOOD_COMPENSATION_FLOOR_DEG = 45;
 
     // INTAKE
     public static final String INTAKE_NAME = "Intake";
@@ -59,8 +67,8 @@ public class JetFireConstants {
 
     public static final double INTAKE_POWER = 1.0;
     public static final double REVERSE_INTAKE_POWER = -0.5;
-
     public static final int INTAKE_TIMEOUT_MS = 2000;
+    public static final int INTAKE_RAPID_FIRE_DURATION_MS = 300;
 
     // GATE
     public static double GATE_SERVO_OPEN = 0.9;
@@ -68,16 +76,19 @@ public class JetFireConstants {
     public static int GATE_SERVO_TIME_MS = 200;
 
 
-    // OTHER
+    // ZONES
+    public static final double FAR_ZONE_X_THRESHOLD = 24;
+
+    // LIGHTS
     public static final int MUZZLE_FLASH_DURATION_MS = 300;
 
     // MARGINS & DELAYS
     public static double FLYWHEEL_VELOCITY_MARGIN_RPM = 200;
-    public static double TURNTABLE_HEADING_MARGIN_DEG = 2;
-    public static long LEAD_COMPUTING_TRANSFER_DELAY_MS = 80;
+    public static int INTAKE_TRANSFER_DELAY_MS = 50;
 
     // LIMELIGHT
     public static final int LIMELIGHT_LOCALIZATION_PIPELINE = 0;
+    public static final int LIMELIGHT_ARTIFACT_DETECTION_PIPELINE = 1;
 
     // LUTs
     private static final TreeMap<Double, Double> FLYWHEEL_VELOCITY_BY_DISTANCE_MAP = new TreeMap<>();
@@ -145,7 +156,4 @@ public class JetFireConstants {
         TIME_OF_FLIGHT_BY_DISTANCE_MAP.put(150.0, 500.0);
     }
     public static LinearInterpolator TIME_OF_FLIGHT_BY_DISTANCE = new LinearInterpolator(TIME_OF_FLIGHT_BY_DISTANCE_MAP);
-
-    // OTHER
-    public static final double FAR_ZONE_X_THRESHOLD = 24;
 }

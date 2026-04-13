@@ -1,7 +1,7 @@
 package org.firstinspires.ftc.teamcode.util.actionsequence;
 
-public class WaitAction extends TimedAction{
-    public WaitAction(double durationMs) {
+public class Wait extends TimedAction{
+    public Wait(double durationMs) {
         super(() -> {}, durationMs);
     }
 }

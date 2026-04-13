@@ -10,6 +10,9 @@ import org.firstinspires.ftc.teamcode.robots.base.opmodes.OpModeBase;
 
 public class JetFireGamepadMapping2 extends GamepadMapping<JetfireRobot> {
     double zoneOffsetIncrement = 1;
+    public static final double smallZoneOffsetIncrement = 1;
+    public static final double largeZoneOffsetIncrement = 5;
+
 
     public JetFireGamepadMapping2(JetfireRobot jetfireRobot, Gamepad gamepad) {
         super(jetfireRobot, gamepad);
@@ -17,23 +20,17 @@ public class JetFireGamepadMapping2 extends GamepadMapping<JetfireRobot> {
 
     @Override
     public void onYPressed() {
-        robot.humanPlayerPoseReset();
+        robot.zeroTurntable();
     }
 
     @Override
     public void onBPressed() {
-        robot.getTurret().turntableController().setInitialAngle(0);
+
     }
 
     @Override
     public void onAPressed() {
-        if (allianceColor.equals(OpModeBase.AllianceColor.BLUE)) {
-            robot.closeTurntableOffsetDeg = JetfireRobot.CLOSE_ZONE_TURNTABLE_START_OFFSET_BLUE;
-            robot.farTurntableOffsetDeg = JetfireRobot.FAR_ZONE_TURNTABLE_START_OFFSET_BLUE;
-        } else {
-            robot.closeTurntableOffsetDeg = JetfireRobot.CLOSE_ZONE_TURNTABLE_START_OFFSET_RED;
-            robot.farTurntableOffsetDeg = JetfireRobot.FAR_ZONE_TURNTABLE_START_OFFSET_RED;
-        }
+        robot.humanPlayerPoseReset();
     }
 
     @Override
@@ -83,45 +80,37 @@ public class JetFireGamepadMapping2 extends GamepadMapping<JetfireRobot> {
 
     @Override
     public void onLeftBumperPressed() {
-        if (robot.isInFarZone()) {
-            robot.farTurntableOffsetDeg += zoneOffsetIncrement;
-        } else {
-            robot.closeTurntableOffsetDeg += zoneOffsetIncrement;
-        }
+
     }
 
     @Override
     public void onRightBumperPressed() {
-        if (robot.isInFarZone()) {
-            robot.farTurntableOffsetDeg -= zoneOffsetIncrement;
-        } else {
-            robot.closeTurntableOffsetDeg -= zoneOffsetIncrement;
-        }
+
     }
 
     @Override
     public void onDpadUpPressed() {
-
+        zoneOffsetIncrement = largeZoneOffsetIncrement;
     }
 
     @Override
     public void onDpadRightPressed() {
-
+        robot.adjustActiveTurntableZoneOffset(-zoneOffsetIncrement);
     }
 
     @Override
     public void onDpadDownPressed() {
-
+        zoneOffsetIncrement = smallZoneOffsetIncrement;
     }
 
     @Override
     public void onDpadLeftPressed() {
-
+        robot.adjustActiveTurntableZoneOffset(zoneOffsetIncrement);
     }
 
     @Override
     public void joysticks(float leftX, float leftY, float rightX, float rightY) {
-        // super.joysticks(leftX, leftY, rightX, rightY);
+
     }
 
     @Override
@@ -131,6 +120,6 @@ public class JetFireGamepadMapping2 extends GamepadMapping<JetfireRobot> {
 
     @Override
     public void onRightStickPressed() {
-        //super.onRightStickPressed();
+
     }
 }

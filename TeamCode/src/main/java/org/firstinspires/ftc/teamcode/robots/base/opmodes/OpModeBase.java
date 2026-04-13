@@ -67,7 +67,7 @@ public abstract class OpModeBase<Robot extends RobotBase> extends OpMode {
         gamepadMapping2 = instantiateGamepadMapping2();
 
         Pose startPose = Optional.ofNullable(instantiateStartPose())
-                .orElse(new Pose(0, 0));
+                .orElse(new Pose(72, 72, Math.toRadians(270)));
         StaticData.lastPose = startPose;
 
         AllianceColor allianceColor = Optional.ofNullable(instantiateAllianceColor())

@@ -1,15 +1,11 @@
 package org.firstinspires.ftc.teamcode.hardware.controllers.lights;
 
-import com.pedropathing.util.Timer;
-
 import org.firstinspires.ftc.teamcode.hardware.controllers.HardwareController;
-import org.firstinspires.ftc.teamcode.hardware.controllers.lights.Prism.Color;
 import org.firstinspires.ftc.teamcode.hardware.controllers.lights.Prism.GoBildaPrismDriver;
-import org.firstinspires.ftc.teamcode.hardware.controllers.lights.Prism.PrismAnimations;
 import org.firstinspires.ftc.teamcode.util.actionsequence.Action;
 import org.firstinspires.ftc.teamcode.util.actionsequence.ActionSequence;
 import org.firstinspires.ftc.teamcode.util.actionsequence.InstantAction;
-import org.firstinspires.ftc.teamcode.util.actionsequence.WaitAction;
+import org.firstinspires.ftc.teamcode.util.actionsequence.Wait;
 
 public class GoBildaPrismController extends HardwareController<GoBildaPrismDriver> {
     private GoBildaPrismDriver.Artboard currentArtboard;
@@ -49,7 +45,7 @@ public class GoBildaPrismController extends HardwareController<GoBildaPrismDrive
 
         Action[] indicateActions = new Action[] {
                 new InstantAction(() -> device.loadAnimationsFromArtboard(artboard)),
-                new WaitAction(indicateTimeMills),
+                new Wait(indicateTimeMills),
                 new InstantAction(() -> device.loadAnimationsFromArtboard(currentArtboard))
 
         };

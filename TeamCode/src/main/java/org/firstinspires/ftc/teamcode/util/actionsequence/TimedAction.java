@@ -7,7 +7,7 @@ public class TimedAction extends Action {
     private long startTime = -1;
 
     public TimedAction(Runnable function, double durationMs) {
-        super(function, () -> false);
+        super(function);
         this.durationMs = durationMs;
     }
 
