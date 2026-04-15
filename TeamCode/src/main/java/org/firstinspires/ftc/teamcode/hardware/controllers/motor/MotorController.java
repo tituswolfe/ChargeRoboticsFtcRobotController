@@ -62,7 +62,7 @@ public abstract class MotorController extends HardwareController<DcMotorEx> {
 
     @Override
     public void update(long deltaTimeNS) {
-        velocity = device.getVelocity() * (60 / motorInfo.ENCODER_RESOLUTION_PPR);
+        velocity = device.getVelocity() * (60 / 28.0);
         outputVelocity = velocity / totalGearRatio;
         currentPosition = device.getCurrentPosition();
 
@@ -110,7 +110,8 @@ public abstract class MotorController extends HardwareController<DcMotorEx> {
     public void updateTelemetry(TelemetryManager telemetry) {
         super.updateTelemetry(telemetry);
 
-        telemetry.addData(name + " velocity", outputVelocity);
+        telemetry.addData(name + " velocity", velocity);
+        telemetry.addData(name + " output shaft velocity", outputVelocity);
         telemetry.addData(name + " power", targetPower);
         telemetry.addData(name + " isEngaged", isMotorEngaged);
         telemetry.addData(name + " position", currentPosition);

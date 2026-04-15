@@ -47,8 +47,9 @@ public class Constants {
 
     public static FollowerConstants JETFIRE_FOLLOWER_CONSTANTS = new FollowerConstants()
             .headingPIDFCoefficients(new PIDFCoefficients(1.5, 0, 0.1, 0)) // tuned constants
-            .predictiveBrakingCoefficients(new PredictiveBrakingCoefficients(0.1, 0.04, 0.0016)) // (kP, kLinear, kQuadratic)
+            .predictiveBrakingCoefficients(new PredictiveBrakingCoefficients(0.1, 0.06382, 0.0017577)) // (kP, kLinear, kQuadratic)
             .centripetalScaling(0);
+
 
 //     new FollowerConstants()
 //                        .mass(jetfireMassKg)

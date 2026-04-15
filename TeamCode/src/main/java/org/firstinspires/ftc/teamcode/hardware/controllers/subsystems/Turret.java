@@ -16,5 +16,6 @@ public record Turret<FlywheelController extends VelocityPIDFMotorController>(
 
         flywheelController.update(deltaTimeNs);
         turntableController.update(deltaTimeNs);
+        hoodServoController.update(deltaTimeNs);
     }
 }

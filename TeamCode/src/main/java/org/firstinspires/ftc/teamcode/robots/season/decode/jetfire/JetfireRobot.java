@@ -68,10 +68,10 @@ public class JetfireRobot extends RobotBase {
     public double closeTurntableOffsetDeg = 0; // getter setter
     public double farTurntableOffsetDeg = 0;
 
-    private final static Pose HUMAN_PLAYER_ZONE_RESET_BLUE = new Pose(64.2, 58.08, Math.toRadians(90), FTCCoordinates.INSTANCE);
+    private final static Pose HUMAN_PLAYER_ZONE_RESET_BLUE = new Pose(134.9, 12.2, Math.toRadians(0));
     private Pose humanPlayerReset;
 
-    private final static Pose TARGET_GOAL_BLUE = new Pose(-67, -67, 0, FTCCoordinates.INSTANCE);
+    private final static Pose TARGET_GOAL_BLUE = new Pose(0 + 5, 144 - 5, 0);
     public static Pose targetGoal;
 
     // TUNING & Telemetry
@@ -94,7 +94,7 @@ public class JetfireRobot extends RobotBase {
             new InstantAction(() -> {
                 gateServoController.setPosition(GATE_SERVO_OPEN);
                 intakeController.setMotorEngaged(true);
-                intakeController.setTargetPower(-0.5);
+                intakeController.setTargetPower(-0.75);
             }),
             new Wait(1),
             new InstantAction(() -> intakeController.setTargetPower(1.0)),
@@ -103,7 +103,7 @@ public class JetfireRobot extends RobotBase {
     };
     private final ActionSequence rapidFireActionSequence = new ActionSequence(rapidFireActions);
 
-    RollingAverage velocitySmoothing = new RollingAverage(7);
+    RollingAverage velocitySmoothing = new RollingAverage(3);
 
     @Override
     public void init(HardwareMap hardwareMap, Pose startPose, OpModeBase.AllianceColor allianceColor) {
@@ -168,6 +168,7 @@ public class JetfireRobot extends RobotBase {
 
         Servo hoodServo = hardwareMap.get(Servo.class, HOOD_SERVO_DEVICE_NAME);
         hoodServo.setDirection(HOOD_SERVO_DIRECTION);
+        hoodServo.setPosition(0.5);
 
         AngleServoController hoodController = new AngleServoController(
                 hoodServo,
@@ -212,15 +213,21 @@ public class JetfireRobot extends RobotBase {
 
         GoBildaPrismDriver prism = hardwareMap.get(GoBildaPrismDriver.class,"prism");
         prismController = new GoBildaPrismController(prism, "Prism");
-    }
 
-    @Override
-    public void startConfiguration() {
         gateServoController.start(GATE_SERVO_CLOSED);
         intakeController.start();
         turret.turntableController().start();
         turret.flywheelController().start();
         turret.hoodServoController().start(0); // TODO: Get from data table
+    }
+
+    @Override
+    public void startConfiguration() {
+//        gateServoController.start(GATE_SERVO_CLOSED);
+//        intakeController.start();
+//        turret.turntableController().start();
+//        turret.flywheelController().start();
+//        turret.hoodServoController().start(0); // TODO: Get from data table
     }
 
     @Override
@@ -250,13 +257,13 @@ public class JetfireRobot extends RobotBase {
         double virtualGoalHeading = MathUtil.bearingTo(predictedFuturePose, virtualGoal);
 
         // CONDITIONS
-        isInFarZone = currentPose.getX() > FAR_ZONE_X_THRESHOLD;
+        isInFarZone = currentPose.getY() < FAR_ZONE_Y_THRESHOLD;
         isFlywheelReady = Math.abs(flywheelError) <= FLYWHEEL_VELOCITY_MARGIN_RPM && isFlywheelOn;
 
         //double turntableErrorDeg = Math.toDegrees(turret.turntableController().getError());
         //boolean isTurntableReady = Math.abs(turntableErrorDeg) < TURNTABLE_HEADING_MARGIN_DEG && autoAimTurntable;
-        double goalHeadingError = Math.abs(AngleUnit.normalizeRadians(virtualGoalHeading - currentPose.getHeading()));
-        boolean isTurntableInRange =  goalHeadingError < Math.toRadians(TURNTABLE_MAX_HARD_STOP);
+        //double goalHeadingError = Math.abs(AngleUnit.normalizeRadians(virtualGoalHeading - currentPose.getHeading()));
+        boolean isTurntableInRange =  Math.abs(turret.turntableController().getError()) > TURNTABLE_MAX_HARD_STOP;
 
         boolean isArtifactDetected = intakeSensor.isObjectDetected();
         if (isArtifactDetected && !wasArtifactDetected) {
@@ -277,26 +284,26 @@ public class JetfireRobot extends RobotBase {
         double interpolatedHoodAngleDeg = HOOD_ANGLE_BY_DISTANCE.interpolate(virtualDistanceFromGoal);
 
         double hoodCompensation = 0;
-        if (flywheelError > FLYWHEEL_ERROR_COMPENSATION_THRESHOLD && interpolatedHoodAngleDeg > HOOD_COMPENSATION_FLOOR_DEG) {
+        if (flywheelError > FLYWHEEL_ERROR_COMPENSATION_THRESHOLD && interpolatedHoodAngleDeg > HOOD_COMPENSATION_FLOOR_DEG && isInFarZone) {
             double maxCompensation = interpolatedHoodAngleDeg - HOOD_COMPENSATION_FLOOR_DEG;
-            hoodCompensation = Range.clip(flywheelError * REGRESSION_COMPENSATION_RATIO, 0, maxCompensation);
+            hoodCompensation = Range.clip(Math.abs(flywheelError) * REGRESSION_COMPENSATION_RATIO, 0, maxCompensation);
         }
 
        // double interpolatedHoodAngleDeg = HOOD_ANGLE_BY_DISTANCE.interpolate(virtualDistanceFromGoal);
-
-        if (flywheelError > FLYWHEEL_ERROR_COMPENSATION_THRESHOLD) {
-            double rawComp = flywheelError * REGRESSION_COMPENSATION_RATIO;
-
-            if (interpolatedHoodAngleDeg > 45.0) {
-                double maxPossibleComp = interpolatedHoodAngleDeg - 45.0;
-                double finalComp = Math.min(rawComp, maxPossibleComp);
-                interpolatedHoodAngleDeg -= finalComp;
-            } else {
-                double maxPossibleComp = 45.0 - interpolatedHoodAngleDeg;
-                double finalComp = Math.min(rawComp, maxPossibleComp);
-                interpolatedHoodAngleDeg += finalComp;
-            }
-        }
+//
+//        if (flywheelError > FLYWHEEL_ERROR_COMPENSATION_THRESHOLD) {
+//            double rawComp = flywheelError * REGRESSION_COMPENSATION_RATIO;
+//
+//            if (interpolatedHoodAngleDeg > 45.0) {
+//                double maxPossibleComp = interpolatedHoodAngleDeg - 45.0;
+//                double finalComp = Math.min(rawComp, maxPossibleComp);
+//                interpolatedHoodAngleDeg -= finalComp;
+//            } else {
+//                double maxPossibleComp = 45.0 - interpolatedHoodAngleDeg;
+//                double finalComp = Math.min(rawComp, maxPossibleComp);
+//                interpolatedHoodAngleDeg += finalComp;
+//            }
+//        }
 
         // compensate the other way
 
@@ -306,15 +313,22 @@ public class JetfireRobot extends RobotBase {
             if (reverseIntake) {
                 intakeController.setMotorEngaged(true);
                 intakeController.setTargetPower(REVERSE_INTAKE_POWER);
-            } else if (atFullArtifactCapacity) {
+            }
+            else if (atFullArtifactCapacity) {
                 intakeController.setMotorEngaged(false);
-                prismController.indicate(GoBildaPrismDriver.Artboard.ARTBOARD_3);
-            } else if (isIntakeOn) {
+//                prismController.indicate(GoBildaPrismDriver.Artboard.ARTBOARD_3);
+            }
+            else if (isIntakeOn) {
                 intakeController.setMotorEngaged(true);
                 intakeController.setTargetPower(INTAKE_POWER);
             } else {
                 intakeController.setMotorEngaged(false);
             }
+        }
+
+        if (isArtifactDetected && (artifactDetectedTimer.getElapsedTime() > 1000)) {
+            prismController.indicate(GoBildaPrismDriver.Artboard.ARTBOARD_3);
+
         }
 
         RGBIndicatorLightController.Color indicatorColor;
@@ -382,6 +396,7 @@ public class JetfireRobot extends RobotBase {
 
             telemetry.addLine("- TURRET -");
             telemetry.addData("Flywheel Velocity Error", flywheelError);
+            telemetry.addData("Interpolated Hood Angle (deg)",interpolatedHoodAngleDeg);
             telemetry.addData("Hood Compensation (deg)", hoodCompensation);
             telemetry.addLine("");
 

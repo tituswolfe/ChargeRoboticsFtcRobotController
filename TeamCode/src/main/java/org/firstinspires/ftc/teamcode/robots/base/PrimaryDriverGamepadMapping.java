@@ -20,9 +20,9 @@ public abstract class PrimaryDriverGamepadMapping<Robot extends RobotBase> exten
         }
 
 
-        //robot.getFollower().setTeleOpDrive(smooth(leftY), smooth(leftX), smooth(rightX), robot.isRobotCentric, (robot.isRobotCentric ? 0 : robot.fieldCentricOffset.getAngle(Angle.AngleNormalization.NONE)));
+        robot.getFollower().setTeleOpDrive(smooth(leftY), smooth(leftX), smooth(rightX), robot.isRobotCentric, (robot.isRobotCentric ? 0 : robot.fieldCentricOffset));
 
-        robot.getFollower().setTeleOpDrive(leftY * robot.speedFactor, leftX * robot.speedFactor, rightX * robot.speedFactor, robot.isRobotCentric, (robot.isRobotCentric ? 0 : robot.fieldCentricOffset.getAngle(Angle.AngleNormalization.NONE)));
+        //robot.getFollower().setTeleOpDrive(leftY * robot.speedFactor, leftX * robot.speedFactor, rightX * robot.speedFactor, robot.isRobotCentric, (robot.isRobotCentric ? 0 : robot.fieldCentricOffset));
     };
 
     // cubic?

@@ -36,10 +36,10 @@ public class JetFireConstants {
     public static final boolean TURNTABLE_REVERSE_POWER = false;
 
     // LEFT (positive+), RIGHT (negative-)
-    public final static double CLOSE_ZONE_TURNTABLE_START_OFFSET_BLUE = 2;
+    public final static double CLOSE_ZONE_TURNTABLE_START_OFFSET_BLUE = 0;
     public final static double FAR_ZONE_TURNTABLE_START_OFFSET_BLUE = 0;
 
-    public final static double CLOSE_ZONE_TURNTABLE_START_OFFSET_RED = -2;
+    public final static double CLOSE_ZONE_TURNTABLE_START_OFFSET_RED = 0;
     public final static double FAR_ZONE_TURNTABLE_START_OFFSET_RED = 0;
 
     // HOOD
@@ -55,7 +55,7 @@ public class JetFireConstants {
     // Regression (Deg) : Error (RPM)
     //hoodCompensation
     public static double REGRESSION_COMPENSATION_RATIO = 0.035;
-    public static double FLYWHEEL_ERROR_COMPENSATION_THRESHOLD = 100;
+    public static double FLYWHEEL_ERROR_COMPENSATION_THRESHOLD = 50;
     public static double HOOD_COMPENSATION_FLOOR_DEG = 45;
 
     // INTAKE
@@ -65,19 +65,19 @@ public class JetFireConstants {
     public static final double INTAKE_GEAR_RATIO = 1;
     public static final double INTAKE_MAX_POWER = 1;
 
-    public static final double INTAKE_POWER = 1.0;
-    public static final double REVERSE_INTAKE_POWER = -0.5;
-    public static final int INTAKE_TIMEOUT_MS = 2000;
+    public static final double INTAKE_POWER = 0.7;
+    public static final double REVERSE_INTAKE_POWER = -0.7;
+    public static int INTAKE_TIMEOUT_MS = 2000;
     public static final int INTAKE_RAPID_FIRE_DURATION_MS = 300;
 
     // GATE
-    public static double GATE_SERVO_OPEN = 0.9;
-    public static double GATE_SERVO_CLOSED = 0.73;
+    public static double GATE_SERVO_OPEN = 0.27;
+    public static double GATE_SERVO_CLOSED = 0.05;
     public static int GATE_SERVO_TIME_MS = 200;
 
 
     // ZONES
-    public static final double FAR_ZONE_X_THRESHOLD = 24;
+    public static final double FAR_ZONE_Y_THRESHOLD = 48;
 
     // LIGHTS
     public static final int MUZZLE_FLASH_DURATION_MS = 300;

@@ -11,8 +11,6 @@ import org.firstinspires.ftc.teamcode.util.math.MathUtil;
 import java.time.temporal.ValueRange;
 
 public class AngleServoController extends ServoController {
-//    public final Angle initialOffset;
-
     public final double minAngle;
     public final double maxAngle;
 

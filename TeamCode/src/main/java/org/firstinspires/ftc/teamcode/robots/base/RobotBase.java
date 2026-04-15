@@ -69,7 +69,7 @@ public abstract class RobotBase {
     public double speedFactor = 1;
     public boolean isRobotCentric = false;
     public static boolean isSlowMode = false;
-    public Angle fieldCentricOffset;
+    public double fieldCentricOffset;
     public static double slowSpeedFactor = 0.3;
 
 
@@ -98,8 +98,8 @@ public abstract class RobotBase {
 
     public void setFieldCentricOffset(OpModeBase.AllianceColor allianceColor) {
         fieldCentricOffset = switch (allianceColor) {
-            case RED -> new Angle(90, false);
-            case BLUE -> new Angle((fieldType == FieldType.DIAMOND) ? 180 : -90, false);
+            case RED -> Math.toRadians(0);
+            case BLUE -> Math.toRadians((fieldType == FieldType.DIAMOND) ? 0 : 180);
         };
     }
 
