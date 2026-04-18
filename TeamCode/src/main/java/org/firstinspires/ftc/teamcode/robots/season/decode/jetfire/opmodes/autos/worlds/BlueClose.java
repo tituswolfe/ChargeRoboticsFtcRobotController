@@ -12,7 +12,9 @@ import org.firstinspires.ftc.teamcode.util.actionsequence.ActionSequence;
 import org.firstinspires.ftc.teamcode.util.actionsequence.InstantAction;
 import org.firstinspires.ftc.teamcode.util.actionsequence.PathAction;
 
-@Autonomous(name = "", preselectTeleOp = "Jetfire")
+import java.util.ArrayList;
+
+@Autonomous(name = "CHARGERS (BLUE+CLOSE)", preselectTeleOp = "Jetfire")
 public class BlueClose extends BaseAuto<JetfireRobot> {
     public static Pose startPose = new Pose();
     Pose shootPose = new Pose();
@@ -106,6 +108,18 @@ public class BlueClose extends BaseAuto<JetfireRobot> {
                 break;
         }
     }
+
+    @Override
+    public ArrayList<Pose> generatePoses() {
+        ArrayList<Pose> poses = new ArrayList();
+
+        poses.add(new Pose());
+
+
+
+        return poses;
+    }
+
 
     @Override
     public void buildPaths(Follower follower) {
