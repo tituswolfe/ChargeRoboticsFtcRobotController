@@ -8,25 +8,37 @@ import org.firstinspires.ftc.teamcode.util.actionsequence.InstantAction;
 import org.firstinspires.ftc.teamcode.util.actionsequence.Wait;
 
 public class GoBildaPrismController extends HardwareController<GoBildaPrismDriver> {
-    private GoBildaPrismDriver.Artboard currentArtboard;
-    //private GoBildaPrismDriver.Artboard indicateArtboard;
-    //private int indicateTimeMills;
+    private GoBildaPrismDriver.Artboard activeArtboard;
+    private GoBildaPrismDriver.Artboard baseArtboard;
+    private GoBildaPrismDriver.Artboard indicateArtboard;
+    //ActionSequence indicateSequence;
 
-    ActionSequence indicateSequence;
+    long indicateStartTime = -1;
+    int indicateDurationMills;
 
     public GoBildaPrismController(GoBildaPrismDriver device, String name) {
         super(device, name);
     }
 
-    public void loadArtboard(GoBildaPrismDriver.Artboard artboard) {
+    public void setBaseArtboard(GoBildaPrismDriver.Artboard artboard) {
+        this.baseArtboard = artboard;
+        loadArtboard(artboard);
+    }
+
+    private void loadArtboard(GoBildaPrismDriver.Artboard artboard) {
+        if (artboard == activeArtboard) {
+            return;
+        }
+
         device.loadAnimationsFromArtboard(artboard);
-        currentArtboard = artboard;
+        activeArtboard = artboard;
     }
 
     @Override
     public void update(long deltaTimeNS) {
-        if (indicateSequence != null) {
-            indicateSequence.update();
+        if (indicateStartTime + indicateDurationMills <= System.currentTimeMillis()) {
+            loadArtboard(baseArtboard);
+            indicateStartTime = -1;
         }
     }
 
@@ -34,26 +46,10 @@ public class GoBildaPrismController extends HardwareController<GoBildaPrismDrive
         indicate(artboard, 200);
     }
 
-    public void indicate(GoBildaPrismDriver.Artboard artboard, int indicateTimeMills) {
-        if (indicateSequence != null) {
-            if (indicateSequence.isRunning()) {
-                return;
-            }
-        }
-
-
-
-        Action[] indicateActions = new Action[] {
-                new InstantAction(() -> device.loadAnimationsFromArtboard(artboard)),
-                new Wait(indicateTimeMills),
-                new InstantAction(() -> device.loadAnimationsFromArtboard(currentArtboard))
-
-        };
-        indicateSequence = new ActionSequence(indicateActions);
-//
-//        this.indicateArtboard = artboard;
-//        this.indicateTimeMills = indicateTimeMills;
-
-        indicateSequence.start();
+    public void indicate(GoBildaPrismDriver.Artboard artboard, int indicateDurationMills) {
+        indicateArtboard = artboard;
+        this.indicateDurationMills = indicateDurationMills;
+        indicateStartTime = System.currentTimeMillis();
+        loadArtboard(artboard);
     }
 }

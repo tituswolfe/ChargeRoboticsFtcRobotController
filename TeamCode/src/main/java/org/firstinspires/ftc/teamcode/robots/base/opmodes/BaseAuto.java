@@ -68,6 +68,14 @@ public abstract class BaseAuto<Robot extends RobotBase> extends OpModeBase<Robot
         if (resetActionTimer) actionTimer.resetTimer();
     }
 
+    public void setPathState(int pState) {
+        setPathState(pState, true);
+    }
+
+    public void nextPathState() {
+        setPathState(pathState + 1, true);
+    }
+
     @Override
     protected GamepadMapping<Robot> instantiateGamepadMapping1() {
         return null;

@@ -71,7 +71,8 @@ public class JetfireRobot extends RobotBase {
     private final static Pose HUMAN_PLAYER_ZONE_RESET_BLUE = new Pose(134.9, 12.2, Math.toRadians(0));
     private Pose humanPlayerReset;
 
-    private final static Pose TARGET_GOAL_BLUE = new Pose(0 + 5, 144 - 5, 0);
+    private static final double GOAL_AIM_OFFSET = 5;
+    private final static Pose TARGET_GOAL_BLUE = new Pose(0 + GOAL_AIM_OFFSET, 144 - GOAL_AIM_OFFSET, 0);
     public static Pose targetGoal;
 
     // TUNING & Telemetry
@@ -110,14 +111,14 @@ public class JetfireRobot extends RobotBase {
         super.init(hardwareMap, startPose, allianceColor);
 
         if (allianceColor.equals(OpModeBase.AllianceColor.BLUE)) {
-            prismController.loadArtboard(GoBildaPrismDriver.Artboard.ARTBOARD_1);
+            prismController.setBaseArtboard(GoBildaPrismDriver.Artboard.ARTBOARD_1);
             targetGoal = TARGET_GOAL_BLUE;
             humanPlayerReset = HUMAN_PLAYER_ZONE_RESET_BLUE;
 
             closeTurntableOffsetDeg = CLOSE_ZONE_TURNTABLE_START_OFFSET_BLUE;
             farTurntableOffsetDeg = FAR_ZONE_TURNTABLE_START_OFFSET_BLUE;
         } else {
-            prismController.loadArtboard(GoBildaPrismDriver.Artboard.ARTBOARD_2);
+            prismController.setBaseArtboard(GoBildaPrismDriver.Artboard.ARTBOARD_2);
             targetGoal = TARGET_GOAL_BLUE.mirror();
             humanPlayerReset = HUMAN_PLAYER_ZONE_RESET_BLUE.mirror();
 
@@ -128,7 +129,7 @@ public class JetfireRobot extends RobotBase {
 
     @Override
     public void stop() {
-        prismController.loadArtboard(GoBildaPrismDriver.Artboard.ARTBOARD_0);
+        prismController.setBaseArtboard(GoBildaPrismDriver.Artboard.ARTBOARD_0);
         super.stop();
     }
 
@@ -258,22 +259,29 @@ public class JetfireRobot extends RobotBase {
 
         // CONDITIONS
         isInFarZone = currentPose.getY() < FAR_ZONE_Y_THRESHOLD;
-        isFlywheelReady = Math.abs(flywheelError) <= FLYWHEEL_VELOCITY_MARGIN_RPM && isFlywheelOn;
+        isFlywheelReady = flywheelError < FLYWHEEL_VELOCITY_MARGIN_RPM && isFlywheelOn;
 
         //double turntableErrorDeg = Math.toDegrees(turret.turntableController().getError());
         //boolean isTurntableReady = Math.abs(turntableErrorDeg) < TURNTABLE_HEADING_MARGIN_DEG && autoAimTurntable;
-        //double goalHeadingError = Math.abs(AngleUnit.normalizeRadians(virtualGoalHeading - currentPose.getHeading()));
-        boolean isTurntableInRange =  Math.abs(turret.turntableController().getError()) > TURNTABLE_MAX_HARD_STOP;
+        double goalHeadingError = Math.abs(AngleUnit.normalizeRadians(virtualGoalHeading - currentPose.getHeading()));
+        boolean isTurntableInRange =  goalHeadingError < TURNTABLE_MAX_HARD_STOP;
 
         boolean isArtifactDetected = intakeSensor.isObjectDetected();
         if (isArtifactDetected && !wasArtifactDetected) {
             artifactDetectedTimer.resetTimer();
         }
 
-        boolean atFullArtifactCapacity = isArtifactDetected && (artifactDetectedTimer.getElapsedTime() > INTAKE_TIMEOUT_MS);
+        // intake
+        boolean pauseIntake = false;
+        boolean indicateIntakeFull = false;
+        if (isArtifactDetected) {
+            pauseIntake = artifactDetectedTimer.getElapsedTime() > INTAKE_TIMEOUT_MS;
+            indicateIntakeFull = artifactDetectedTimer.getElapsedTime() > INDICATE_FULL_INTAKE_MS;
+        }
+
         wasArtifactDetected = isArtifactDetected;
 
-        isReadyToShoot = !getRapidFireActionSequence().isRunning() && isTurntableInRange; // flywheel ready
+        isReadyToShoot = !getRapidFireActionSequence().isRunning() && isTurntableInRange;
 
         // HARDWARE VARIABLES
         double flywheelSpeed = FLYWHEEL_VELOCITY_BY_DISTANCE.interpolate(virtualDistanceFromGoal);
@@ -313,12 +321,9 @@ public class JetfireRobot extends RobotBase {
             if (reverseIntake) {
                 intakeController.setMotorEngaged(true);
                 intakeController.setTargetPower(REVERSE_INTAKE_POWER);
-            }
-            else if (atFullArtifactCapacity) {
+            } else if (pauseIntake) {
                 intakeController.setMotorEngaged(false);
-//                prismController.indicate(GoBildaPrismDriver.Artboard.ARTBOARD_3);
-            }
-            else if (isIntakeOn) {
+            } else if (isIntakeOn) {
                 intakeController.setMotorEngaged(true);
                 intakeController.setTargetPower(INTAKE_POWER);
             } else {
@@ -326,9 +331,8 @@ public class JetfireRobot extends RobotBase {
             }
         }
 
-        if (isArtifactDetected && (artifactDetectedTimer.getElapsedTime() > 1000)) {
-            prismController.indicate(GoBildaPrismDriver.Artboard.ARTBOARD_3);
-
+        if (indicateIntakeFull) {
+            prismController.indicate(GoBildaPrismDriver.Artboard.ARTBOARD_3, 50);
         }
 
         RGBIndicatorLightController.Color indicatorColor;

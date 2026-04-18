@@ -68,6 +68,7 @@ public class JetFireConstants {
     public static final double INTAKE_POWER = 0.7;
     public static final double REVERSE_INTAKE_POWER = -0.7;
     public static int INTAKE_TIMEOUT_MS = 2000;
+    public static int INDICATE_FULL_INTAKE_MS = 700;
     public static final int INTAKE_RAPID_FIRE_DURATION_MS = 300;
 
     // GATE
