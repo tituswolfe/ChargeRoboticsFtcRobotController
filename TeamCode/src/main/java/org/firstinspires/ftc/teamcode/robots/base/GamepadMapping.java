@@ -1,5 +1,7 @@
 package org.firstinspires.ftc.teamcode.robots.base;
 
+import com.bylazar.gamepad.GamepadManager;
+import com.bylazar.gamepad.PanelsGamepad;
 import com.qualcomm.robotcore.hardware.Gamepad;
 
 import org.firstinspires.ftc.teamcode.util.math.Angle;
@@ -7,12 +9,17 @@ import org.firstinspires.ftc.teamcode.util.math.Angle;
 public abstract class GamepadMapping<Robot extends RobotBase> {
     protected final Robot robot;
     protected final Gamepad gamepad;
+    protected final GamepadManager virtualGamepad;
     boolean wasLeftTriggerPressed = false;
     boolean wasRightTriggerPressed = false;
 
-    public GamepadMapping(Robot robot, Gamepad gamepad) {
+    boolean wasVirtualLeftTriggerPressed = false;
+    boolean wasVirtualRightTriggerPressed = false;
+
+    public GamepadMapping(Robot robot, Gamepad gamepad, GamepadManager virtualGamepad) {
         this.robot = robot;
         this.gamepad = gamepad;
+        this.virtualGamepad = virtualGamepad;
     }
 
     // Buttons
@@ -54,8 +61,14 @@ public abstract class GamepadMapping<Robot extends RobotBase> {
     public abstract void onDpadLeftPressed();
 
     public void processGamepad(Gamepad gamepad) {
+        //Gamepad virtualGamepadFTC = virtualGamepad.getAsFTCGamepad();
+
         boolean isLeftTriggerPressed = gamepad.left_trigger > 0.1;
         boolean isRightTriggerPressed = gamepad.right_trigger > 0.1;
+
+
+//        boolean isVirtualLeftTriggerPressed = virtualGamepadFTC.left_trigger > 0.1;
+//        boolean isVirtualRightTriggerPressed = virtualGamepadFTC.right_trigger > 0.1;
 
         // Buttons
         if (gamepad.yWasPressed()) onYPressed();
@@ -64,22 +77,47 @@ public abstract class GamepadMapping<Robot extends RobotBase> {
         if (gamepad.xWasPressed()) onXPressed();
 
         // Joysticks
-        leftJoystick(-gamepad.left_stick_x, -gamepad.left_stick_y);
-        rightJoystick(-gamepad.right_stick_x, -gamepad.right_stick_y);
-        joysticks(-gamepad.left_stick_x, -gamepad.left_stick_y, -gamepad.right_stick_x, -gamepad.right_stick_y);
+        float leftStickX = gamepad.left_stick_x;
+        float leftStickY = gamepad.left_stick_y;
+//        float virtualLeftStickX = virtualGamepadFTC.left_stick_x;
+//        float virtualLeftStickY = virtualGamepadFTC.left_stick_y;
+
+        boolean isLeftStickActive = Math.abs(leftStickX) > 0 || Math.abs(leftStickY) > 0;
+
+        leftJoystick(-leftStickX, -leftStickY);
+
+        float rightStickX = gamepad.right_stick_x;
+        float rightStickY = gamepad.right_stick_y;
+//        float virtualRightStickX = virtualGamepadFTC.right_stick_x;
+//        float virtualRightStickY = virtualGamepadFTC.right_stick_y;
+
+
+        boolean isRightStickActive = Math.abs(rightStickX) > 0 || Math.abs(rightStickY) > 0;
+
+        rightJoystick(-rightStickX, -rightStickY);
+
+        joysticks(-leftStickX, -leftStickY, -rightStickX, -rightStickY);
 
         if (gamepad.leftStickButtonWasPressed()) onLeftStickPressed();
         if (gamepad.rightStickButtonWasPressed()) onRightStickPressed();
 
         // Trigger
-        leftTrigger(gamepad.left_trigger);
-        rightTrigger(gamepad.right_trigger);
+        float leftTriggerVal = gamepad.left_trigger;
+        float rightTriggerVal = gamepad.right_trigger;
+
+        leftTrigger(leftTriggerVal);
+
+        leftTrigger(rightTriggerVal);
 
         if (isLeftTriggerPressed && !wasLeftTriggerPressed) onLeftTriggerPressed();
         if (!isLeftTriggerPressed && wasLeftTriggerPressed) onLeftTriggerReleased();
 
         if (isRightTriggerPressed && !wasRightTriggerPressed) onRightTriggerPressed();
         if (!isRightTriggerPressed && wasRightTriggerPressed) onRightTriggerReleased();
+
+
+        if (isRightTriggerPressed && !wasRightTriggerPressed) onLeftTriggerPressed();
+        if (!isRightTriggerPressed && wasRightTriggerPressed) onLeftTriggerReleased();
 
         // Bumper
         if (gamepad.leftBumperWasPressed()) onLeftBumperPressed();
@@ -92,6 +130,9 @@ public abstract class GamepadMapping<Robot extends RobotBase> {
 
         wasLeftTriggerPressed = isLeftTriggerPressed;
         wasRightTriggerPressed = isRightTriggerPressed;
+
+//        wasVirtualLeftTriggerPressed = isVirtualLeftTriggerPressed;
+//        wasVirtualRightTriggerPressed = isVirtualRightTriggerPressed;
     }
 
     public boolean toggle(boolean state, Runnable onTrue, Runnable onFalse) {

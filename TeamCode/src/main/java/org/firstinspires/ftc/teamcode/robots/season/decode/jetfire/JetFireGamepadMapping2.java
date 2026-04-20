@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.robots.season.decode.jetfire;
 
 import static org.firstinspires.ftc.teamcode.robots.base.StaticData.allianceColor;
 
+import com.bylazar.gamepad.GamepadManager;
 import com.qualcomm.robotcore.hardware.Gamepad;
 
 import org.firstinspires.ftc.teamcode.hardware.controllers.servo.RGBIndicatorLightController;
@@ -13,10 +14,10 @@ public class JetFireGamepadMapping2 extends GamepadMapping<JetfireRobot> {
     public static final double smallZoneOffsetIncrement = 1;
     public static final double largeZoneOffsetIncrement = 5;
 
-
-    public JetFireGamepadMapping2(JetfireRobot jetfireRobot, Gamepad gamepad) {
-        super(jetfireRobot, gamepad);
+    public JetFireGamepadMapping2(JetfireRobot jetfireRobot, Gamepad gamepad, GamepadManager virtualGamepad) {
+        super(jetfireRobot, gamepad, virtualGamepad);
     }
+
 
     @Override
     public void onYPressed() {

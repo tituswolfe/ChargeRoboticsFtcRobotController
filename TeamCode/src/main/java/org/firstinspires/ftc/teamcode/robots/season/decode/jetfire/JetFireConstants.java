@@ -55,7 +55,7 @@ public class JetFireConstants {
     // Regression (Deg) : Error (RPM)
     //hoodCompensation
     public static double REGRESSION_COMPENSATION_RATIO = 0.035;
-    public static double FLYWHEEL_ERROR_COMPENSATION_THRESHOLD = 50;
+    public static double FLYWHEEL_ERROR_COMPENSATION_THRESHOLD = 30;
     public static double HOOD_COMPENSATION_FLOOR_DEG = 45;
 
     // INTAKE
@@ -65,7 +65,7 @@ public class JetFireConstants {
     public static final double INTAKE_GEAR_RATIO = 1;
     public static final double INTAKE_MAX_POWER = 1;
 
-    public static final double INTAKE_POWER = 0.7;
+    public static final double INTAKE_POWER = 0.9;
     public static final double REVERSE_INTAKE_POWER = -0.7;
     public static int INTAKE_TIMEOUT_MS = 2000;
     public static int INDICATE_FULL_INTAKE_MS = 700;
@@ -107,9 +107,9 @@ public class JetFireConstants {
         FLYWHEEL_VELOCITY_BY_DISTANCE_MAP.put(108.0, 2800.0); // half
         FLYWHEEL_VELOCITY_BY_DISTANCE_MAP.put(114.0, 2900.0);
         FLYWHEEL_VELOCITY_BY_DISTANCE_MAP.put(120.0, 3000.0); // half
-        FLYWHEEL_VELOCITY_BY_DISTANCE_MAP.put(126.0, 3000.0);
-        FLYWHEEL_VELOCITY_BY_DISTANCE_MAP.put(132.0, 3000.0); // half
-        FLYWHEEL_VELOCITY_BY_DISTANCE_MAP.put(140.0, 3000.0);
+        FLYWHEEL_VELOCITY_BY_DISTANCE_MAP.put(126.0, 3050.0);
+        FLYWHEEL_VELOCITY_BY_DISTANCE_MAP.put(132.0, 3100.0); // half
+        FLYWHEEL_VELOCITY_BY_DISTANCE_MAP.put(140.0, 3150.0);
         FLYWHEEL_VELOCITY_BY_DISTANCE_MAP.put(150.0, 3300.0);
     }
     public static LinearInterpolator FLYWHEEL_VELOCITY_BY_DISTANCE = new LinearInterpolator(FLYWHEEL_VELOCITY_BY_DISTANCE_MAP);

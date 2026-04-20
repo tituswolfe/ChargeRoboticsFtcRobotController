@@ -1,12 +1,14 @@
 package org.firstinspires.ftc.teamcode.robots.base;
 
+import com.bylazar.gamepad.GamepadManager;
 import com.qualcomm.robotcore.hardware.Gamepad;
 
 import org.firstinspires.ftc.teamcode.util.math.Angle;
 
 public abstract class PrimaryDriverGamepadMapping<Robot extends RobotBase> extends GamepadMapping<Robot> {
-    public PrimaryDriverGamepadMapping(Robot robot, Gamepad gamepad) {
-        super(robot, gamepad);
+
+    public PrimaryDriverGamepadMapping(Robot robot, Gamepad gamepad, GamepadManager virtualGamepad) {
+        super(robot, gamepad, virtualGamepad);
     }
 
     @Override
@@ -20,9 +22,9 @@ public abstract class PrimaryDriverGamepadMapping<Robot extends RobotBase> exten
         }
 
 
-        robot.getFollower().setTeleOpDrive(smooth(leftY), smooth(leftX), smooth(rightX), robot.isRobotCentric, (robot.isRobotCentric ? 0 : robot.fieldCentricOffset));
+        //robot.getFollower().setTeleOpDrive(smooth(leftY), smooth(leftX), smooth(rightX), robot.isRobotCentric, (robot.isRobotCentric ? 0 : robot.fieldCentricOffset));
 
-        //robot.getFollower().setTeleOpDrive(leftY * robot.speedFactor, leftX * robot.speedFactor, rightX * robot.speedFactor, robot.isRobotCentric, (robot.isRobotCentric ? 0 : robot.fieldCentricOffset));
+        robot.getFollower().setTeleOpDrive(leftY * robot.speedFactor, leftX * robot.speedFactor, rightX * robot.speedFactor, robot.isRobotCentric, (robot.isRobotCentric ? 0 : robot.fieldCentricOffset));
     };
 
     // cubic?

@@ -20,7 +20,7 @@ public class TestTeleOp extends TeleOpBase<TestRobot> {
 
     @Override
     protected GamepadMapping<TestRobot> instantiateGamepadMapping1() {
-        return new TestMapping(robot, gamepad1);
+        return new TestMapping(robot, gamepad1, null);
     }
 
     @Override

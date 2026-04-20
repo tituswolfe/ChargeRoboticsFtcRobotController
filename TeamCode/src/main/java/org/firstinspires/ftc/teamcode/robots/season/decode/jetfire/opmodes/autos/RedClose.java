@@ -10,6 +10,8 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import org.firstinspires.ftc.teamcode.robots.base.opmodes.BaseAuto;
 import org.firstinspires.ftc.teamcode.robots.season.decode.jetfire.JetfireRobot;
 
+import java.util.ArrayList;
+
 public class RedClose extends BaseAuto<JetfireRobot> {
     // Start pose
     // shoot preload pose
@@ -156,6 +158,11 @@ public class RedClose extends BaseAuto<JetfireRobot> {
                 }
                 break;
         }
+    }
+
+    @Override
+    public ArrayList<Pose> generatePoses() {
+        return null;
     }
 
     @Override

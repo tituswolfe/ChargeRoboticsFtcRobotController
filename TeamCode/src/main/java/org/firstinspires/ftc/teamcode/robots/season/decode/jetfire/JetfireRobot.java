@@ -90,6 +90,9 @@ public class JetfireRobot extends RobotBase {
     Timer artifactDetectedTimer = new Timer();
     private boolean wasArtifactDetected = false;
 
+    double hoodCompensation = 0;
+    public static double PreCONFIG_COMP = 7;
+
     // Action Sequences
     private final Action[] rapidFireActions = new Action[] {
             new InstantAction(() -> {
@@ -99,10 +102,12 @@ public class JetfireRobot extends RobotBase {
             }),
             new Wait(1),
             new InstantAction(() -> intakeController.setTargetPower(1.0)),
+            //new InstantAction(() -> hoodCompensation = PreCONFIG_COMP),
             new Wait(INTAKE_RAPID_FIRE_DURATION_MS),
-            new InstantAction(() -> gateServoController.setPosition(GATE_SERVO_CLOSED))
+            new InstantAction(() -> gateServoController.setPosition(GATE_SERVO_CLOSED)),
+            //new InstantAction(() -> hoodCompensation = 0)
     };
-    private final ActionSequence rapidFireActionSequence = new ActionSequence(rapidFireActions);
+    private ActionSequence rapidFireActionSequence = new ActionSequence(rapidFireActions);
 
     RollingAverage velocitySmoothing = new RollingAverage(3);
 
@@ -231,6 +236,8 @@ public class JetfireRobot extends RobotBase {
 //        turret.hoodServoController().start(0); // TODO: Get from data table
     }
 
+    double lastFerr = 0;
+
     @Override
     public void update(long deltaTimeNs, TelemetryManager telemetry) {
         Pose currentPose = follower.getPose();
@@ -240,17 +247,17 @@ public class JetfireRobot extends RobotBase {
         double angularVelocity = follower.getAngularVelocity();
 
         velocitySmoothing.update(velocityMagnitude);
-        velocity = velocity.times(velocityMagnitude / velocitySmoothing.getAverage()); // ??
+        //velocity = velocity.times(velocityMagnitude / velocitySmoothing.getAverage()); // ??
 
         double turntableHeading = turret.turntableController().getHeading();
         double flywheelError = turret.flywheelController().getError();
 
         // Lead Computing
-        double launchDelaySec = Conversion.millsToSec(INTAKE_TRANSFER_DELAY_MS);
+        double launchDelaySec = 250.0 / 1000.0;// Conversion.millsToSec(INTAKE_TRANSFER_DELAY_MS);
         Pose predictedFuturePose = MathUtil.predictFuturePose(currentPose, velocity, launchDelaySec);
         double distanceFromGoalAtFuturePose = predictedFuturePose.distanceFrom(targetGoal);
 
-        double timeOfFlightSec = Conversion.millsToSec((int) TIME_OF_FLIGHT_BY_DISTANCE.interpolate(distanceFromGoalAtFuturePose));
+        double timeOfFlightSec = TIME_OF_FLIGHT_BY_DISTANCE.interpolate(distanceFromGoalAtFuturePose) / 1000.0; //Conversion.millsToSec(TIME_OF_FLIGHT_BY_DISTANCE.interpolate(distanceFromGoalAtFuturePose));
         Vector virtualGoalVelocity = velocity.times(-1);
         Pose virtualGoal = MathUtil.predictFuturePose(targetGoal, virtualGoalVelocity, timeOfFlightSec);
 
@@ -281,7 +288,7 @@ public class JetfireRobot extends RobotBase {
 
         wasArtifactDetected = isArtifactDetected;
 
-        isReadyToShoot = !getRapidFireActionSequence().isRunning() && isTurntableInRange;
+        isReadyToShoot = !getRapidFireActionSequence().isRunning() && isTurntableInRange && isFlywheelReady;
 
         // HARDWARE VARIABLES
         double flywheelSpeed = FLYWHEEL_VELOCITY_BY_DISTANCE.interpolate(virtualDistanceFromGoal);
@@ -291,27 +298,23 @@ public class JetfireRobot extends RobotBase {
 
         double interpolatedHoodAngleDeg = HOOD_ANGLE_BY_DISTANCE.interpolate(virtualDistanceFromGoal);
 
+        double k1 = 0.001;
+        double k2 = 0.00004;
+
+        double tLag = 0.1;
+        double maxAdjust = 10.0;
+
+
+
         double hoodCompensation = 0;
-        if (flywheelError > FLYWHEEL_ERROR_COMPENSATION_THRESHOLD && interpolatedHoodAngleDeg > HOOD_COMPENSATION_FLOOR_DEG && isInFarZone) {
-            double maxCompensation = interpolatedHoodAngleDeg - HOOD_COMPENSATION_FLOOR_DEG;
-            hoodCompensation = Range.clip(Math.abs(flywheelError) * REGRESSION_COMPENSATION_RATIO, 0, maxCompensation);
+        if (flywheelError > FLYWHEEL_ERROR_COMPENSATION_THRESHOLD && isInFarZone) {
+            double Ferr = turret.flywheelController().getError();
+            double FerrRate = (Ferr - lastFerr) / (deltaTimeNs / 1e-9);
+            double FerrPredict = Ferr + FerrRate * tLag;
+            hoodCompensation = k1 * FerrPredict + k2 * (FerrPredict * FerrPredict);
+
         }
 
-       // double interpolatedHoodAngleDeg = HOOD_ANGLE_BY_DISTANCE.interpolate(virtualDistanceFromGoal);
-//
-//        if (flywheelError > FLYWHEEL_ERROR_COMPENSATION_THRESHOLD) {
-//            double rawComp = flywheelError * REGRESSION_COMPENSATION_RATIO;
-//
-//            if (interpolatedHoodAngleDeg > 45.0) {
-//                double maxPossibleComp = interpolatedHoodAngleDeg - 45.0;
-//                double finalComp = Math.min(rawComp, maxPossibleComp);
-//                interpolatedHoodAngleDeg -= finalComp;
-//            } else {
-//                double maxPossibleComp = 45.0 - interpolatedHoodAngleDeg;
-//                double finalComp = Math.min(rawComp, maxPossibleComp);
-//                interpolatedHoodAngleDeg += finalComp;
-//            }
-//        }
 
         // compensate the other way
 
@@ -378,6 +381,23 @@ public class JetfireRobot extends RobotBase {
 
         // UPDATE STATIC VARS
         JetfireStaticData.lastTurretHeading = turntableHeading;
+
+//        if (!rapidFireActionSequence.isRunning()) {
+//            rapidFireActionSequence = new ActionSequence(new Action[] {
+//                    new InstantAction(() -> {
+//                        gateServoController.setPosition(GATE_SERVO_OPEN);
+//                        intakeController.setMotorEngaged(true);
+//                        intakeController.setTargetPower(-0.75);
+//                    }),
+//                    new Wait(1),
+//                    new InstantAction(() -> intakeController.setTargetPower(1.0)),
+//                    new InstantAction(() -> hoodCompensation = PreCONFIG_COMP),
+//                    new Wait(INTAKE_RAPID_FIRE_DURATION_MS),
+//                    new InstantAction(() -> gateServoController.setPosition(GATE_SERVO_CLOSED)),
+//                    new InstantAction(() -> hoodCompensation = 0)
+//            });
+//        }
+
 
         if (DISPLAY_TELEMETRY) {
             double distanceFromGoal = currentPose.distanceFrom(targetGoal);

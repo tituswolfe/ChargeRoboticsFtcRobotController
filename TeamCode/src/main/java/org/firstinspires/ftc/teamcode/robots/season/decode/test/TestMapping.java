@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.robots.season.decode.test;
 
+import com.bylazar.gamepad.GamepadManager;
 import com.qualcomm.robotcore.hardware.Gamepad;
 
 import org.firstinspires.ftc.teamcode.robots.base.PrimaryDriverGamepadMapping;
@@ -8,8 +9,8 @@ import org.firstinspires.ftc.teamcode.robots.base.opmodes.OpModeBase;
 
 public class TestMapping extends PrimaryDriverGamepadMapping<TestRobot> {
 
-    public TestMapping(TestRobot testRobot, Gamepad gamepad) {
-        super(testRobot, gamepad);
+    public TestMapping(TestRobot testRobot, Gamepad gamepad, GamepadManager virtualGamepad) {
+        super(testRobot, gamepad, virtualGamepad);
     }
 
     @Override

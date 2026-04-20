@@ -11,6 +11,8 @@ import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import org.firstinspires.ftc.teamcode.robots.base.opmodes.BaseAuto;
 import org.firstinspires.ftc.teamcode.robots.season.decode.jetfire.JetfireRobot;
 
+import java.util.ArrayList;
+
 @Autonomous(preselectTeleOp = "Jetfire")
 public class RedFar extends BaseAuto<JetfireRobot> {
     Pose start = new Pose(63, 14.1, Math.toRadians(-180));
@@ -114,6 +116,11 @@ public class RedFar extends BaseAuto<JetfireRobot> {
                 }
                 break;
         }
+    }
+
+    @Override
+    public ArrayList<Pose> generatePoses() {
+        return null;
     }
 
     @Override

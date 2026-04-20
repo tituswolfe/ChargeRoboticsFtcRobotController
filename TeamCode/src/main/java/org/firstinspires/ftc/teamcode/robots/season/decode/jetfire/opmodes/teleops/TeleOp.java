@@ -1,5 +1,6 @@
 package org.firstinspires.ftc.teamcode.robots.season.decode.jetfire.opmodes.teleops;
 
+import com.bylazar.gamepad.PanelsGamepad;
 import com.pedropathing.follower.Follower;
 
 import org.firstinspires.ftc.teamcode.robots.base.GamepadMapping;
@@ -22,11 +23,13 @@ public class TeleOp extends TeleOpBase<JetfireRobot> {
 
     @Override
     protected GamepadMapping<JetfireRobot> instantiateGamepadMapping1() {
-        return new JetfireGamepadMapping(robot, gamepad1);
+        PanelsGamepad.INSTANCE.getFirstManager().asCombinedFTCGamepad(gamepad1);
+        return new JetfireGamepadMapping(robot, gamepad1, null);
     }
 
     @Override
     protected GamepadMapping<JetfireRobot> instantiateGamepadMapping2() {
-        return new JetFireGamepadMapping2(robot, gamepad2);
+        PanelsGamepad.INSTANCE.getFirstManager().asCombinedFTCGamepad(gamepad2);
+        return new JetFireGamepadMapping2(robot, gamepad2,  null);
     }
 }
