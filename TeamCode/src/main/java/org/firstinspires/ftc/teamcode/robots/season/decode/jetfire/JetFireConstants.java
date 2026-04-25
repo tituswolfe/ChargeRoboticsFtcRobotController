@@ -19,7 +19,8 @@ public class JetFireConstants {
     public static final DcMotorSimple.Direction TOP_FLYWHEEL_MOTOR_DIRECTION = DcMotorSimple.Direction.FORWARD;
 
     public static final String FLYWHEEL_NAME = "Flywheel";
-    public static PIDFCoefficients FLYWHEEL_PIDF_COEFFICIENTS = new PIDFCoefficients(0.01, 0, 0, 0.00027);
+    // new PIDFCoefficients(0.005, 0, 0, 0.0001);
+    public static PIDFCoefficients FLYWHEEL_PIDF_COEFFICIENTS = new PIDFCoefficients(0.01, 0, 0, 0.0002);
     public static final double FLYWHEEL_GEAR_RATIO = 1.5;
     public static final double FLYWHEEL_MAX_POWER = 1;
 

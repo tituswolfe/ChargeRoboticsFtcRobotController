@@ -94,6 +94,8 @@ public class JetfireRobot extends RobotBase {
     public static double hoodCompensationK2 = 0.000065;
     public static double hoodActuationLagSec = 0.1;
 
+    // RollingAverage targetVelocitySmooth = new RollingAverage(3);
+
 
     // Action Sequences
     private final Action[] rapidFireActions = new Action[] {
@@ -111,19 +113,21 @@ public class JetfireRobot extends RobotBase {
 
     RollingAverage velocitySmoothing = new RollingAverage(3);
 
+    GoBildaPrismDriver.Artboard allianceArtboard;
+
     @Override
     public void init(HardwareMap hardwareMap, Pose startPose, OpModeBase.AllianceColor allianceColor) {
         super.init(hardwareMap, startPose, allianceColor);
 
         if (allianceColor.equals(OpModeBase.AllianceColor.BLUE)) {
-            prismController.setBaseArtboard(GoBildaPrismDriver.Artboard.ARTBOARD_1);
+            allianceArtboard = GoBildaPrismDriver.Artboard.ARTBOARD_1;
             targetGoal = TARGET_GOAL_BLUE;
             humanPlayerReset = HUMAN_PLAYER_ZONE_RESET_BLUE;
 
             closeTurntableOffsetDeg = CLOSE_ZONE_TURNTABLE_START_OFFSET_BLUE;
             farTurntableOffsetDeg = FAR_ZONE_TURNTABLE_START_OFFSET_BLUE;
         } else {
-            prismController.setBaseArtboard(GoBildaPrismDriver.Artboard.ARTBOARD_2);
+            allianceArtboard = GoBildaPrismDriver.Artboard.ARTBOARD_2;
             targetGoal = TARGET_GOAL_BLUE.mirror();
             humanPlayerReset = HUMAN_PLAYER_ZONE_RESET_BLUE.mirror();
 
@@ -329,7 +333,9 @@ public class JetfireRobot extends RobotBase {
         }
 
         if (indicateIntakeFull) {
-            prismController.indicate(GoBildaPrismDriver.Artboard.ARTBOARD_3, 50);
+            prismController.setBaseArtboard(GoBildaPrismDriver.Artboard.ARTBOARD_3);
+        } else {
+            prismController.setBaseArtboard(allianceArtboard);
         }
 
         RGBIndicatorLightController.Color indicatorColor;

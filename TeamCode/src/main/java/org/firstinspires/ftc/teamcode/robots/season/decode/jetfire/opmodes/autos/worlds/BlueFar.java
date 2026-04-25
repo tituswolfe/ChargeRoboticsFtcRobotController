@@ -14,28 +14,39 @@ import java.util.ArrayList;
 
 @Autonomous(name = "CHARGERS (BLUE+FAR)", preselectTeleOp = "Jetfire")
 public class BlueFar extends BaseAuto<JetfireRobot> {
-    static Pose startPose = new Pose(58, 9.1, Math.toRadians(90));
-    static  Pose shootPose = new Pose(55.6, 19.1, Math.toRadians(118.5));
+    Pose startPose = new Pose(58, 9.1, Math.toRadians(90));
+    Pose shootPose = new Pose(55.6, 19.1, Math.toRadians(118.5));
 
-    static Pose spike3Start = new Pose(40.3, 32.8, Math.toRadians(150));
-    static Pose spike3End = new Pose(21.3, 36.5, Math.toRadians(-180));
+    Pose spike3Start = new Pose(40.3, 32.8, Math.toRadians(150));
+    Pose spike3End = new Pose(21.3, 36.5, Math.toRadians(-180));
 
-    static Pose humanPlayerStart = new Pose(35.6, 10, Math.toRadians(-180));
-    static Pose humanPlayerEnd = humanPlayerStart.withX(20);
+    Pose shootPose2 = new Pose(50, 10, Math.toRadians(-180)); // = new Pose(54.2, 17.3, Math.toRadians(-180));
 
-    static Pose tunnelStart = humanPlayerStart.withX(humanPlayerStart.getX() + 16);
-    static Pose tunnelEnd = tunnelStart.withX(20);
+    Pose humanPlayerStart = new Pose(22, 10, Math.toRadians(-180));
+    Pose humanPlayerEnd = humanPlayerStart.withX(20);
 
-    Pose endPose = new Pose(27, 65, Math.toRadians(90));
+    Pose tunnelStart = new Pose(35.6, 10 + 16, Math.toRadians(-180));
+    Pose tunnelEnd = tunnelStart.withX(20);
+
+    Pose endPose = new Pose(54.6, 27.5, Math.toRadians(120));
 
     PathChain startToShoot;
     PathChain shootSpike3;
     PathChain shootHumanPlayer;
     PathChain shootTunnel;
+    PathChain shootToEnd;
+
+    int humanPlayerCycles = 7;
 
 
     @Override
     public void autonomousPathUpdate(int pathState) {
+//        if (getOpModeElapsedTimeSeconds() > 28 && !hasParked) {
+//            setPathState(-1);
+//            hasParked = true;
+//            return;
+//        }
+
         switch (pathState) {
             case 0:
                 robot.toggleSubsystems(true);
@@ -61,36 +72,65 @@ public class BlueFar extends BaseAuto<JetfireRobot> {
                 }
                 break;
             case 4:
-                if (!robot.getRapidFireActionSequence().isRunning()) {
+                if (robot.getRapidFireActionSequence().isRunning()) {
+                    break;
+                }
+
+                if (humanPlayerCycles <= 0) {
+                    setPathState(-1);
+                } else {
                     robot.getFollower().followPath(shootHumanPlayer);
                     nextPathState();
                 }
+
                 break;
             case 5:
                 if (robot.isAtEndOfCurrentPath()) {
                     robot.fire();
-                    nextPathState();
+                    humanPlayerCycles--;
+                    setPathState(4);
                 }
                 break;
-            case 6:
-                if (!robot.getRapidFireActionSequence().isRunning()) {
-                    robot.getFollower().followPath(shootTunnel);
-                    nextPathState();
-                }
-                break;
-            case 7:
-                if (robot.isAtEndOfCurrentPath()) {
-                    robot.fire();
-                    setPathState(-1);
-                }
-                break;
-//
-//            case -1:
-//                if (!robot.getRapidFireActionSequence().isRunning()) {
-//                    robot.getFollower().followPath(shootToEnd);
-//                    setPathState(-2);
+
+
+//            case 5:
+//                if (robot.isAtEndOfCurrentPath()) {
+//                    robot.fire();
+//                    nextPathState();
 //                }
 //                break;
+//            case 6:
+//                if (!robot.getRapidFireActionSequence().isRunning()) {
+//                    robot.getFollower().followPath(shootTunnel);
+//                    nextPathState();
+//                }
+//                break;
+//            case 7:
+//                if (robot.isAtEndOfCurrentPath()) {
+//                    robot.fire();
+//                    nextPathState();
+//                }
+//                break;
+//            case 8:
+//                if (!robot.getRapidFireActionSequence().isRunning()) {
+//                    robot.getFollower().followPath(shootHumanPlayer);
+//                    nextPathState();
+//                }
+//                break;
+//            case 9:
+//                if (robot.isAtEndOfCurrentPath()) {
+//                    robot.fire();
+//                    setPathState(-1);
+//                }
+//                break;
+
+            case -1:
+                if (!robot.getRapidFireActionSequence().isRunning()) {
+                    robot.toggleSubsystems(false);
+                    robot.getFollower().followPath(shootToEnd);
+                    setPathState(-2);
+                }
+                break;
         }
     }
 
@@ -111,27 +151,43 @@ public class BlueFar extends BaseAuto<JetfireRobot> {
                 .addPath(new BezierCurve(shootPose, spike3Start, spike3End))
                 .setTangentHeadingInterpolation()
                 //.setLinearHeadingInterpolation(shootPose.getHeading(), spike3End.getHeading())
-                .addPath(new BezierCurve(spike3End, spike3Start, shootPose))
-                .setTangentHeadingInterpolation().setReversed()
-                //.setLinearHeadingInterpolation(spike3End.getHeading(), shootPose.getHeading())
+                .addPath(new BezierCurve(spike3End, spike3Start, shootPose2))
+               // .setTangentHeadingInterpolation().setReversed()
+
+                //.addPath(new BezierLine(shootPose, shootPose2))
+                .setLinearHeadingInterpolation(spike3End.getHeading(), shootPose2.getHeading())
                 .build();
 
         shootHumanPlayer = follower.pathBuilder()
-                .addPath(new BezierLine(shootPose, humanPlayerStart))
-                .setLinearHeadingInterpolation(shootPose.getHeading(), humanPlayerStart.getHeading())
-                .addPath(new BezierLine(humanPlayerStart, humanPlayerEnd))
-                .setLinearHeadingInterpolation(humanPlayerStart.getHeading(), humanPlayerEnd.getHeading())
-                .addPath(new BezierLine(humanPlayerEnd, shootPose))
-                .setLinearHeadingInterpolation(humanPlayerStart.getHeading(), shootPose.getHeading())
+                .addPath(new BezierLine(shootPose2, humanPlayerEnd))
+                .setLinearHeadingInterpolation(shootPose2.getHeading(), humanPlayerEnd.getHeading())
+
+
+//                .addPath(new BezierLine(humanPlayerEnd, humanPlayerStart))
+//                .setLinearHeadingInterpolation(humanPlayerEnd.getHeading(), humanPlayerStart.getHeading())
+//                .addPath(new BezierLine(humanPlayerStart, humanPlayerEnd))
+//                .setLinearHeadingInterpolation(humanPlayerStart.getHeading(), humanPlayerEnd.getHeading())
+
+
+
+                .addPath(new BezierLine(humanPlayerEnd, shootPose2))
+                .setLinearHeadingInterpolation(humanPlayerEnd.getHeading(), shootPose2.getHeading())
+//                .addPath(new BezierLine(humanPlayerEnd, shootPose2))
+//                .setLinearHeadingInterpolation(humanPlayerStart.getHeading(), shootPose2.getHeading())
                 .build();
 
         shootTunnel = follower.pathBuilder()
-                .addPath(new BezierLine(shootPose, tunnelStart))
-                .setLinearHeadingInterpolation(shootPose.getHeading(), tunnelStart.getHeading())
+                .addPath(new BezierLine(shootPose2, tunnelStart))
+                .setLinearHeadingInterpolation(shootPose2.getHeading(), tunnelStart.getHeading())
                 .addPath(new BezierLine(tunnelStart, tunnelEnd))
                 .setLinearHeadingInterpolation(tunnelStart.getHeading(), tunnelEnd.getHeading())
-                .addPath(new BezierLine(tunnelEnd, shootPose))
-                .setLinearHeadingInterpolation(tunnelEnd.getHeading(), shootPose.getHeading())
+                .addPath(new BezierLine(tunnelEnd, shootPose2))
+                .setLinearHeadingInterpolation(tunnelEnd.getHeading(), shootPose2.getHeading())
+                .build();
+
+        shootToEnd = follower.pathBuilder()
+                .addPath(new BezierLine(shootPose2, endPose))
+                .setLinearHeadingInterpolation(shootPose2.getHeading(), endPose.getHeading())
                 .build();
     }
 

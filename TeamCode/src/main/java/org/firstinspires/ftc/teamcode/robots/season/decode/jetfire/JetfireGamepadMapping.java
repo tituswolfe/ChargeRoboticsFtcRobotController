@@ -46,7 +46,7 @@ public class JetfireGamepadMapping extends PrimaryDriverGamepadMapping<JetfireRo
 
     @Override
     public void leftTrigger(float val) {
-        robot.setReverseIntake(val > 0.05 ? true : false);
+        robot.setReverseIntake(val > 0.05);
     }
 
     @Override

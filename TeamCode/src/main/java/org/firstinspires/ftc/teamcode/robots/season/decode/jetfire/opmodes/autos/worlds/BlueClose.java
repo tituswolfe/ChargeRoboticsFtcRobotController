@@ -111,6 +111,7 @@ public class BlueClose extends BaseAuto<JetfireRobot> {
             case -1:
                 if (!robot.getRapidFireActionSequence().isRunning()) {
                     robot.getFollower().followPath(shootToEnd);
+                    robot.toggleSubsystems(false);
                     setPathState(-2);
                 }
                 break;
