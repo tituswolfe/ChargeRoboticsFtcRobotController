@@ -34,6 +34,10 @@ public abstract class ServoController extends HardwareController<Servo> {
         sendPosition(startPosition);
     }
 
+    public void start() {
+        device.getController().pwmEnable();
+    }
+
     protected void sendPosition(double position) {
         boolean isWithinDeltaFilteringThreshold = MathUtil.isWithinRange(position, lastPosition, DELTA_FILTERING_THRESHOLD);
 

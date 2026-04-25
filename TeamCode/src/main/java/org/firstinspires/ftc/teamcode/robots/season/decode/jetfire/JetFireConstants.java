@@ -28,7 +28,7 @@ public class JetFireConstants {
     public static final DcMotorSimple.Direction TURNTABLE_MOTOR_DIRECTION = DcMotorSimple.Direction.FORWARD;
 
     public static final String TURNTABLE_NAME = "Turntable";
-    public static PIDFCoefficients TURNTABLE_PIDF_COEFFICIENTS = new PIDFCoefficients(0.025, 0, 0.001, -0.002); // i 0.000006
+    public static PIDFCoefficients TURNTABLE_PIDF_COEFFICIENTS = new PIDFCoefficients(0.03, 0, 0.001, -0.0025); // i 0.000006
     public static final double TURNTABLE_TOTAL_GEAR_RATIO = 64.0 / 16.0;
     public static final double TURNTABLE_MAX_POWER = 0.75;
     public static final double TURNTABLE_MIN_HARD_STOP = Math.toRadians(-140);
@@ -36,10 +36,10 @@ public class JetFireConstants {
     public static final boolean TURNTABLE_REVERSE_POWER = false;
 
     // LEFT (positive+), RIGHT (negative-)
-    public final static double CLOSE_ZONE_TURNTABLE_START_OFFSET_BLUE = 0;
+    public final static double CLOSE_ZONE_TURNTABLE_START_OFFSET_BLUE = -3;
     public final static double FAR_ZONE_TURNTABLE_START_OFFSET_BLUE = 0;
 
-    public final static double CLOSE_ZONE_TURNTABLE_START_OFFSET_RED = 0;
+    public final static double CLOSE_ZONE_TURNTABLE_START_OFFSET_RED = 3;
     public final static double FAR_ZONE_TURNTABLE_START_OFFSET_RED = 0;
 
     // HOOD
@@ -84,8 +84,8 @@ public class JetFireConstants {
     public static final int MUZZLE_FLASH_DURATION_MS = 300;
 
     // MARGINS & DELAYS
-    public static double FLYWHEEL_VELOCITY_MARGIN_RPM = 200;
-    public static int INTAKE_TRANSFER_DELAY_MS = 50;
+    public static double FLYWHEEL_VELOCITY_MARGIN_RPM = 50;
+    public static int INTAKE_TRANSFER_DELAY_MS = 200;
 
     // LIMELIGHT
     public static final int LIMELIGHT_LOCALIZATION_PIPELINE = 0;
@@ -152,9 +152,9 @@ public class JetFireConstants {
         TIME_OF_FLIGHT_BY_DISTANCE_MAP.put(114.0, 500.0);
         TIME_OF_FLIGHT_BY_DISTANCE_MAP.put(120.0, 500.0); //
         TIME_OF_FLIGHT_BY_DISTANCE_MAP.put(126.0, 500.0);
-        TIME_OF_FLIGHT_BY_DISTANCE_MAP.put(132.0, 500.0); //
-        TIME_OF_FLIGHT_BY_DISTANCE_MAP.put(140.0, 500.0);
-        TIME_OF_FLIGHT_BY_DISTANCE_MAP.put(150.0, 500.0);
+        TIME_OF_FLIGHT_BY_DISTANCE_MAP.put(132.0, 650.0); //
+        TIME_OF_FLIGHT_BY_DISTANCE_MAP.put(140.0, 650.0);
+        TIME_OF_FLIGHT_BY_DISTANCE_MAP.put(150.0, 650.0);
     }
     public static LinearInterpolator TIME_OF_FLIGHT_BY_DISTANCE = new LinearInterpolator(TIME_OF_FLIGHT_BY_DISTANCE_MAP);
 }

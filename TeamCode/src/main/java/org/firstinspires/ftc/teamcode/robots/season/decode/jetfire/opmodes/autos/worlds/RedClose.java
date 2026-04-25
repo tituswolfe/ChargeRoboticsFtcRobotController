@@ -12,24 +12,24 @@ import org.firstinspires.ftc.teamcode.robots.season.decode.jetfire.JetfireRobot;
 
 import java.util.ArrayList;
 
-@Autonomous(name = "STEALTH (BLUE+CLOSE)", preselectTeleOp = "Jetfire")
-public class BlueClose extends BaseAuto<JetfireRobot> {
-    Pose startPose = new Pose(20, 120, Math.toRadians(143.8));
-    Pose shootWithBack = new Pose(53.6, 80.8, Math.toRadians(-142.4));
+@Autonomous(name = "X BOTS (RED+CLOSE)", preselectTeleOp = "Jetfire")
+public class RedClose extends BaseAuto<JetfireRobot> {
+    Pose startPose = new Pose(20, 120, Math.toRadians(143.8)).mirror();
+    Pose shootWithBack = new Pose(53.6, 80.8, Math.toRadians(-142.4)).mirror();
 
-    Pose spike2Start = new Pose(41.3, 59.7, Math.toRadians(-180));
-    Pose spike2End = new Pose(41.3 - 15, 59.7, Math.toRadians(-180));
+    Pose spike2Start = new Pose(41.3, 59.7, Math.toRadians(-180)).mirror();
+    Pose spike2End = new Pose(41.3 - 15, 59.7, Math.toRadians(-180)).mirror();
 
-    Pose gateControl = new Pose(36, 70, Math.toRadians(-150));
-    Pose gateOpen = new Pose (13.8, 58.5, Math.toRadians(147.7));
+    Pose gateControl = new Pose(36, 70, Math.toRadians(-150)).mirror();
+    Pose gateOpen = new Pose (13.8, 58.5, Math.toRadians(147.7)).mirror();
 
-    Pose intakeTunnelControl = new Pose(18, 59, Math.toRadians(180));
-    Pose intakeTunnel = new Pose(124, 59, Math.toRadians(0)).mirror();
+    Pose intakeTunnelControl = new Pose(18, 59, Math.toRadians(180)).mirror();
+    Pose intakeTunnel = new Pose(124, 59, Math.toRadians(0));
 
-    Pose spike1Start = new Pose(42.2, 83.3, Math.toRadians(-180));
-    Pose spike1End = new Pose(42.2 - 20, 83.3, Math.toRadians(-180));
+    Pose spike1Start = new Pose(42.2, 83.3, Math.toRadians(-180)).mirror();
+    Pose spike1End = new Pose(42.2 - 20, 83.3, Math.toRadians(-180)).mirror();
 
-    Pose endPose = new Pose(27, 65, Math.toRadians(90));
+    Pose endPose = new Pose(27, 65, Math.toRadians(90)).mirror();
 
     PathChain startToShoot;
 
@@ -179,6 +179,6 @@ public class BlueClose extends BaseAuto<JetfireRobot> {
 
     @Override
     protected AllianceColor instantiateAllianceColor() {
-        return AllianceColor.BLUE;
+        return AllianceColor.RED;
     }
 }

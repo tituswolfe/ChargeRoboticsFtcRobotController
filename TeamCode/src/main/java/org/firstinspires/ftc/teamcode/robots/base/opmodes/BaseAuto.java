@@ -57,17 +57,13 @@ public abstract class BaseAuto<Robot extends RobotBase> extends OpModeBase<Robot
     }
 
     public abstract ArrayList<Pose> generatePoses();
-
-//    public void nextPath(PathChain path, int pState) {
-//        if (isAtEndOfPathChain()) {
-//            robot.getFollower().followPath(path);
-//            setPathState(pState, true);
-//        }
+//
+//    AllianceColor defaultPoseAlliance = AllianceColor.BLUE;
+//    public void setDefaultPoseAlliance(AllianceColor allianceColor) {
+//        defaultPoseAlliance = allianceColor;
 //    }
 //
-//    public boolean isAtEndOfPathChain() {
-//        return robot.getFollower().getCurrentTValue() > END_OF_PATH_T_VALUE && robot.getFollower().getCurrentPathNumber() + 1 >= robot.getFollower().getCurrentPathChain().size();
-//    }
+//    public void mirrorIf
 
     public void setPathState(int pState, boolean resetActionTimer) {
         pathState = pState;

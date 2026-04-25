@@ -71,7 +71,7 @@ public abstract class RobotBase {
     public static boolean isSlowMode = false;
     public double fieldCentricOffset;
     public static double slowSpeedFactor = 0.3;
-
+    public static double END_OF_PATH_T_VALUE = 0.97;
 
     List<LynxModule> lynxModules;
 
@@ -94,6 +94,16 @@ public abstract class RobotBase {
         for (LynxModule hub : lynxModules) {
             hub.setBulkCachingMode(LynxModule.BulkCachingMode.MANUAL);
         }
+    }
+
+    public boolean isAtEndOfCurrentPath() {
+        if (follower == null) {
+            return false;
+        }
+
+        boolean endOfCurrentPath = follower.getCurrentTValue() > END_OF_PATH_T_VALUE;
+        boolean isLastPath = follower.getCurrentPathNumber() + 1 >= follower.getCurrentPathChain().size();
+        return endOfCurrentPath && isLastPath;
     }
 
     public void setFieldCentricOffset(OpModeBase.AllianceColor allianceColor) {

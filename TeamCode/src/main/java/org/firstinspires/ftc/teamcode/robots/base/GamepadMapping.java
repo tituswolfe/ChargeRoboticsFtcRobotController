@@ -106,8 +106,7 @@ public abstract class GamepadMapping<Robot extends RobotBase> {
         float rightTriggerVal = gamepad.right_trigger;
 
         leftTrigger(leftTriggerVal);
-
-        leftTrigger(rightTriggerVal);
+        rightTrigger(rightTriggerVal);
 
         if (isLeftTriggerPressed && !wasLeftTriggerPressed) onLeftTriggerPressed();
         if (!isLeftTriggerPressed && wasLeftTriggerPressed) onLeftTriggerReleased();
