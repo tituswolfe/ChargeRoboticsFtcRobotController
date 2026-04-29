@@ -3,7 +3,6 @@ package org.firstinspires.ftc.teamcode.robots.season.decode.jetfire;
 import com.bylazar.configurables.annotations.Configurable;
 import com.bylazar.telemetry.TelemetryManager;
 import com.pedropathing.follower.Follower;
-import com.pedropathing.ftc.FTCCoordinates;
 import com.pedropathing.geometry.Pose;
 import com.pedropathing.math.Vector;
 import com.pedropathing.util.Timer;
@@ -12,7 +11,6 @@ import com.qualcomm.robotcore.hardware.DcMotorEx;
 import com.qualcomm.robotcore.hardware.DigitalChannel;
 import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
-import com.qualcomm.robotcore.util.Range;
 
 import org.firstinspires.ftc.robotcore.external.navigation.AngleUnit;
 import org.firstinspires.ftc.teamcode.hardware.controllers.digital.GoBildaLaserDistanceSensorDigital;
@@ -42,7 +40,6 @@ import static org.firstinspires.ftc.teamcode.robots.base.StaticData.allianceColo
 import static org.firstinspires.ftc.teamcode.robots.season.decode.jetfire.JetFireConstants.*;
 
 import java.util.Optional;
-import java.util.concurrent.TimeUnit;
 
 @Configurable
 public class JetfireRobot extends RobotBase {
@@ -111,7 +108,8 @@ public class JetfireRobot extends RobotBase {
     };
     private ActionSequence rapidFireActionSequence = new ActionSequence(rapidFireActions);
 
-    RollingAverage velocitySmoothing = new RollingAverage(3);
+    RollingAverage smoothVelocity = new RollingAverage(3);
+    RollingAverage smoothFlywheelTargetVelocity = new RollingAverage(3);
 
     GoBildaPrismDriver.Artboard allianceArtboard;
 
@@ -243,30 +241,44 @@ public class JetfireRobot extends RobotBase {
     double lastFerr = 0;
 
     @Override
-    public void update(long deltaTimeNs, TelemetryManager telemetry) {
+    public void update(long deltaTimeNs, double averageDeltaTimeMs, TelemetryManager telemetry) {
+        // Follower
         Pose currentPose = follower.getPose();
         Vector velocity = follower.getVelocity();
 
         double velocityMagnitude = follower.getVelocity().getMagnitude();
         double angularVelocity = follower.getAngularVelocity();
 
-        velocitySmoothing.update(velocityMagnitude);
-        //velocity = velocity.times(velocityMagnitude / velocitySmoothing.getAverage()); // ??
+        double cosHeading = Math.cos(currentPose.getHeading());
+        double sinHeading = Math.sin(currentPose.getHeading());
+
+        // Turntable Pivot
+        // turret pivot x = 1 and y = 1
+
+        Pose turntablePivotOffset = new Pose(
+                cosHeading * TURNTABLE_PIVOT_OFFSET_X - sinHeading * TURNTABLE_PIVOT_OFFSET_Y,
+                sinHeading * TURNTABLE_PIVOT_OFFSET_X + cosHeading * TURNTABLE_PIVOT_OFFSET_Y
+        );
+        Pose turntablePose = currentPose.plus(turntablePivotOffset);
+
+        smoothVelocity.update(velocityMagnitude);
+        velocity = velocity.times(velocityMagnitude / smoothVelocity.getAverage());
 
         double turntableHeading = turret.turntableController().getHeading();
         double flywheelError = turret.flywheelController().getError();
 
         // Lead Computing
-        double launchDelaySec = INTAKE_TRANSFER_DELAY_MS / 1000.0;// Conversion.millsToSec(INTAKE_TRANSFER_DELAY_MS);
-        Pose predictedFuturePose = MathUtil.predictFuturePose(currentPose, velocity, launchDelaySec);
-        double distanceFromGoalAtFuturePose = predictedFuturePose.distanceFrom(targetGoal);
+        double launchDelaySec = INTAKE_TRANSFER_DELAY_MS + averageDeltaTimeMs / 1000.0; // + delta time
+        Pose futurePose = MathUtil.predictFuturePose(currentPose, velocity, launchDelaySec);
+        Pose futureTurntablePose = futurePose.plus(turntablePivotOffset);
+        double distanceFromGoalAtFuturePose = futureTurntablePose.distanceFrom(targetGoal);
 
-        double timeOfFlightSec = TIME_OF_FLIGHT_BY_DISTANCE.interpolate(distanceFromGoalAtFuturePose) / 1000.0; //Conversion.millsToSec(TIME_OF_FLIGHT_BY_DISTANCE.interpolate(distanceFromGoalAtFuturePose));
+        double timeOfFlightSec = TIME_OF_FLIGHT_BY_DISTANCE.interpolate(distanceFromGoalAtFuturePose) / 1000.0;
         Vector virtualGoalVelocity = velocity.times(-1);
         Pose virtualGoal = MathUtil.predictFuturePose(targetGoal, virtualGoalVelocity, timeOfFlightSec);
 
-        double virtualDistanceFromGoal = predictedFuturePose.distanceFrom(virtualGoal);
-        double virtualGoalHeading = MathUtil.bearingTo(predictedFuturePose, virtualGoal);
+        double virtualDistanceFromGoal = futureTurntablePose.distanceFrom(virtualGoal);
+        double virtualGoalHeading = MathUtil.bearingTo(futureTurntablePose, virtualGoal);
 
         // CONDITIONS
         isInFarZone = currentPose.getY() < FAR_ZONE_Y_THRESHOLD;
@@ -341,14 +353,19 @@ public class JetfireRobot extends RobotBase {
         RGBIndicatorLightController.Color indicatorColor;
         if (isReadyToShoot) {
             indicatorColor = RGBIndicatorLightController.Color.GREEN;
-        } else if (!isTurntableInRange) {
-            indicatorColor = RGBIndicatorLightController.Color.ORANGE;
-        } else {
+        }
+//        else if (!isFlywheelReady) {
+//
+//        }
+//        else if (!isTurntableInRange) {
+//            indicatorColor = RGBIndicatorLightController.Color.ORANGE;
+//        }
+        else {
             indicatorColor = RGBIndicatorLightController.Color.RED;
         }
 
         // UPDATE HARDWARE CONTROLLERS
-        super.update(deltaTimeNs, telemetry);
+        super.update(deltaTimeNs, averageDeltaTimeMs, telemetry);
 
         turret.flywheelController().setMotorEngaged(isFlywheelOn);
         turret.turntableController().setMotorEngaged(autoAimTurntable);
@@ -408,8 +425,8 @@ public class JetfireRobot extends RobotBase {
             telemetry.addLine("");
 
             telemetry.addLine("- LEAD COMPUTING - ");
-            telemetry.addData("Future Pose X", predictedFuturePose.getX());
-            telemetry.addData("Future Pose Y", predictedFuturePose.getY());
+            telemetry.addData("Future Pose X", futurePose.getX());
+            telemetry.addData("Future Pose Y", futurePose.getY());
             telemetry.addData("Time of Flight (sec)", timeOfFlightSec);
             telemetry.addData("Heading to Virtual Goal", Math.toDegrees(virtualGoalHeading));
             telemetry.addLine("");

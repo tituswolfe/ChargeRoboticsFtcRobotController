@@ -8,4 +8,9 @@ public class Conversion {
     public static double nsToSec(long nanoseconds) {
         return nanoseconds / 1e-9;
     }
+
+
+//    public static long nsToMs(long nanoseconds) {
+//        return nanoseconds / 1e+6;
+//    }
 }

@@ -36,6 +36,9 @@ public class JetFireConstants {
     public static final double TURNTABLE_MAX_HARD_STOP = Math.toRadians(140);
     public static final boolean TURNTABLE_REVERSE_POWER = false;
 
+    public static final double TURNTABLE_PIVOT_OFFSET_X = -0.7716535; // -19.6mm
+    public static final double TURNTABLE_PIVOT_OFFSET_Y = 0;
+
     // LEFT (positive+), RIGHT (negative-)
     public final static double CLOSE_ZONE_TURNTABLE_START_OFFSET_BLUE = -3;
     public final static double FAR_ZONE_TURNTABLE_START_OFFSET_BLUE = 0;

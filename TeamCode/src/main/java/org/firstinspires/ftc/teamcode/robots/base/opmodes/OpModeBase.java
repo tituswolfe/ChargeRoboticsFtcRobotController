@@ -19,6 +19,7 @@ import org.firstinspires.ftc.teamcode.hardware.drivetrain.pedroPathing.Drawing;
 import org.firstinspires.ftc.teamcode.robots.base.GamepadMapping;
 import org.firstinspires.ftc.teamcode.robots.base.RobotBase;
 import org.firstinspires.ftc.teamcode.robots.base.StaticData;
+import org.firstinspires.ftc.teamcode.util.math.Conversion;
 import org.firstinspires.ftc.teamcode.util.math.RollingAverage;
 
 import java.util.Optional;
@@ -50,6 +51,7 @@ public abstract class OpModeBase<Robot extends RobotBase> extends OpMode {
     RollingAverage rollingAverage = new RollingAverage(DELTA_TIME_SAMPLE_SIZE);
 
     long lastNanoTime;
+
 
     /**
      * Initiates and instantiates hardware & handlers.
@@ -107,19 +109,21 @@ public abstract class OpModeBase<Robot extends RobotBase> extends OpMode {
         long currentNanoTime = System.nanoTime();
         long deltaTimeNs = currentNanoTime - lastNanoTime;
         long deltaTimeMs = TimeUnit.NANOSECONDS.toMillis(deltaTimeNs);
+        //Conversion.nsToSec()
         lastNanoTime = currentNanoTime;
 
         rollingAverage.update(deltaTimeMs);
+        double averageDeltaTimeMs = rollingAverage.getAverage();
 
         telemetryManager.addLine("- OpMode info -");
         telemetryManager.addData("Alliance", StaticData.allianceColor);
         telemetryManager.addData("Loop Time (MS)", deltaTimeMs);
-        telemetryManager.addData("Avrg. Loop Time (MS)", rollingAverage.getAverage());
+        telemetryManager.addData("Avrg. Loop Time (MS)", averageDeltaTimeMs);
 
         telemetryManager.addData("Elapsed time (sec)", opmodeTimer.getElapsedTimeSeconds());
         telemetryManager.addData("isEndgame", isEndgame);
 
-        robot.update(deltaTimeNs, telemetryManager);
+        robot.update(deltaTimeMs, averageDeltaTimeMs, telemetryManager);
 
         telemetryManager.addLine("");
         telemetryManager.addLine("- CHARGER ROBOTICS 9808 -");
@@ -148,6 +152,7 @@ public abstract class OpModeBase<Robot extends RobotBase> extends OpMode {
     public static double getOpModeElapsedTimeSeconds() {
         return opmodeTimer.getElapsedTimeSeconds();
     }
+
 
     protected abstract Robot instantiateRobot();
     protected abstract Pose instantiateStartPose();
