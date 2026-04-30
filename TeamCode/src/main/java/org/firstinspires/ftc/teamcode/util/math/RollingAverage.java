@@ -35,6 +35,10 @@ public class RollingAverage {
     }
 
     public void setSampleSize(int sampleSize) {
+        if (this.sampleSize == sampleSize) {
+            return;
+        }
+
         this.sampleSize = sampleSize;
         this.samples = new double[sampleSize];
         this.totalSum = 0;

@@ -12,23 +12,23 @@ import org.firstinspires.ftc.teamcode.robots.season.decode.jetfire.JetfireRobot;
 
 import java.util.ArrayList;
 
-@Autonomous(name = "CHARGERS (BLUE+FAR)", preselectTeleOp = "Jetfire")
-public class BlueFar extends BaseAuto<JetfireRobot> {
-    Pose startPose = new Pose(58, 9.1, Math.toRadians(90));
-    Pose shootPose = new Pose(55.6, 19.1, Math.toRadians(118.5));
+@Autonomous(name = "VERGE (RED+FAR)", preselectTeleOp = "Jetfire")
+public class RedFar extends BaseAuto<JetfireRobot> {
+    Pose startPose = new Pose(58, 9.1, Math.toRadians(90)).mirror();
+    Pose shootPose = new Pose(55.6, 19.1, Math.toRadians(118.5)).mirror();
 
-    Pose spike3Start = new Pose(40.3, 32.8, Math.toRadians(150));
-    Pose spike3End = new Pose(21.3, 36.5, Math.toRadians(-180));
+    Pose spike3Start = new Pose(40.3, 32.8, Math.toRadians(150)).mirror();
+    Pose spike3End = new Pose(21.3, 36.5, Math.toRadians(-180)).mirror();
 
-    Pose shootPose2 = new Pose(50, 10, Math.toRadians(-180)); // = new Pose(54.2, 17.3, Math.toRadians(-180));
+    Pose shootPose2 = new Pose(50, 10, Math.toRadians(-180)).mirror(); // = new Pose(54.2, 17.3, Math.toRadians(-180));
 
     //Pose humanPlayerStart = new Pose(22, 10, Math.toRadians(-180));
-    Pose humanPlayerEnd = new Pose(20, 10, Math.toRadians(-180)); //humanPlayerStart.withX(20);
+    Pose humanPlayerEnd = new Pose(20, 10, Math.toRadians(-180)).mirror(); //humanPlayerStart.withX(20);
 
     //Pose tunnelStart = new Pose(35.6, 10 + 16, Math.toRadians(-180));
-    Pose tunnelEnd = new Pose(20, 10 + 16, Math.toRadians(-180)); //tunnelStart.withX(20);
+    Pose tunnelEnd = new Pose(20, 10 + 16, Math.toRadians(-180)).mirror(); //tunnelStart.withX(20);
 
-    Pose endPose = new Pose(54.6, 27.5, Math.toRadians(120));
+    Pose endPose = new Pose(54.6, 27.5, Math.toRadians(120)).mirror();
 
     PathChain startToShoot;
     PathChain shootSpike3;
@@ -150,6 +150,6 @@ public class BlueFar extends BaseAuto<JetfireRobot> {
 
     @Override
     protected AllianceColor instantiateAllianceColor() {
-        return AllianceColor.BLUE;
+        return AllianceColor.RED;
     }
 }

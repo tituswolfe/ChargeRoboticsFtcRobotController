@@ -6,8 +6,7 @@ import org.firstinspires.ftc.teamcode.robots.base.PrimaryDriverGamepadMapping;
 
 public class JetfireGamepadMapping extends PrimaryDriverGamepadMapping<JetfireRobot> {
     double zoneOffsetIncrement = 1;
-    public static final double smallZoneOffsetIncrement = 1;
-    public static final double largeZoneOffsetIncrement = 5;
+
 
     public JetfireGamepadMapping(JetfireRobot jetfireRobot, Gamepad gamepad, GamepadManager virtualGamepad) {
         super(jetfireRobot, gamepad, virtualGamepad);
@@ -88,7 +87,7 @@ public class JetfireGamepadMapping extends PrimaryDriverGamepadMapping<JetfireRo
 
     @Override
     public void onDpadUpPressed() {
-        zoneOffsetIncrement = largeZoneOffsetIncrement;
+
     }
 
     @Override
@@ -98,7 +97,7 @@ public class JetfireGamepadMapping extends PrimaryDriverGamepadMapping<JetfireRo
 
     @Override
     public void onDpadDownPressed() {
-        zoneOffsetIncrement = smallZoneOffsetIncrement;
+
     }
 
     @Override

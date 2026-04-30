@@ -11,8 +11,7 @@ import org.firstinspires.ftc.teamcode.robots.base.opmodes.OpModeBase;
 
 public class JetFireGamepadMapping2 extends GamepadMapping<JetfireRobot> {
     double zoneOffsetIncrement = 1;
-    public static final double smallZoneOffsetIncrement = 1;
-    public static final double largeZoneOffsetIncrement = 5;
+    double flywheelTrimIncrement = 25;
 
     public JetFireGamepadMapping2(JetfireRobot jetfireRobot, Gamepad gamepad, GamepadManager virtualGamepad) {
         super(jetfireRobot, gamepad, virtualGamepad);
@@ -21,7 +20,7 @@ public class JetFireGamepadMapping2 extends GamepadMapping<JetfireRobot> {
 
     @Override
     public void onYPressed() {
-        robot.zeroTurntable();
+        robot.resetOffsets();
     }
 
     @Override
@@ -36,7 +35,7 @@ public class JetFireGamepadMapping2 extends GamepadMapping<JetfireRobot> {
 
     @Override
     public void onXPressed() {
-        robot.toggleMuzzleFlash();
+        //robot.toggleMuzzleFlash();
     }
 
     @Override
@@ -81,17 +80,19 @@ public class JetFireGamepadMapping2 extends GamepadMapping<JetfireRobot> {
 
     @Override
     public void onLeftBumperPressed() {
+        robot.adjustActiveTurntableZoneOffset(zoneOffsetIncrement);
 
     }
 
     @Override
     public void onRightBumperPressed() {
+        robot.adjustActiveTurntableZoneOffset(-zoneOffsetIncrement);
 
     }
 
     @Override
     public void onDpadUpPressed() {
-        zoneOffsetIncrement = largeZoneOffsetIncrement;
+        robot.adjustFlywheelTrim(flywheelTrimIncrement);
     }
 
     @Override
@@ -101,7 +102,7 @@ public class JetFireGamepadMapping2 extends GamepadMapping<JetfireRobot> {
 
     @Override
     public void onDpadDownPressed() {
-        zoneOffsetIncrement = smallZoneOffsetIncrement;
+        robot.adjustFlywheelTrim(-flywheelTrimIncrement);
     }
 
     @Override

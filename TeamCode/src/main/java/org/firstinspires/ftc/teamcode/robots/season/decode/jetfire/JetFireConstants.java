@@ -20,7 +20,7 @@ public class JetFireConstants {
 
     public static final String FLYWHEEL_NAME = "Flywheel";
     // new PIDFCoefficients(0.005, 0, 0, 0.0001);
-    public static PIDFCoefficients FLYWHEEL_PIDF_COEFFICIENTS = new PIDFCoefficients(0.01, 0, 0, 0.0002);
+    public static PIDFCoefficients FLYWHEEL_PIDF_COEFFICIENTS = new PIDFCoefficients(0.01, 0, 0, 0.00015);
     public static final double FLYWHEEL_GEAR_RATIO = 1.5;
     public static final double FLYWHEEL_MAX_POWER = 1;
 
@@ -29,7 +29,8 @@ public class JetFireConstants {
     public static final DcMotorSimple.Direction TURNTABLE_MOTOR_DIRECTION = DcMotorSimple.Direction.FORWARD;
 
     public static final String TURNTABLE_NAME = "Turntable";
-    public static PIDFCoefficients TURNTABLE_PIDF_COEFFICIENTS = new PIDFCoefficients(0.03, 0, 0.001, -0.0025); // i 0.000006
+    public static PIDFCoefficients TURNTABLE_PIDF_COEFFICIENTS = new PIDFCoefficients(0.035, 0, 0.002, -0.0001); // i 0.000006
+            //new PIDFCoefficients(0.03, 0, 0.001, -0.0025); // i 0.000006
     public static final double TURNTABLE_TOTAL_GEAR_RATIO = 64.0 / 16.0;
     public static final double TURNTABLE_MAX_POWER = 0.75;
     public static final double TURNTABLE_MIN_HARD_STOP = Math.toRadians(-140);
@@ -95,7 +96,11 @@ public class JetFireConstants {
     public static final int LIMELIGHT_LOCALIZATION_PIPELINE = 0;
     public static final int LIMELIGHT_ARTIFACT_DETECTION_PIPELINE = 1;
 
+    // Shoot-on-the-Move
+    public static int SMOOTH_VELOCITY_SAMPLE_SIZE = 3;
+
     // LUTs
+    public static int SMOOTH_FLYWHEEL_VELOCITY_SAMPLE_SIZE = 3;
     private static final TreeMap<Double, Double> FLYWHEEL_VELOCITY_BY_DISTANCE_MAP = new TreeMap<>();
     static {
         // INCH, RPM

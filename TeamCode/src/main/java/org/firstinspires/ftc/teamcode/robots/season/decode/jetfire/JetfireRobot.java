@@ -87,12 +87,11 @@ public class JetfireRobot extends RobotBase {
     Timer artifactDetectedTimer = new Timer();
     private boolean wasArtifactDetected = false;
 
-    public static double hoodCompensationK1 = 0.0004;
+    public static double hoodCompensationK1 = 0.0006;
     public static double hoodCompensationK2 = 0.000065;
-    public static double hoodActuationLagSec = 0.1;
+    public static double hoodActuationLagSec = 0.1; // try tuning
 
-    // RollingAverage targetVelocitySmooth = new RollingAverage(3);
-
+    public static double flywheelTrim = 0;
 
     // Action Sequences
     private final Action[] rapidFireActions = new Action[] {
@@ -108,8 +107,8 @@ public class JetfireRobot extends RobotBase {
     };
     private ActionSequence rapidFireActionSequence = new ActionSequence(rapidFireActions);
 
-    RollingAverage smoothVelocity = new RollingAverage(3);
-    RollingAverage smoothFlywheelTargetVelocity = new RollingAverage(3);
+    RollingAverage smoothVelocity = new RollingAverage(SMOOTH_VELOCITY_SAMPLE_SIZE);
+    RollingAverage smoothFlywheelTargetVelocity = new RollingAverage(SMOOTH_FLYWHEEL_VELOCITY_SAMPLE_SIZE);
 
     GoBildaPrismDriver.Artboard allianceArtboard;
 
@@ -226,7 +225,7 @@ public class JetfireRobot extends RobotBase {
         intakeController.start();
         turret.turntableController().start();
         turret.flywheelController().start();
-        turret.hoodServoController().start(); // TODO: Get from data table
+        turret.hoodServoController().start(JetfireStaticData.lastHoodPosition); // TODO: Get from data table
     }
 
     @Override
@@ -268,7 +267,7 @@ public class JetfireRobot extends RobotBase {
         double flywheelError = turret.flywheelController().getError();
 
         // Lead Computing
-        double launchDelaySec = INTAKE_TRANSFER_DELAY_MS + averageDeltaTimeMs / 1000.0; // + delta time
+        double launchDelaySec = INTAKE_TRANSFER_DELAY_MS / 1000.0; // + delta time
         Pose futurePose = MathUtil.predictFuturePose(currentPose, velocity, launchDelaySec);
         Pose futureTurntablePose = futurePose.plus(turntablePivotOffset);
         double distanceFromGoalAtFuturePose = futureTurntablePose.distanceFrom(targetGoal);
@@ -307,7 +306,9 @@ public class JetfireRobot extends RobotBase {
         isReadyToShoot = !getRapidFireActionSequence().isRunning() && isFlywheelReady; //isTurntableInRange
 
         // HARDWARE VARIABLES
-        double flywheelSpeed = FLYWHEEL_VELOCITY_BY_DISTANCE.interpolate(virtualDistanceFromGoal);
+        double interpolatedFlywheelSpeed = FLYWHEEL_VELOCITY_BY_DISTANCE.interpolate(virtualDistanceFromGoal);
+        smoothFlywheelTargetVelocity.update(interpolatedFlywheelSpeed);
+        double flywheelSpeed = smoothFlywheelTargetVelocity.getAverage() + flywheelTrim;
 
         double turntableZoneOffsetDeg = isInFarZone ? farTurntableOffsetDeg : closeTurntableOffsetDeg;
         double targetTurntableHeading = AngleUnit.normalizeRadians(virtualGoalHeading - currentPose.getHeading()) + Math.toRadians(turntableZoneOffsetDeg);
@@ -372,7 +373,8 @@ public class JetfireRobot extends RobotBase {
         turret.turntableController().updateRobotHeadingVelocity(angularVelocity);
 
         if (TUNING) {
-            //turret.update(TUNING_TARGET_FLYWHEEL_VELOCITY, targetTurntableHeading, TUNING_HOOD_ANGLE, deltaTimeNs);
+            smoothVelocity.setSampleSize(SMOOTH_VELOCITY_SAMPLE_SIZE);
+            smoothFlywheelTargetVelocity.setSampleSize(SMOOTH_FLYWHEEL_VELOCITY_SAMPLE_SIZE);
 
             turret.flywheelController().setPIDFCoefficients(FLYWHEEL_PIDF_COEFFICIENTS);
             turret.turntableController().setPIDFCoefficients(TURNTABLE_PIDF_COEFFICIENTS);
@@ -398,6 +400,7 @@ public class JetfireRobot extends RobotBase {
 
         // UPDATE STATIC VARS
         JetfireStaticData.lastTurretHeading = turntableHeading;
+        JetfireStaticData.lastHoodPosition = turret.hoodServoController().getLastPosition();
 
         if (DISPLAY_TELEMETRY) {
             double distanceFromGoal = currentPose.distanceFrom(targetGoal);
@@ -411,6 +414,9 @@ public class JetfireRobot extends RobotBase {
             telemetry.addData("isInFarZone", isInFarZone);
             telemetry.addData("Close Turntable Offset", closeTurntableOffsetDeg);
             telemetry.addData("Far Turntable Offset", farTurntableOffsetDeg);
+
+            telemetry.addData("pivot offset", turntablePivotOffset);
+            telemetry.addData("pivot pose", turntablePose);
             telemetry.addLine("");
 
             telemetry.addLine("- GOAL -");
@@ -454,9 +460,11 @@ public class JetfireRobot extends RobotBase {
         }
     }
 
-    public void zeroTurntable() {
-        turret.turntableController().setInitialAngle(0);
+    public void adjustFlywheelTrim(double trim) {
+        flywheelTrim += trim;
+    }
 
+    public void resetOffsets() {
         if (allianceColor.equals(OpModeBase.AllianceColor.BLUE)) {
             closeTurntableOffsetDeg = JetFireConstants.CLOSE_ZONE_TURNTABLE_START_OFFSET_BLUE;
             farTurntableOffsetDeg = JetFireConstants.FAR_ZONE_TURNTABLE_START_OFFSET_BLUE;
@@ -464,6 +472,7 @@ public class JetfireRobot extends RobotBase {
             closeTurntableOffsetDeg = JetFireConstants.CLOSE_ZONE_TURNTABLE_START_OFFSET_RED;
             farTurntableOffsetDeg = JetFireConstants.FAR_ZONE_TURNTABLE_START_OFFSET_RED;
         }
+        flywheelTrim = 0;
         indicatorLightController.indicate(RGBIndicatorLightController.Color.VIOLET);
     }
 
@@ -483,6 +492,9 @@ public class JetfireRobot extends RobotBase {
 
     public void humanPlayerPoseReset() {
         follower.setPose(humanPlayerReset);
+
+        resetOffsets();
+
         indicatorLightController.indicate(RGBIndicatorLightController.Color.VIOLET);
     }
 

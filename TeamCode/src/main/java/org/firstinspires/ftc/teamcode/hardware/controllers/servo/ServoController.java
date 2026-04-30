@@ -17,6 +17,7 @@ public abstract class ServoController extends HardwareController<Servo> {
     private double lastPosition = -1;
     private static final double DELTA_FILTERING_THRESHOLD = 0.03;
 
+
     public ServoController(Servo device, String name, double totalRotation, double totalGearRatio) {
         super(device, name);
 
@@ -45,6 +46,10 @@ public abstract class ServoController extends HardwareController<Servo> {
             device.setPosition(position);
             lastPosition = position;
         }
+    }
+
+    public double getLastPosition() {
+        return lastPosition;
     }
 
     @Override

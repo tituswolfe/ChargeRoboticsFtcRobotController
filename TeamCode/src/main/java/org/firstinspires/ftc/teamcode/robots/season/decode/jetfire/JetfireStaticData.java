@@ -4,4 +4,5 @@ import org.firstinspires.ftc.teamcode.util.math.Angle;
 
 public class JetfireStaticData {
     public static double lastTurretHeading;
+    public static double lastHoodPosition = 0;
 }
