@@ -15,7 +15,8 @@ import org.firstinspires.ftc.teamcode.util.info.MotorInfo;
  */
 public class VelocityPIDFMotorController extends PIDFMotorController {
     private double targetOutputVelocity = 0;
-    private double error;
+    private double lastError = 0;
+    private double error = 0;
 
     public VelocityPIDFMotorController(DcMotorEx device, String name, MotorInfo motorInfo, double totalGearRatio, double maxPower, PIDFCoefficients pidfCoefficients) {
         super(device, name, motorInfo, totalGearRatio, maxPower, pidfCoefficients);
@@ -23,13 +24,18 @@ public class VelocityPIDFMotorController extends PIDFMotorController {
 
     @Override
     public void update(long deltaTimeNS) {
+        // TODO FIRST CYCLE CHECK SOMEDAY FOR D TERM
         super.update(deltaTimeNS);
 
         double clampedTargetVelocity = Math.min(targetOutputVelocity, maxOutputSpeedRPM);
-        error = clampedTargetVelocity - outputVelocity;
-        pidfController.updateError(error);
+        double currentError = clampedTargetVelocity - outputVelocity;
+
+        pidfController.updateError(currentError);
         pidfController.updateFeedForwardInput(targetOutputVelocity);
         targetPower = pidfController.run();
+
+        lastError = this.error;
+        this.error = currentError;
     }
 
     public void setTargetOutputVelocity(double targetVelocityRPM) {
@@ -42,6 +48,10 @@ public class VelocityPIDFMotorController extends PIDFMotorController {
 
     public double getError() {
         return isMotorEngaged ? error : 0;
+    }
+
+    public double getLastError() {
+        return lastError;
     }
 
     @Override

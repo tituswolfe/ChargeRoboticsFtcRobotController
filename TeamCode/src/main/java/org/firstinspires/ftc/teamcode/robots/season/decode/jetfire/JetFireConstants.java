@@ -2,6 +2,7 @@ package org.firstinspires.ftc.teamcode.robots.season.decode.jetfire;
 
 import com.bylazar.configurables.annotations.Configurable;
 import com.pedropathing.control.PIDFCoefficients;
+import com.pedropathing.geometry.Pose;
 import com.qualcomm.robotcore.hardware.DcMotorSimple;
 import com.qualcomm.robotcore.hardware.Servo;
 
@@ -19,33 +20,32 @@ public class JetFireConstants {
     public static final DcMotorSimple.Direction TOP_FLYWHEEL_MOTOR_DIRECTION = DcMotorSimple.Direction.FORWARD;
 
     public static final String FLYWHEEL_NAME = "Flywheel";
-    // new PIDFCoefficients(0.005, 0, 0, 0.0001);
-    public static PIDFCoefficients FLYWHEEL_PIDF_COEFFICIENTS = new PIDFCoefficients(0.01, 0, 0, 0.00015);
+    public static PIDFCoefficients FLYWHEEL_PIDF_COEFFICIENTS = new PIDFCoefficients(0.01, 0, 0, 0.00015); // new PIDFCoefficients(0.005, 0, 0, 0.0001);
     public static final double FLYWHEEL_GEAR_RATIO = 1.5;
     public static final double FLYWHEEL_MAX_POWER = 1;
+    public static final int SMOOTH_FLYWHEEL_VELOCITY_TRIM_SAMPLE_SIZE = 3;
 
     // TURNTABLE
     public static final String TURNTABLE_MOTOR_DEVICE_NAME = "turntable";
     public static final DcMotorSimple.Direction TURNTABLE_MOTOR_DIRECTION = DcMotorSimple.Direction.FORWARD;
 
     public static final String TURNTABLE_NAME = "Turntable";
-    public static PIDFCoefficients TURNTABLE_PIDF_COEFFICIENTS = new PIDFCoefficients(0.035, 0, 0.002, -0.0001); // i 0.000006
-            //new PIDFCoefficients(0.03, 0, 0.001, -0.0025); // i 0.000006
+    public static PIDFCoefficients TURNTABLE_PIDF_COEFFICIENTS = new PIDFCoefficients(0.035, 0, 0.002, -0.0001); // TODO: update w/ new vals
     public static final double TURNTABLE_TOTAL_GEAR_RATIO = 64.0 / 16.0;
     public static final double TURNTABLE_MAX_POWER = 0.75;
     public static final double TURNTABLE_MIN_HARD_STOP = Math.toRadians(-140);
     public static final double TURNTABLE_MAX_HARD_STOP = Math.toRadians(140);
     public static final boolean TURNTABLE_REVERSE_POWER = false;
 
-    public static final double TURNTABLE_PIVOT_OFFSET_X = -0.7716535; // -19.6mm
+    public static final double TURNTABLE_PIVOT_OFFSET_X = -0.7716535;
     public static final double TURNTABLE_PIVOT_OFFSET_Y = 0;
 
     // LEFT (positive+), RIGHT (negative-)
     public final static double CLOSE_ZONE_TURNTABLE_START_OFFSET_BLUE = -3;
-    public final static double FAR_ZONE_TURNTABLE_START_OFFSET_BLUE = 0;
+    public final static double FAR_ZONE_TURNTABLE_START_OFFSET_BLUE = -2; // TODO
 
     public final static double CLOSE_ZONE_TURNTABLE_START_OFFSET_RED = 3;
-    public final static double FAR_ZONE_TURNTABLE_START_OFFSET_RED = 0;
+    public final static double FAR_ZONE_TURNTABLE_START_OFFSET_RED = 2;
 
     // HOOD
     public static final String HOOD_SERVO_DEVICE_NAME = "hood";
@@ -57,11 +57,13 @@ public class JetFireConstants {
     public static final double MIN_HOOD_ANGLE = Math.toRadians(26);
     public static final double MAX_HOOD_ANGLE = Math.toRadians(50);
 
-    // Regression (Deg) : Error (RPM)
-    //hoodCompensation
-    public static double REGRESSION_COMPENSATION_RATIO = 0.035;
+    // TODO: Tune
+    public static double HOOD_COMPENSATION_K1 = 0.0006;
+    public static double HOOD_COMPENSATION_K2 = 0.000065;
+    public static double HOOD_ACTUATION_LAG_SEC = 0.1;
+
+
     public static double FLYWHEEL_ERROR_COMPENSATION_THRESHOLD = 30;
-    public static double HOOD_COMPENSATION_FLOOR_DEG = 45;
 
     // INTAKE
     public static final String INTAKE_NAME = "Intake";
@@ -73,23 +75,26 @@ public class JetFireConstants {
     public static final double INTAKE_POWER = 0.9;
     public static final double REVERSE_INTAKE_POWER = -0.7;
     public static int INTAKE_TIMEOUT_MS = 2000;
-    public static int INDICATE_FULL_INTAKE_MS = 700;
+    public static int INDICATE_FULL_INTAKE_MS = 700; // TODO: less
     public static final int INTAKE_RAPID_FIRE_DURATION_MS = 300;
 
     // GATE
     public static double GATE_SERVO_OPEN = 0.27;
     public static double GATE_SERVO_CLOSED = 0.05;
-    public static int GATE_SERVO_TIME_MS = 200;
 
-
-    // ZONES
+    // THRESHOLDS, MARGINS, DELAYS, OFFSETS, & INCREMENTS
     public static final double FAR_ZONE_Y_THRESHOLD = 48;
+    public static double FLYWHEEL_VELOCITY_MARGIN_RPM = 50;
 
-    // LIGHTS
-    public static final int MUZZLE_FLASH_DURATION_MS = 300;
+
+    public static final double GOAL_AIM_OFFSET = 5;
+
+    // Poses
+    public final static Pose TARGET_GOAL_BLUE = new Pose(0 + GOAL_AIM_OFFSET, 144 - GOAL_AIM_OFFSET, 0);
+    public final static Pose HUMAN_PLAYER_ZONE_RESET_BLUE = new Pose(134.9, 12.2, Math.toRadians(0));
+
 
     // MARGINS & DELAYS
-    public static double FLYWHEEL_VELOCITY_MARGIN_RPM = 50;
     public static int INTAKE_TRANSFER_DELAY_MS = 200;
 
     // LIMELIGHT
@@ -98,6 +103,10 @@ public class JetFireConstants {
 
     // Shoot-on-the-Move
     public static int SMOOTH_VELOCITY_SAMPLE_SIZE = 3;
+
+
+    // LIGHTS
+    public static final int MUZZLE_FLASH_DURATION_MS = 300;
 
     // LUTs
     public static int SMOOTH_FLYWHEEL_VELOCITY_SAMPLE_SIZE = 3;

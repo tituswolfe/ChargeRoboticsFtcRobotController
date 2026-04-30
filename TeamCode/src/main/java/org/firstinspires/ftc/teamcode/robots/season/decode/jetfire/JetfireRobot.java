@@ -43,6 +43,7 @@ import java.util.Optional;
 
 @Configurable
 public class JetfireRobot extends RobotBase {
+    // Hardware Controllers
     private Turret<DualPIDFMotorVelocityController> turret;
 
     ThrottleMotorController intakeController;
@@ -53,45 +54,42 @@ public class JetfireRobot extends RobotBase {
     private RGBIndicatorLightController indicatorLightController;
     private GoBildaPrismController prismController;
 
-    private LimelightController limelightController;
+    // Poses & alliance
+    private Pose humanPlayerReset;
+    public static Pose targetGoal;
 
+    GoBildaPrismDriver.Artboard allianceArtboard;
+
+    // Subsystem status
     private boolean autoAimTurntable = false;
+
     private boolean isFlywheelOn = false;
+    private boolean isFlywheelReady = false;
+
     private boolean isIntakeOn = false;
     private boolean reverseIntake = false;
 
-    private boolean useMuzzleFlash = false;
+    private boolean isReadyToShoot = false;
+    private boolean isInFarZone = false;
 
-    public double closeTurntableOffsetDeg = 0; // getter setter
+    // Smoothing
+    RollingAverage smoothVelocity = new RollingAverage(SMOOTH_VELOCITY_SAMPLE_SIZE);
+    RollingAverage smoothFlywheelTargetVelocity = new RollingAverage(SMOOTH_FLYWHEEL_VELOCITY_SAMPLE_SIZE);
+    RollingAverage smoothFlywheelVelocityTrim = new RollingAverage(SMOOTH_FLYWHEEL_VELOCITY_TRIM_SAMPLE_SIZE);
+
+    // Trim & offset
+    public double flywheelTrim = 0;
+    public double closeTurntableOffsetDeg = 0;
     public double farTurntableOffsetDeg = 0;
 
-    private final static Pose HUMAN_PLAYER_ZONE_RESET_BLUE = new Pose(134.9, 12.2, Math.toRadians(0));
-    private Pose humanPlayerReset;
+    Timer artifactDetectedTimer = new Timer();
+    private boolean wasArtifactDetected = false;
 
-    private static final double GOAL_AIM_OFFSET = 5;
-    private final static Pose TARGET_GOAL_BLUE = new Pose(0 + GOAL_AIM_OFFSET, 144 - GOAL_AIM_OFFSET, 0);
-    public static Pose targetGoal;
-
-    // TUNING & Telemetry
+    // Tuning & Telemetry
     public static boolean DISPLAY_TELEMETRY = false;
     public static boolean TUNING = false;
     public static double TUNING_TARGET_FLYWHEEL_VELOCITY = 0;
     public static double TUNING_HOOD_ANGLE = 16;
-
-    // RUNTIME
-    private boolean isReadyToShoot = false;
-    private boolean isInFarZone = false;
-    private boolean isFlywheelReady = false;
-
-    // Intake Sensor
-    Timer artifactDetectedTimer = new Timer();
-    private boolean wasArtifactDetected = false;
-
-    public static double hoodCompensationK1 = 0.0006;
-    public static double hoodCompensationK2 = 0.000065;
-    public static double hoodActuationLagSec = 0.1; // try tuning
-
-    public static double flywheelTrim = 0;
 
     // Action Sequences
     private final Action[] rapidFireActions = new Action[] {
@@ -105,12 +103,7 @@ public class JetfireRobot extends RobotBase {
             new Wait(INTAKE_RAPID_FIRE_DURATION_MS),
             new InstantAction(() -> gateServoController.setPosition(GATE_SERVO_CLOSED)),
     };
-    private ActionSequence rapidFireActionSequence = new ActionSequence(rapidFireActions);
-
-    RollingAverage smoothVelocity = new RollingAverage(SMOOTH_VELOCITY_SAMPLE_SIZE);
-    RollingAverage smoothFlywheelTargetVelocity = new RollingAverage(SMOOTH_FLYWHEEL_VELOCITY_SAMPLE_SIZE);
-
-    GoBildaPrismDriver.Artboard allianceArtboard;
+    private final ActionSequence rapidFireActionSequence = new ActionSequence(rapidFireActions);
 
     @Override
     public void init(HardwareMap hardwareMap, Pose startPose, OpModeBase.AllianceColor allianceColor) {
@@ -209,9 +202,6 @@ public class JetfireRobot extends RobotBase {
         DigitalChannel laserDigitalInput = hardwareMap.get(DigitalChannel.class, "laser-digital-input");
         intakeSensor = new GoBildaLaserDistanceSensorDigital(laserDigitalInput);
 
-        Limelight3A limelight3A = hardwareMap.get(Limelight3A.class, "limelight");
-        limelightController = new LimelightController(limelight3A, "Limelight");
-        limelightController.init(LIMELIGHT_LOCALIZATION_PIPELINE);
 
         Servo indicator = hardwareMap.get(Servo.class, "indicator");
         indicatorLightController = new RGBIndicatorLightController(indicator, "Indicator");
@@ -230,14 +220,8 @@ public class JetfireRobot extends RobotBase {
 
     @Override
     public void startConfiguration() {
-//        gateServoController.start(GATE_SERVO_CLOSED);
-//        intakeController.start();
-//        turret.turntableController().start();
-//        turret.flywheelController().start();
-//        turret.hoodServoController().start(0); // TODO: Get from data table
-    }
 
-    double lastFerr = 0;
+    }
 
     @Override
     public void update(long deltaTimeNs, double averageDeltaTimeMs, TelemetryManager telemetry) {
@@ -251,8 +235,6 @@ public class JetfireRobot extends RobotBase {
         double cosHeading = Math.cos(currentPose.getHeading());
         double sinHeading = Math.sin(currentPose.getHeading());
 
-        // Turntable Pivot
-        // turret pivot x = 1 and y = 1
 
         Pose turntablePivotOffset = new Pose(
                 cosHeading * TURNTABLE_PIVOT_OFFSET_X - sinHeading * TURNTABLE_PIVOT_OFFSET_Y,
@@ -318,11 +300,12 @@ public class JetfireRobot extends RobotBase {
 
         double hoodCompensation = 0;
         if (flywheelError > FLYWHEEL_ERROR_COMPENSATION_THRESHOLD && isInFarZone) {
-            double flywheelErrorRate = (flywheelError - lastFerr) / Conversion.nsToSec(deltaTimeNs);
-            double flywheelErrorPredict = flywheelError + flywheelErrorRate * hoodActuationLagSec;
+            double lastFlywheelError = turret.flywheelController().getLastError();
+            double flywheelErrorRate = (flywheelError - lastFlywheelError) / Conversion.nsToSec(deltaTimeNs);
+            double flywheelErrorPredict = flywheelError + flywheelErrorRate * HOOD_ACTUATION_LAG_SEC;
             double flywheelErrorPredictSquared = flywheelErrorPredict * flywheelErrorPredict;
 
-            hoodCompensation = hoodCompensationK1 * flywheelErrorPredict + hoodCompensationK2 * flywheelErrorPredictSquared;
+            hoodCompensation = HOOD_COMPENSATION_K1 * flywheelErrorPredict + HOOD_COMPENSATION_K2 * flywheelErrorPredictSquared;
             // TODO: Max adjust
         }
 
@@ -382,9 +365,6 @@ public class JetfireRobot extends RobotBase {
 
         turret.update(flywheelSpeed, targetTurntableHeading, hoodAngle, deltaTimeNs);
 
-        limelightController.updateRobotHeading(Math.toDegrees(currentPose.getHeading()));
-        limelightController.update(deltaTimeNs);
-
         indicatorLightController.setBaseColor(indicatorColor);
         indicatorLightController.update(deltaTimeNs);
 
@@ -443,7 +423,6 @@ public class JetfireRobot extends RobotBase {
             telemetry.addLine("");
 
             // Hardware Telemetry
-            limelightController.updateTelemetry(telemetry);
             turret.turntableController().updateTelemetry(telemetry);
             turret.flywheelController().updateTelemetry(telemetry);
             turret.hoodServoController().updateTelemetry(telemetry);
@@ -473,22 +452,16 @@ public class JetfireRobot extends RobotBase {
             farTurntableOffsetDeg = JetFireConstants.FAR_ZONE_TURNTABLE_START_OFFSET_RED;
         }
         flywheelTrim = 0;
+
         indicatorLightController.indicate(RGBIndicatorLightController.Color.VIOLET);
     }
 
     public void fire() {
         if (!rapidFireActionSequence.isRunning()) {
             rapidFireActionSequence.start();
-            if (useMuzzleFlash) {
-                prismController.indicate(GoBildaPrismDriver.Artboard.ARTBOARD_4, MUZZLE_FLASH_DURATION_MS);
-                //indicatorLightController.indicate(RGBIndicatorLightController.Color.ORANGE, MUZZLE_FLASH_DURATION_MS);
-            }
         }
     }
 
-    public void toggleMuzzleFlash() {
-        useMuzzleFlash = !useMuzzleFlash;
-    }
 
     public void humanPlayerPoseReset() {
         follower.setPose(humanPlayerReset);
@@ -543,14 +516,6 @@ public class JetfireRobot extends RobotBase {
     public boolean isReadyToShoot() {
         return isReadyToShoot;
     }
-
-    public LimelightController getLimelightHandler() {
-        return limelightController;
-    }
-
-//    public StateMachine getAutoFire() {
-//        return autoFire;
-//    }
 
     public Turret getTurret() {
         return turret;
