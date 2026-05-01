@@ -106,27 +106,6 @@ public class JetfireRobot extends RobotBase {
     private final ActionSequence rapidFireActionSequence = new ActionSequence(rapidFireActions);
 
     @Override
-    public void init(HardwareMap hardwareMap, Pose startPose, OpModeBase.AllianceColor allianceColor) {
-        super.init(hardwareMap, startPose, allianceColor);
-
-        if (allianceColor.equals(OpModeBase.AllianceColor.BLUE)) {
-            allianceArtboard = GoBildaPrismDriver.Artboard.ARTBOARD_1;
-            targetGoal = TARGET_GOAL_BLUE;
-            humanPlayerReset = HUMAN_PLAYER_ZONE_RESET_BLUE;
-
-            closeTurntableOffsetDeg = CLOSE_ZONE_TURNTABLE_START_OFFSET_BLUE;
-            farTurntableOffsetDeg = FAR_ZONE_TURNTABLE_START_OFFSET_BLUE;
-        } else {
-            allianceArtboard = GoBildaPrismDriver.Artboard.ARTBOARD_2;
-            targetGoal = TARGET_GOAL_BLUE.mirror();
-            humanPlayerReset = HUMAN_PLAYER_ZONE_RESET_BLUE.mirror();
-
-            closeTurntableOffsetDeg = CLOSE_ZONE_TURNTABLE_START_OFFSET_RED;
-            farTurntableOffsetDeg = FAR_ZONE_TURNTABLE_START_OFFSET_RED;
-        }
-    }
-
-    @Override
     public void stop() {
         prismController.setBaseArtboard(GoBildaPrismDriver.Artboard.ARTBOARD_0);
         super.stop();
@@ -219,6 +198,28 @@ public class JetfireRobot extends RobotBase {
     }
 
     @Override
+    public void init(HardwareMap hardwareMap, Pose startPose, OpModeBase.AllianceColor allianceColor) {
+        super.init(hardwareMap, startPose, allianceColor);
+
+        if (allianceColor.equals(OpModeBase.AllianceColor.BLUE)) {
+            allianceArtboard = GoBildaPrismDriver.Artboard.ARTBOARD_1;
+            targetGoal = TARGET_GOAL_BLUE;
+            humanPlayerReset = HUMAN_PLAYER_ZONE_RESET_BLUE;
+
+            closeTurntableOffsetDeg = CLOSE_ZONE_TURNTABLE_START_OFFSET_BLUE;
+            farTurntableOffsetDeg = FAR_ZONE_TURNTABLE_START_OFFSET_BLUE;
+        } else {
+            allianceArtboard = GoBildaPrismDriver.Artboard.ARTBOARD_2;
+            targetGoal = TARGET_GOAL_BLUE.mirror();
+            humanPlayerReset = HUMAN_PLAYER_ZONE_RESET_BLUE.mirror();
+
+            closeTurntableOffsetDeg = CLOSE_ZONE_TURNTABLE_START_OFFSET_RED;
+            farTurntableOffsetDeg = FAR_ZONE_TURNTABLE_START_OFFSET_RED;
+        }
+        prismController.setBaseArtboard(allianceArtboard);
+    }
+
+    @Override
     public void startConfiguration() {
 
     }
@@ -249,7 +250,7 @@ public class JetfireRobot extends RobotBase {
         double flywheelError = turret.flywheelController().getError();
 
         // Lead Computing
-        double launchDelaySec = INTAKE_TRANSFER_DELAY_MS / 1000.0; // + delta time
+        double launchDelaySec = INTAKE_TRANSFER_DELAY_MS / 1000.0;
         Pose futurePose = MathUtil.predictFuturePose(currentPose, velocity, launchDelaySec);
         Pose futureTurntablePose = futurePose.plus(turntablePivotOffset);
         double distanceFromGoalAtFuturePose = futureTurntablePose.distanceFrom(targetGoal);
@@ -267,8 +268,8 @@ public class JetfireRobot extends RobotBase {
 
         //double turntableErrorDeg = Math.toDegrees(turret.turntableController().getError());
         //boolean isTurntableReady = Math.abs(turntableErrorDeg) < TURNTABLE_HEADING_MARGIN_DEG && autoAimTurntable;
-        double goalHeadingError = Math.abs(AngleUnit.normalizeRadians(virtualGoalHeading - currentPose.getHeading()));
-        boolean isTurntableInRange =  goalHeadingError < TURNTABLE_MAX_HARD_STOP;
+        double goalHeadingError = Math.abs(AngleUnit.normalizeRadians(currentPose.getHeading() - virtualGoalHeading));
+        boolean isTurntableInRange =  goalHeadingError <= TURNTABLE_MAX_HARD_STOP;
 
         boolean isArtifactDetected = intakeSensor.isObjectDetected();
         if (isArtifactDetected && !wasArtifactDetected) {
@@ -285,12 +286,13 @@ public class JetfireRobot extends RobotBase {
 
         wasArtifactDetected = isArtifactDetected;
 
-        isReadyToShoot = !getRapidFireActionSequence().isRunning() && isFlywheelReady; //isTurntableInRange
+        isReadyToShoot = !getRapidFireActionSequence().isRunning() && isTurntableInRange && isFlywheelOn;
+        boolean indicateReadyToShoot = isReadyToShoot && isFlywheelReady;
 
         // HARDWARE VARIABLES
         double interpolatedFlywheelSpeed = FLYWHEEL_VELOCITY_BY_DISTANCE.interpolate(virtualDistanceFromGoal);
-        smoothFlywheelTargetVelocity.update(interpolatedFlywheelSpeed);
-        double flywheelSpeed = smoothFlywheelTargetVelocity.getAverage() + flywheelTrim;
+        smoothFlywheelTargetVelocity.update(interpolatedFlywheelSpeed + flywheelTrim);
+        double flywheelSpeed = smoothFlywheelTargetVelocity.getAverage(); // flywheel trim
 
         double turntableZoneOffsetDeg = isInFarZone ? farTurntableOffsetDeg : closeTurntableOffsetDeg;
         double targetTurntableHeading = AngleUnit.normalizeRadians(virtualGoalHeading - currentPose.getHeading()) + Math.toRadians(turntableZoneOffsetDeg);
@@ -308,9 +310,6 @@ public class JetfireRobot extends RobotBase {
             hoodCompensation = HOOD_COMPENSATION_K1 * flywheelErrorPredict + HOOD_COMPENSATION_K2 * flywheelErrorPredictSquared;
             // TODO: Max adjust
         }
-
-
-        // compensate the other way
 
         double hoodAngle = Math.toRadians(interpolatedHoodAngleDeg - hoodCompensation);
 
@@ -335,16 +334,13 @@ public class JetfireRobot extends RobotBase {
         }
 
         RGBIndicatorLightController.Color indicatorColor;
-        if (isReadyToShoot) {
+        if (indicateReadyToShoot) {
             indicatorColor = RGBIndicatorLightController.Color.GREEN;
-        }
-//        else if (!isFlywheelReady) {
-//
-//        }
-//        else if (!isTurntableInRange) {
-//            indicatorColor = RGBIndicatorLightController.Color.ORANGE;
-//        }
-        else {
+        } else if (!isTurntableInRange) {
+            indicatorColor = RGBIndicatorLightController.Color.BLUE;
+        }else if (!isFlywheelReady) {
+            indicatorColor = RGBIndicatorLightController.Color.ORANGE;
+        } else {
             indicatorColor = RGBIndicatorLightController.Color.RED;
         }
 
@@ -386,18 +382,11 @@ public class JetfireRobot extends RobotBase {
             double distanceFromGoal = currentPose.distanceFrom(targetGoal);
 
             // Variable Telemetry
-            telemetry.addLine("- MISC. VARS -");
-            telemetry.addData("Rapid Fire Status", rapidFireActionSequence.isRunning() ? 1 : 0);
-            telemetry.addLine("");
 
             telemetry.addLine("- OFFSETS -");
             telemetry.addData("isInFarZone", isInFarZone);
             telemetry.addData("Close Turntable Offset", closeTurntableOffsetDeg);
             telemetry.addData("Far Turntable Offset", farTurntableOffsetDeg);
-
-            telemetry.addData("pivot offset", turntablePivotOffset);
-            telemetry.addData("pivot pose", turntablePose);
-            telemetry.addLine("");
 
             telemetry.addLine("- GOAL -");
             telemetry.addData("Distance From Goal", distanceFromGoal);
@@ -420,6 +409,7 @@ public class JetfireRobot extends RobotBase {
             telemetry.addLine("- CONDITIONS -");
             telemetry.addData("isReadyToShoot", isReadyToShoot);
             telemetry.addData("isFlywheelReady", isFlywheelReady);
+            telemetry.addData("isTurntableInRange", isTurntableInRange);
             telemetry.addLine("");
 
             // Hardware Telemetry
@@ -457,7 +447,7 @@ public class JetfireRobot extends RobotBase {
     }
 
     public void fire() {
-        if (!rapidFireActionSequence.isRunning()) {
+        if (isReadyToShoot) {
             rapidFireActionSequence.start();
         }
     }
@@ -475,10 +465,6 @@ public class JetfireRobot extends RobotBase {
         setFlywheelOn(on);
         setIntakeOn(on);
         setAutoAimTurntable(on);
-    }
-
-    public GoBildaPrismController getPrismController() {
-        return prismController;
     }
 
     public void setIntakeOn(boolean isIntakeOn) {
@@ -515,14 +501,6 @@ public class JetfireRobot extends RobotBase {
 
     public boolean isReadyToShoot() {
         return isReadyToShoot;
-    }
-
-    public Turret getTurret() {
-        return turret;
-    }
-
-    public boolean isInFarZone() {
-        return isInFarZone;
     }
 
     public boolean isFlywheelReady() {

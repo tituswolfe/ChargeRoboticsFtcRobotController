@@ -42,7 +42,7 @@ public class JetFireConstants {
 
     // LEFT (positive+), RIGHT (negative-)
     public final static double CLOSE_ZONE_TURNTABLE_START_OFFSET_BLUE = -3;
-    public final static double FAR_ZONE_TURNTABLE_START_OFFSET_BLUE = -2; // TODO
+    public final static double FAR_ZONE_TURNTABLE_START_OFFSET_BLUE = -2;
 
     public final static double CLOSE_ZONE_TURNTABLE_START_OFFSET_RED = 3;
     public final static double FAR_ZONE_TURNTABLE_START_OFFSET_RED = 2;
@@ -57,11 +57,9 @@ public class JetFireConstants {
     public static final double MIN_HOOD_ANGLE = Math.toRadians(26);
     public static final double MAX_HOOD_ANGLE = Math.toRadians(50);
 
-    // TODO: Tune
-    public static double HOOD_COMPENSATION_K1 = 0.0006;
+    public static double HOOD_COMPENSATION_K1 = 0.0002;
     public static double HOOD_COMPENSATION_K2 = 0.000065;
-    public static double HOOD_ACTUATION_LAG_SEC = 0.1;
-
+    public static double HOOD_ACTUATION_LAG_SEC = 0.05;
 
     public static double FLYWHEEL_ERROR_COMPENSATION_THRESHOLD = 30;
 
@@ -74,7 +72,7 @@ public class JetFireConstants {
 
     public static final double INTAKE_POWER = 0.9;
     public static final double REVERSE_INTAKE_POWER = -0.7;
-    public static int INTAKE_TIMEOUT_MS = 2000;
+    public static final int INTAKE_TIMEOUT_MS = 2000;
     public static int INDICATE_FULL_INTAKE_MS = 700; // TODO: less
     public static final int INTAKE_RAPID_FIRE_DURATION_MS = 300;
 
@@ -85,6 +83,10 @@ public class JetFireConstants {
     // THRESHOLDS, MARGINS, DELAYS, OFFSETS, & INCREMENTS
     public static final double FAR_ZONE_Y_THRESHOLD = 48;
     public static double FLYWHEEL_VELOCITY_MARGIN_RPM = 50;
+
+    public static final double TURNTABLE_ZONE_OFFSET_INCREMENT = 1;
+    public static final double FLYWHEEL_OFFSET_INCREMENT = 10;
+
 
 
     public static final double GOAL_AIM_OFFSET = 5;
@@ -124,11 +126,11 @@ public class JetFireConstants {
         FLYWHEEL_VELOCITY_BY_DISTANCE_MAP.put(102.0, 2600.0);
         FLYWHEEL_VELOCITY_BY_DISTANCE_MAP.put(108.0, 2800.0); // half
         FLYWHEEL_VELOCITY_BY_DISTANCE_MAP.put(114.0, 2900.0);
-        FLYWHEEL_VELOCITY_BY_DISTANCE_MAP.put(120.0, 3000.0); // half
-        FLYWHEEL_VELOCITY_BY_DISTANCE_MAP.put(126.0, 3050.0);
-        FLYWHEEL_VELOCITY_BY_DISTANCE_MAP.put(132.0, 3100.0); // half
-        FLYWHEEL_VELOCITY_BY_DISTANCE_MAP.put(140.0, 3150.0);
-        FLYWHEEL_VELOCITY_BY_DISTANCE_MAP.put(150.0, 3300.0);
+        FLYWHEEL_VELOCITY_BY_DISTANCE_MAP.put(120.0, 3000.0 - 25); // half
+        FLYWHEEL_VELOCITY_BY_DISTANCE_MAP.put(126.0, 3050.0 - 25);
+        FLYWHEEL_VELOCITY_BY_DISTANCE_MAP.put(132.0, 3100.0 - 25); // half
+        FLYWHEEL_VELOCITY_BY_DISTANCE_MAP.put(140.0, 3150.0 - 25);
+        FLYWHEEL_VELOCITY_BY_DISTANCE_MAP.put(150.0, 3300.0 - 25);
     }
     public static LinearInterpolator FLYWHEEL_VELOCITY_BY_DISTANCE = new LinearInterpolator(FLYWHEEL_VELOCITY_BY_DISTANCE_MAP);
 

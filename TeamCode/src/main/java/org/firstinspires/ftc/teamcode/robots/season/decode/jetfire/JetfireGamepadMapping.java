@@ -75,13 +75,13 @@ public class JetfireGamepadMapping extends PrimaryDriverGamepadMapping<JetfireRo
 
     @Override
     public void onLeftBumperPressed() {
-        robot.adjustActiveTurntableZoneOffset(zoneOffsetIncrement);
+        robot.adjustActiveTurntableZoneOffset(JetFireConstants.TURNTABLE_ZONE_OFFSET_INCREMENT);
         //robot.setIntakeOn(!robot.isIntakeOn());
     }
 
     @Override
     public void onRightBumperPressed() {
-        robot.adjustActiveTurntableZoneOffset(-zoneOffsetIncrement);
+        robot.adjustActiveTurntableZoneOffset(-JetFireConstants.TURNTABLE_ZONE_OFFSET_INCREMENT);
         //robot.setAutoAimTurntable(!robot.isAutoAimTurntable());
     }
 
@@ -92,7 +92,7 @@ public class JetfireGamepadMapping extends PrimaryDriverGamepadMapping<JetfireRo
 
     @Override
     public void onDpadRightPressed() {
-        robot.adjustActiveTurntableZoneOffset(-zoneOffsetIncrement);
+        robot.adjustActiveTurntableZoneOffset(-JetFireConstants.TURNTABLE_ZONE_OFFSET_INCREMENT);
     }
 
     @Override
@@ -102,6 +102,6 @@ public class JetfireGamepadMapping extends PrimaryDriverGamepadMapping<JetfireRo
 
     @Override
     public void onDpadLeftPressed() {
-        robot.adjustActiveTurntableZoneOffset(zoneOffsetIncrement);
+        robot.adjustActiveTurntableZoneOffset(JetFireConstants.TURNTABLE_ZONE_OFFSET_INCREMENT);
     }
 }

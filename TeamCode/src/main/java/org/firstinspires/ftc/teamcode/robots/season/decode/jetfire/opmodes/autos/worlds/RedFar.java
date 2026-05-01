@@ -126,7 +126,7 @@ public class RedFar extends BaseAuto<JetfireRobot> {
                 .build();
 
         shootTunnel = follower.pathBuilder()
-                .addPath(new BezierLine(shootPose2, tunnelEnd))
+                .addPath(new BezierCurve(shootPose2, spike3End, tunnelEnd))
                 .setLinearHeadingInterpolation(shootPose2.getHeading(), tunnelEnd.getHeading())
                 .addPath(new BezierLine(tunnelEnd, shootPose2))
                 .setLinearHeadingInterpolation(tunnelEnd.getHeading(), shootPose2.getHeading())
