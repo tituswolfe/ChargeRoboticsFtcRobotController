@@ -26,6 +26,7 @@ import static com.pedropathing.math.MathFunctions.quadraticFit;
 import android.annotation.SuppressLint;
 
 import com.qualcomm.hardware.lynx.LynxModule;
+import com.qualcomm.robotcore.eventloop.opmode.Disabled;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
 import com.qualcomm.robotcore.eventloop.opmode.TeleOp;
 import com.qualcomm.robotcore.hardware.AnalogInput;
@@ -44,6 +45,7 @@ import java.util.List;
  */
 @Configurable
 @TeleOp(name = "Tuning", group = "Pedro Pathing")
+@Disabled
 public class Tuning extends SelectableOpMode {
     public static Follower follower;
 

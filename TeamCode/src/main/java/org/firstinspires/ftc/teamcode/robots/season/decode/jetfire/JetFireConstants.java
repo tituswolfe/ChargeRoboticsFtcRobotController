@@ -45,7 +45,7 @@ public class JetFireConstants {
     public final static double FAR_ZONE_TURNTABLE_START_OFFSET_BLUE = -2;
 
     public final static double CLOSE_ZONE_TURNTABLE_START_OFFSET_RED = 3;
-    public final static double FAR_ZONE_TURNTABLE_START_OFFSET_RED = 2;
+    public final static double FAR_ZONE_TURNTABLE_START_OFFSET_RED = 1;
 
     // HOOD
     public static final String HOOD_SERVO_DEVICE_NAME = "hood";

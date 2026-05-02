@@ -20,4 +20,8 @@ public class DualPIDFMotorVelocityController extends VelocityPIDFMotorController
         secondMotor.setPower(power);
         super.sendPowerToMotor(power);
     }
+
+    public DcMotorEx getSecondMotor() {
+        return secondMotor;
+    }
 }

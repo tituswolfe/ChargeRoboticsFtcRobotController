@@ -503,6 +503,10 @@ public class JetfireRobot extends RobotBase {
         return isReadyToShoot;
     }
 
+    public Turret<DualPIDFMotorVelocityController> getTurret() {
+        return turret;
+    }
+
     public boolean isFlywheelReady() {
         return isFlywheelReady;
     }

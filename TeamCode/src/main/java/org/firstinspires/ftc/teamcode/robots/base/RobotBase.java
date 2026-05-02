@@ -103,7 +103,7 @@ public abstract class RobotBase {
 
         boolean endOfCurrentPath = follower.getCurrentTValue() > END_OF_PATH_T_VALUE;
         boolean isLastPath = follower.getCurrentPathNumber() + 1 >= follower.getCurrentPathChain().size();
-        return endOfCurrentPath && isLastPath;
+        return endOfCurrentPath && isLastPath;// || follower.isRobotStuck();
     }
 
     public void setFieldCentricOffset(OpModeBase.AllianceColor allianceColor) {
